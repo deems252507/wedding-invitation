@@ -38,6 +38,7 @@ export interface InvitationSettings {
   opening_quote: string | null;
   opening_quote_source: string | null;
   greeting: string | null;
+  logo_url: string | null;
   cover_photo_url: string | null;
   groom_photo_url: string | null;
   bride_photo_url: string | null;
@@ -80,6 +81,7 @@ export const DEFAULT_SETTINGS: Omit<InvitationSettings, "id" | "updated_at"> = {
   opening_quote_source: "(Qs. Ar. Rum : 21)",
   greeting:
     "Assalamualaikum Wr. Wb. Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami:",
+  logo_url: null,
   cover_photo_url: null,
   groom_photo_url: null,
   bride_photo_url: null,

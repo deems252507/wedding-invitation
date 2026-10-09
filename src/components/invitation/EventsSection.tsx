@@ -21,7 +21,7 @@ export default function EventsSection({ settings }: Props) {
         {events.map((event, i) => (
           <div
             key={event.id || i}
-            className="text-center border border-cream/20 rounded-sm p-6 bg-navy/50"
+            className="event-card text-center"
           >
             <h3 className="font-cormorant text-lg font-semibold tracking-wider uppercase text-cream mb-3">
               {event.title}

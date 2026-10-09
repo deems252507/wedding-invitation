@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS invitation_settings (
   opening_quote_source TEXT DEFAULT '(Qs. Ar. Rum : 21)',
   greeting TEXT DEFAULT 'Assalamualaikum Wr. Wb. Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara pernikahan kami:',
   -- Photos (public URLs from Supabase Storage)
+  logo_url TEXT,
   cover_photo_url TEXT,
   groom_photo_url TEXT,
   bride_photo_url TEXT,
@@ -101,3 +102,16 @@ CREATE POLICY "Public read wishes"
 -- Storage bucket for photos (run in dashboard or via API)
 -- Bucket name: wedding-photos (public)
 -- Policies: public read, authenticated upload
+
+-- ============================================================
+-- STORAGE: Run these AFTER creating bucket "wedding-photos"
+-- in Dashboard > Storage > New bucket (Public: ON)
+-- ============================================================
+
+-- Allow public read
+-- CREATE POLICY "Public read wedding photos"
+-- ON storage.objects FOR SELECT
+-- USING (bucket_id = 'wedding-photos');
+
+-- Allow service role upload (handled via service key on server)
+-- No extra policy needed if using service_role key

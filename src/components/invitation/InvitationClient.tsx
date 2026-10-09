@@ -13,6 +13,8 @@ import GallerySection from "./GallerySection";
 import GiftSection from "./GiftSection";
 import WishesSection from "./WishesSection";
 import SectionReveal from "./SectionReveal";
+import MusicPlayer from "./MusicPlayer";
+import Particles from "./Particles";
 
 interface Props {
   settings: InvitationSettings;
@@ -24,9 +26,10 @@ export default function InvitationClient({ settings, guestName }: Props) {
 
   return (
     <>
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {!opened && (
           <Cover
+            key="cover"
             settings={settings}
             guestName={guestName}
             onOpen={() => setOpened(true)}
@@ -38,22 +41,34 @@ export default function InvitationClient({ settings, guestName }: Props) {
         <motion.main
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          className="min-h-screen bg-navy text-cream"
+          transition={{ duration: 1, delay: 0.2 }}
+          className="min-h-screen bg-navy text-cream relative"
         >
+          <Particles />
+          <MusicPlayer url={settings.music_url} autoPlay />
+
           {/* Hero */}
-          <SectionReveal className="section-band text-center pt-16 pb-12">
-            <p className="font-cormorant text-sm tracking-[3px] uppercase text-cream/70 mb-3">
+          <SectionReveal className="section-band text-center pt-16 pb-8">
+            {settings.logo_url && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={settings.logo_url}
+                alt="Logo"
+                className="w-14 h-14 mx-auto mb-4 object-contain opacity-70"
+              />
+            )}
+            <p className="font-cormorant text-xs tracking-[4px] uppercase text-cream/60 mb-4">
               The Wedding of
             </p>
-            <h1 className="font-pinyon text-5xl md:text-[55px] leading-tight text-cream">
+            <h1 className="font-pinyon text-5xl md:text-[55px] leading-tight text-cream text-glow">
               {settings.groom_name}
             </h1>
-            <p className="font-cormorant text-lg text-cream/60 my-1">and</p>
-            <h1 className="font-pinyon text-5xl md:text-[55px] leading-tight text-cream mb-4">
+            <p className="font-cormorant text-base text-cream/40 my-1">and</p>
+            <h1 className="font-pinyon text-5xl md:text-[55px] leading-tight text-cream text-glow mb-4">
               {settings.bride_name}
             </h1>
-            <p className="font-cormorant text-base tracking-widest text-cream/70">
+            <div className="ornament-diamond"><span>✦</span></div>
+            <p className="font-cormorant text-sm tracking-[3px] text-cream/60">
               {settings.wedding_date
                 ? new Date(settings.wedding_date)
                     .toLocaleDateString("id-ID", {
@@ -74,11 +89,14 @@ export default function InvitationClient({ settings, guestName }: Props) {
           {/* Quote */}
           {(settings.opening_quote || settings.opening_quote_source) && (
             <SectionReveal className="section-band text-center max-w-lg mx-auto">
-              <p className="font-cormorant text-sm italic leading-relaxed text-cream/80">
+              <p className="font-cormorant text-xs tracking-[2px] uppercase text-cream/50 mb-3">
+                With Love
+              </p>
+              <p className="font-cormorant text-sm italic leading-relaxed text-cream/75">
                 &ldquo;{settings.opening_quote}&rdquo;
               </p>
               {settings.opening_quote_source && (
-                <p className="font-poppins text-[10px] tracking-wider text-cream/50 mt-3">
+                <p className="font-poppins text-[10px] tracking-wider text-cream/40 mt-3">
                   {settings.opening_quote_source}
                 </p>
               )}
@@ -87,11 +105,11 @@ export default function InvitationClient({ settings, guestName }: Props) {
 
           <CoupleSection settings={settings} />
 
-          {/* Countdown */}
           <SectionReveal className="section-band text-center">
-            <h2 className="font-cormorant text-xl tracking-[2px] uppercase text-cream mb-6">
+            <h2 className="font-cormorant text-xl tracking-[2px] uppercase text-cream mb-2">
               Save The Date
             </h2>
+            <div className="ornament-diamond"><span>✦</span></div>
             <Countdown targetDate={settings.wedding_date} />
           </SectionReveal>
 
@@ -102,12 +120,12 @@ export default function InvitationClient({ settings, guestName }: Props) {
           <GiftSection settings={settings} />
           <WishesSection />
 
-          {/* Closing */}
-          <SectionReveal className="section-band text-center pb-20">
-            <p className="font-cormorant text-[15px] leading-relaxed text-cream/80 max-w-md mx-auto mb-6">
+          <SectionReveal className="section-band text-center pb-24">
+            <div className="ornament-diamond"><span>✦</span></div>
+            <p className="font-cormorant text-[15px] leading-relaxed text-cream/75 max-w-md mx-auto mb-6">
               {settings.closing_text}
             </p>
-            <p className="font-pinyon text-3xl text-cream">
+            <p className="font-pinyon text-3xl text-cream text-glow">
               {settings.groom_name} & {settings.bride_name}
             </p>
             {settings.hashtag && (
@@ -115,7 +133,7 @@ export default function InvitationClient({ settings, guestName }: Props) {
                 {settings.hashtag}
               </p>
             )}
-            <p className="font-poppins text-[10px] text-cream/30 mt-12">
+            <p className="font-poppins text-[10px] text-cream/25 mt-14">
               Made with ♥
             </p>
           </SectionReveal>

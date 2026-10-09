@@ -1,10 +1,68 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { InvitationSettings, Wish, EventItem, LoveStoryItem, BankAccount } from "@/lib/types";
 import { DEFAULT_SETTINGS } from "@/lib/types";
-import { Trash2, Save, Plus, ExternalLink } from "lucide-react";
+import { Trash2, Save, Plus, ExternalLink, Upload, Loader2 } from "lucide-react";
+import ImageUpload from "@/components/admin/ImageUpload";
+
+
+function GalleryUploadButton({ onUploaded }: { onUploaded: (url: string) => void }) {
+  const [uploading, setUploading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      form.append("folder", "gallery");
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "x-admin-password": sessionStorage.getItem("admin_password") || "" },
+        body: form,
+      });
+      const data = await res.json();
+      if (res.ok && data.url) onUploaded(data.url);
+      else alert(data.error || "Upload gagal");
+    } catch (err) {
+      alert(String(err));
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={uploading}
+        className="aspect-square border-2 border-dashed border-gray-300 rounded flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-navy hover:text-navy transition disabled:opacity-50"
+      >
+        {uploading ? (
+          <Loader2 size={24} className="animate-spin" />
+        ) : (
+          <>
+            <Upload size={24} />
+            <span className="text-xs">Upload</span>
+          </>
+        )}
+      </button>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFile}
+      />
+    </>
+  );
+}
 
 export default function AdminDashboard() {
   const router = useRouter();
@@ -211,14 +269,28 @@ export default function AdminDashboard() {
                 <label className="admin-label">Judul Cover</label>
                 <input className="admin-input" value={settings.cover_title || ""} onChange={(e) => update("cover_title", e.target.value)} />
               </div>
+              <ImageUpload
+                label="Logo Undangan"
+                value={settings.logo_url}
+                onChange={(url) => update("logo_url", url)}
+                folder="logo"
+              />
               <div>
-                <label className="admin-label">URL Foto Pria</label>
-                <input className="admin-input" value={settings.groom_photo_url || ""} onChange={(e) => update("groom_photo_url", e.target.value)} placeholder="https://..." />
+                <label className="admin-label">URL Musik Background (mp3)</label>
+                <input className="admin-input" value={settings.music_url || ""} onChange={(e) => update("music_url", e.target.value)} placeholder="https://...lagu.mp3" />
               </div>
-              <div>
-                <label className="admin-label">URL Foto Wanita</label>
-                <input className="admin-input" value={settings.bride_photo_url || ""} onChange={(e) => update("bride_photo_url", e.target.value)} placeholder="https://..." />
-              </div>
+              <ImageUpload
+                label="Foto Pria"
+                value={settings.groom_photo_url}
+                onChange={(url) => update("groom_photo_url", url)}
+                folder="groom"
+              />
+              <ImageUpload
+                label="Foto Wanita"
+                value={settings.bride_photo_url}
+                onChange={(url) => update("bride_photo_url", url)}
+                folder="bride"
+              />
             </div>
             <div>
               <label className="admin-label">Sapaan / Greeting</label>
@@ -437,21 +509,9 @@ export default function AdminDashboard() {
         {tab === "gallery" && (
           <div className="admin-card space-y-4">
             <p className="text-sm text-gray-500">
-              Masukkan URL gambar (upload ke Supabase Storage atau hosting lain, lalu tempel URL-nya di sini). Satu URL per baris.
+              Klik tombol Upload untuk menambah foto ke galeri (maks 5MB per foto).
             </p>
-            <textarea
-              className="admin-input font-mono text-xs"
-              rows={8}
-              value={(settings.gallery || []).join("\n")}
-              onChange={(e) =>
-                update(
-                  "gallery",
-                  e.target.value.split("\n").map((s) => s.trim()).filter(Boolean)
-                )
-              }
-              placeholder={"https://example.com/foto1.jpg\nhttps://example.com/foto2.jpg"}
-            />
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-3">
               {(settings.gallery || []).map((url, i) => (
                 <div key={i} className="aspect-square bg-gray-200 rounded overflow-hidden relative">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -468,6 +528,9 @@ export default function AdminDashboard() {
                   </button>
                 </div>
               ))}
+              <GalleryUploadButton
+                onUploaded={(url) => update("gallery", [...(settings.gallery || []), url])}
+              />
             </div>
           </div>
         )}

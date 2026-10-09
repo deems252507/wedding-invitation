@@ -21,7 +21,7 @@ export default function CoupleSection({ settings }: Props) {
         {/* Groom */}
         <div className="flex flex-col items-center">
           {settings.groom_photo_url ? (
-            <div className="w-40 h-40 rounded-full overflow-hidden border-2 border-cream/30 mb-4 shadow-invitation">
+            <div className="w-40 h-40 photo-frame mb-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={settings.groom_photo_url}
@@ -30,7 +30,7 @@ export default function CoupleSection({ settings }: Props) {
               />
             </div>
           ) : (
-            <div className="w-40 h-40 rounded-full bg-cream/10 border-2 border-cream/30 mb-4 flex items-center justify-center">
+            <div className="w-40 h-40 photo-frame bg-cream/10 mb-4 flex items-center justify-center">
               <span className="font-pinyon text-4xl text-cream/50">
                 {settings.groom_name.charAt(0)}
               </span>
@@ -57,7 +57,7 @@ export default function CoupleSection({ settings }: Props) {
         {/* Bride */}
         <div className="flex flex-col items-center">
           {settings.bride_photo_url ? (
-            <div className="w-40 h-40 rounded-full overflow-hidden border-2 border-cream/30 mb-4 shadow-invitation">
+            <div className="w-40 h-40 photo-frame mb-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={settings.bride_photo_url}
@@ -66,7 +66,7 @@ export default function CoupleSection({ settings }: Props) {
               />
             </div>
           ) : (
-            <div className="w-40 h-40 rounded-full bg-cream/10 border-2 border-cream/30 mb-4 flex items-center justify-center">
+            <div className="w-40 h-40 photo-frame bg-cream/10 mb-4 flex items-center justify-center">
               <span className="font-pinyon text-4xl text-cream/50">
                 {settings.bride_name.charAt(0)}
               </span>
