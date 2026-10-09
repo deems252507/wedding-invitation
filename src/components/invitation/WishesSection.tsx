@@ -15,13 +15,8 @@ export default function WishesSection() {
   const fetchWishes = async () => {
     try {
       const res = await fetch("/api/wishes");
-      if (res.ok) {
-        const data = await res.json();
-        setWishes(data);
-      }
-    } catch {
-      /* offline / no db yet */
-    }
+      if (res.ok) setWishes(await res.json());
+    } catch { /* ignore */ }
   };
 
   useEffect(() => {
@@ -54,23 +49,21 @@ export default function WishesSection() {
 
   return (
     <SectionReveal className="section-band">
-      <h2 className="font-cormorant text-xl tracking-[2px] uppercase text-center text-cream mb-2">
-        Ucapan & Doa
-      </h2>
-      <p className="font-cormorant text-sm text-center text-cream/70 mb-8">
+      <p className="font-jakarta text-[11px] tracking-[0.25em] uppercase text-gold text-center mb-2">
+        Buku Tamu & RSVP
+      </p>
+      <div className="gold-divider"><span>✦</span></div>
+      <p className="font-jakarta text-sm text-center text-porcelain/55 mb-8">
         Sampaikan doa dan ucapan terbaik Anda
       </p>
 
-      <form
-        onSubmit={handleSubmit}
-        className="max-w-md mx-auto space-y-4 mb-10"
-      >
+      <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-3 mb-10">
         <input
           type="text"
           placeholder="Nama Anda"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full px-4 py-2.5 bg-cream/10 border border-cream/20 rounded text-cream placeholder:text-cream/40 font-cormorant text-base focus:outline-none focus:border-cream/50"
+          className="w-full px-4 py-3 rounded-2xl bg-midnight-surface border border-gold/15 text-porcelain placeholder:text-porcelain/30 font-jakarta text-sm focus:outline-none focus:border-gold/40"
           required
         />
         <textarea
@@ -78,55 +71,43 @@ export default function WishesSection() {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           rows={3}
-          className="w-full px-4 py-2.5 bg-cream/10 border border-cream/20 rounded text-cream placeholder:text-cream/40 font-cormorant text-base focus:outline-none focus:border-cream/50 resize-none"
+          className="w-full px-4 py-3 rounded-2xl bg-midnight-surface border border-gold/15 text-porcelain placeholder:text-porcelain/30 font-jakarta text-sm focus:outline-none focus:border-gold/40 resize-none"
           required
         />
         <select
           value={attendance}
           onChange={(e) => setAttendance(e.target.value)}
-          className="w-full px-4 py-2.5 bg-cream/10 border border-cream/20 rounded text-cream font-cormorant text-base focus:outline-none focus:border-cream/50"
+          className="w-full px-4 py-3 rounded-2xl bg-midnight-surface border border-gold/15 text-porcelain font-jakarta text-sm focus:outline-none focus:border-gold/40"
         >
-          <option value="hadir" className="text-navy">
-            InsyaAllah Hadir
-          </option>
-          <option value="tidak" className="text-navy">
-            Maaf, Tidak Bisa Hadir
-          </option>
-          <option value="ragu" className="text-navy">
-            Masih Ragu
-          </option>
+          <option value="hadir" className="text-black">InsyaAllah Hadir</option>
+          <option value="tidak" className="text-black">Maaf, Tidak Bisa Hadir</option>
+          <option value="ragu" className="text-black">Masih Ragu</option>
         </select>
-        <button
-          type="submit"
-          disabled={loading}
-          className="btn-ornamental w-full disabled:opacity-50"
-        >
+        <button type="submit" disabled={loading} className="btn-gold w-full disabled:opacity-50">
           {loading ? "Mengirim..." : submitted ? "Terkirim ✓" : "Kirim Ucapan"}
         </button>
       </form>
 
       <div className="max-w-md mx-auto space-y-3 max-h-80 overflow-y-auto">
         {wishes.length === 0 && (
-          <p className="text-center font-cormorant text-sm text-cream/40">
+          <p className="text-center font-jakarta text-sm text-porcelain/30">
             Belum ada ucapan. Jadilah yang pertama!
           </p>
         )}
         {wishes.map((w) => (
           <div
             key={w.id}
-            className="border border-cream/10 rounded p-3 bg-navy/30"
+            className="rounded-2xl border border-gold/10 bg-midnight-surface/60 p-4"
           >
             <div className="flex justify-between items-start">
-              <p className="font-cormorant font-semibold text-cream text-sm">
+              <p className="font-jakarta font-semibold text-sm text-porcelain">
                 {w.guest_name}
               </p>
-              <span className="font-poppins text-[9px] tracking-wider uppercase text-cream/40">
+              <span className="font-jakarta text-[9px] tracking-wider uppercase text-gold/60">
                 {w.attendance}
               </span>
             </div>
-            <p className="font-cormorant text-sm text-cream/80 mt-1">
-              {w.message}
-            </p>
+            <p className="font-jakarta text-sm text-porcelain/65 mt-1">{w.message}</p>
           </div>
         ))}
       </div>

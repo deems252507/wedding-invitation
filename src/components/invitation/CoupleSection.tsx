@@ -7,86 +7,89 @@ interface Props {
   settings: InvitationSettings;
 }
 
+function PersonCard({
+  name,
+  fullName,
+  parents,
+  instagram,
+  photoUrl,
+  label,
+}: {
+  name: string;
+  fullName: string;
+  parents: string;
+  instagram: string | null;
+  photoUrl: string | null;
+  label: string;
+}) {
+  return (
+    <div className="card-porcelain flex flex-col items-center text-center max-w-xs w-full mx-auto">
+      <div className="relative mb-4">
+        {photoUrl ? (
+          <div className="w-36 h-36 rounded-full overflow-hidden border-[3px] border-gold shadow-gold">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className="w-36 h-36 rounded-full bg-gold/10 border-[3px] border-gold/40 flex items-center justify-center">
+            <span className="font-playfair text-4xl text-gold/60">{name.charAt(0)}</span>
+          </div>
+        )}
+      </div>
+      <p className="font-jakarta text-[10px] tracking-[0.2em] uppercase text-gold mb-1">
+        {label}
+      </p>
+      <h3 className="font-playfair text-2xl font-semibold text-[#1A1D23]">{name}</h3>
+      <p className="font-jakarta text-sm text-[#596173] mt-1">{fullName}</p>
+      <div className="w-8 h-px bg-gold/40 my-3" />
+      <p className="font-jakarta text-[11px] text-[#596173]">
+        Putra/i dari
+        <br />
+        <span className="font-medium text-[#1A1D23]">{parents}</span>
+      </p>
+      {instagram && (
+        <a
+          href={`https://instagram.com/${instagram}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 font-jakarta text-xs text-gold hover:underline"
+        >
+          @{instagram}
+        </a>
+      )}
+    </div>
+  );
+}
+
 export default function CoupleSection({ settings }: Props) {
   return (
-    <SectionReveal className="section-band text-center">
-      <p className="font-cormorant text-sm tracking-[2px] uppercase text-cream/70 mb-2">
-        Groom & Bride
+    <SectionReveal className="section-band">
+      <p className="font-jakarta text-[11px] tracking-[0.25em] uppercase text-gold text-center mb-2">
+        Mempelai Pria & Wanita
       </p>
-      <p className="font-cormorant text-[15px] leading-relaxed text-cream/90 max-w-lg mx-auto mb-10">
+      <div className="gold-divider"><span>✦</span></div>
+      <p className="font-jakarta text-sm leading-relaxed text-porcelain/70 text-center max-w-lg mx-auto mb-10">
         {settings.greeting}
       </p>
 
-      <div className="flex flex-col md:flex-row items-center justify-center gap-10 md:gap-16">
-        {/* Groom */}
-        <div className="flex flex-col items-center">
-          {settings.groom_photo_url ? (
-            <div className="w-40 h-40 photo-frame mb-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={settings.groom_photo_url}
-                alt={settings.groom_name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="w-40 h-40 photo-frame bg-cream/10 mb-4 flex items-center justify-center">
-              <span className="font-pinyon text-4xl text-cream/50">
-                {settings.groom_name.charAt(0)}
-              </span>
-            </div>
-          )}
-          <h3 className="font-pinyon text-4xl text-cream mb-1">{settings.groom_name}</h3>
-          <p className="font-cormorant text-lg text-cream/90">{settings.groom_full_name}</p>
-          <p className="font-poppins text-xs text-cream/60 mt-2">Putra dari</p>
-          <p className="font-caudex text-sm text-cream/80">{settings.groom_parents}</p>
-          {settings.groom_instagram && (
-            <a
-              href={`https://instagram.com/${settings.groom_instagram}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 text-rose text-sm hover:underline"
-            >
-              @{settings.groom_instagram}
-            </a>
-          )}
-        </div>
-
-        <div className="font-pinyon text-3xl text-cream/50">&</div>
-
-        {/* Bride */}
-        <div className="flex flex-col items-center">
-          {settings.bride_photo_url ? (
-            <div className="w-40 h-40 photo-frame mb-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={settings.bride_photo_url}
-                alt={settings.bride_name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="w-40 h-40 photo-frame bg-cream/10 mb-4 flex items-center justify-center">
-              <span className="font-pinyon text-4xl text-cream/50">
-                {settings.bride_name.charAt(0)}
-              </span>
-            </div>
-          )}
-          <h3 className="font-pinyon text-4xl text-cream mb-1">{settings.bride_name}</h3>
-          <p className="font-cormorant text-lg text-cream/90">{settings.bride_full_name}</p>
-          <p className="font-poppins text-xs text-cream/60 mt-2">Putri dari</p>
-          <p className="font-caudex text-sm text-cream/80">{settings.bride_parents}</p>
-          {settings.bride_instagram && (
-            <a
-              href={`https://instagram.com/${settings.bride_instagram}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 text-rose text-sm hover:underline"
-            >
-              @{settings.bride_instagram}
-            </a>
-          )}
-        </div>
+      <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8">
+        <PersonCard
+          name={settings.groom_name}
+          fullName={settings.groom_full_name}
+          parents={settings.groom_parents}
+          instagram={settings.groom_instagram}
+          photoUrl={settings.groom_photo_url}
+          label="The Groom"
+        />
+        <span className="font-playfair text-2xl text-gold italic hidden md:block">&</span>
+        <PersonCard
+          name={settings.bride_name}
+          fullName={settings.bride_full_name}
+          parents={settings.bride_parents}
+          instagram={settings.bride_instagram}
+          photoUrl={settings.bride_photo_url}
+          label="The Bride"
+        />
       </div>
     </SectionReveal>
   );

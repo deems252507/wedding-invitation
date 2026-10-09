@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { differenceInDays, differenceInHours, differenceInMinutes, differenceInSeconds } from "date-fns";
+import {
+  differenceInDays,
+  differenceInHours,
+  differenceInMinutes,
+  differenceInSeconds,
+} from "date-fns";
 
 interface CountdownProps {
   targetDate: string;
@@ -38,13 +43,16 @@ export default function Countdown({ targetDate }: CountdownProps) {
   ];
 
   return (
-    <div className="flex justify-center gap-4 md:gap-8">
+    <div className="flex justify-center gap-3 md:gap-4">
       {items.map((item) => (
-        <div key={item.label} className="text-center">
-          <div className="font-cormorant text-3xl md:text-4xl font-semibold text-cream tabular-nums">
+        <div
+          key={item.label}
+          className="w-[70px] md:w-20 rounded-2xl border border-gold/25 bg-midnight-surface/80 py-3 text-center backdrop-blur-sm"
+        >
+          <div className="font-playfair text-2xl md:text-3xl font-semibold text-gold tabular-nums">
             {String(item.value).padStart(2, "0")}
           </div>
-          <div className="font-poppins text-[10px] tracking-[1.8px] uppercase text-cream/60 mt-1">
+          <div className="font-jakarta text-[9px] tracking-[0.15em] uppercase text-porcelain/50 mt-1">
             {item.label}
           </div>
         </div>

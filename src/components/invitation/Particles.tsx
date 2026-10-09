@@ -1,12 +1,12 @@
 "use client";
 
 export default function Particles() {
-  const items = Array.from({ length: 12 }, (_, i) => ({
+  const items = Array.from({ length: 14 }, (_, i) => ({
     id: i,
-    left: `${(i * 8 + 5) % 100}%`,
-    delay: `${(i * 0.8) % 6}s`,
-    duration: `${8 + (i % 5)}s`,
-    size: 4 + (i % 4),
+    left: `${(i * 7 + 3) % 100}%`,
+    delay: `${(i * 0.7) % 7}s`,
+    duration: `${10 + (i % 6)}s`,
+    size: 3 + (i % 4),
   }));
 
   return (

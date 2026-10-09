@@ -9,24 +9,40 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: "#E4EAF6",
-        "on-primary": "#0D0E3A",
-        canvas: "#FFFFFF",
-        ink: "#E4EAF6",
-        "accent-1": "#212529",
-        "accent-2": "#CC3366",
-        neutral: "#5A5A5A",
-        navy: "#0D0E3A",
+        midnight: {
+          base: "#0B192C",
+          surface: "#101828",
+          accent: "#1E2E4F",
+          deep: "#061426",
+        },
+        gold: {
+          DEFAULT: "#D4AF37",
+          regal: "#D4AF37",
+          champagne: "#E5C378",
+          light: "#F7E7CE",
+        },
+        porcelain: "#FDFBF7",
         cream: "#E4EAF6",
+        navy: "#0D0E3A",
         rose: "#CC3366",
       },
       fontFamily: {
+        playfair: ["Playfair Display", "Georgia", "serif"],
+        jakarta: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
         pinyon: ["Pinyon Script", "cursive"],
-        aboreto: ["Aboreto", "serif"],
         cormorant: ["Cormorant Garamond", "serif"],
-        "cormorant-infant": ["Cormorant Infant", "serif"],
         caudex: ["Caudex", "serif"],
         poppins: ["Poppins", "sans-serif"],
+      },
+      boxShadow: {
+        gold: "0 8px 24px -4px rgba(212, 175, 55, 0.28)",
+        "gold-lg": "0 12px 28px -2px rgba(212, 175, 55, 0.45)",
+        card: "0 12px 32px -8px rgba(3, 8, 16, 0.6), 0 2px 8px 0 rgba(212, 175, 55, 0.08)",
+        invitation: "rgba(0, 0, 0, 0.2) 0px 15px 35px 0px",
+      },
+      borderRadius: {
+        "2xl": "1rem",
+        "3xl": "1.5rem",
       },
       spacing: {
         xxs: "4px",
@@ -40,15 +56,24 @@ const config: Config = {
         section: "52px",
         band: "80px",
       },
-      boxShadow: {
-        "invitation": "rgba(0, 0, 0, 0.2) 0px 15px 35px 0px",
-        "invitation-hover": "rgba(0, 0, 0, 0.16) 0px 28px 50px 0px",
-        "btn-icon": "rgba(0, 0, 0, 0.12) 0px 2px 16px 0px, rgba(255, 255, 255, 0.8) 0px 1px 0px 0px inset",
-        "btn-icon-sm": "rgba(255, 255, 255, 0.85) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.1) 0px 1px 4px 0px",
+      animation: {
+        "fade-up": "fadeUp 0.8s ease-out forwards",
+        "scale-in": "scaleIn 0.6s ease-out forwards",
+        float: "float 6s ease-in-out infinite",
       },
-      borderRadius: {
-        none: "0px",
-        full: "9999px",
+      keyframes: {
+        fadeUp: {
+          "0%": { opacity: "0", transform: "translateY(24px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        scaleIn: {
+          "0%": { opacity: "0", transform: "scale(0.92)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
       },
     },
   },

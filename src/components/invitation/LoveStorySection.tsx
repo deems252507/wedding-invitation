@@ -12,31 +12,26 @@ export default function LoveStorySection({ settings }: Props) {
 
   return (
     <SectionReveal className="section-band">
-      <h2 className="font-cormorant text-xl tracking-[2px] uppercase text-center text-cream mb-10">
+      <p className="font-jakarta text-[11px] tracking-[0.25em] uppercase text-gold text-center mb-2">
         Love Story
-      </h2>
+      </p>
+      <div className="gold-divider"><span>✦</span></div>
 
-      <div className="max-w-md mx-auto relative">
-        {/* Timeline line */}
-        <div className="absolute left-4 top-0 bottom-0 w-px bg-cream/20 md:left-1/2 md:-translate-x-px" />
-
+      <div className="max-w-md mx-auto relative mt-10">
+        <div className="absolute left-4 top-2 bottom-2 w-px bg-gold/20 md:left-1/2" />
         {stories.map((item, i) => (
           <div
             key={item.id || i}
             className={`relative pl-12 md:pl-0 mb-10 ${
-              i % 2 === 0 ? "md:pr-[50%] md:text-right md:pr-10" : "md:pl-[50%] md:pl-10"
+              i % 2 === 0 ? "md:pr-[52%] md:text-right md:pr-10" : "md:pl-[52%] md:pl-10"
             }`}
           >
-            <div
-              className={`absolute left-2.5 w-3 h-3 rounded-full bg-rose border-2 border-cream md:left-1/2 md:-translate-x-1.5 ${
-                i % 2 === 0 ? "" : ""
-              }`}
-            />
-            <h3 className="font-pinyon text-2xl text-cream">{item.title}</h3>
-            <p className="font-poppins text-xs tracking-wider text-cream/60 mt-1">
+            <div className="absolute left-2.5 w-3 h-3 rounded-full bg-gold border-2 border-midnight-base md:left-1/2 md:-translate-x-1.5" />
+            <h3 className="font-playfair text-xl text-porcelain">{item.title}</h3>
+            <p className="font-jakarta text-[11px] tracking-wider text-gold/70 mt-1">
               {item.date}
             </p>
-            <p className="font-cormorant text-[15px] leading-relaxed text-cream/80 mt-2">
+            <p className="font-jakarta text-sm leading-relaxed text-porcelain/60 mt-2">
               {item.description}
             </p>
           </div>

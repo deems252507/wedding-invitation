@@ -24,15 +24,15 @@ export default function GiftSection({ settings }: Props) {
 
   return (
     <SectionReveal className="section-band text-center">
-      <h2 className="font-cormorant text-xl tracking-[2px] uppercase text-cream mb-4">
+      <p className="font-jakarta text-[11px] tracking-[0.25em] uppercase text-gold mb-2">
         Wedding Gift
-      </h2>
-      <div className="ornament-diamond"><span>✦</span></div>
-      <p className="font-cormorant text-[15px] leading-relaxed text-cream/80 max-w-md mx-auto mb-8">
+      </p>
+      <div className="gold-divider"><span>✦</span></div>
+      <p className="font-jakarta text-sm leading-relaxed text-porcelain/65 max-w-md mx-auto mb-8">
         {settings.gift_intro}
       </p>
 
-      <button onClick={() => setOpen(true)} className="btn-ornamental gap-2">
+      <button onClick={() => setOpen(true)} className="btn-gold gap-2">
         <Gift size={16} />
         Klik Disini
       </button>
@@ -47,39 +47,38 @@ export default function GiftSection({ settings }: Props) {
             onClick={() => setOpen(false)}
           >
             <motion.div
-              className="bg-navy border border-cream/20 rounded-lg p-6 max-w-sm w-full max-h-[80vh] overflow-y-auto relative"
-              initial={{ scale: 0.9, y: 20 }}
+              className="card-dark max-w-sm w-full max-h-[80vh] overflow-y-auto relative"
+              initial={{ scale: 0.92, y: 24 }}
               animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
+              exit={{ scale: 0.92, y: 24 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={() => setOpen(false)}
-                className="absolute top-3 right-3 text-cream/50 hover:text-cream"
+                className="absolute top-3 right-3 text-porcelain/40 hover:text-porcelain"
               >
                 <X size={20} />
               </button>
-
-              <h3 className="font-cormorant text-lg tracking-wider uppercase text-cream mb-4 text-center">
+              <h3 className="font-jakarta text-xs tracking-[0.2em] uppercase text-gold mb-5 text-center">
                 Wedding Gift
               </h3>
-
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {accounts.map((acc, i) => (
                   <div
                     key={i}
-                    className="border border-cream/15 rounded p-4 bg-white/[0.03]"
+                    className="rounded-2xl border border-gold/15 bg-midnight-base/50 p-4"
                   >
-                    <p className="font-cormorant text-sm text-cream/70">{acc.bank}</p>
-                    <p className="font-caudex text-lg text-cream tracking-wider my-1">
+                    <p className="font-jakarta text-xs text-porcelain/50">{acc.bank}</p>
+                    <p className="font-playfair text-lg text-porcelain tracking-wide my-1">
                       {acc.number}
                     </p>
                     {acc.name && (
-                      <p className="font-poppins text-xs text-cream/50">{acc.name}</p>
+                      <p className="font-jakarta text-xs text-porcelain/45">{acc.name}</p>
                     )}
                     <button
                       onClick={() => handleCopy(acc.number, `bank-${i}`)}
-                      className="mt-2 inline-flex items-center gap-1.5 text-xs text-rose hover:underline"
+                      className="mt-2 inline-flex items-center gap-1.5 text-xs text-gold hover:underline"
                     >
                       {copied === `bank-${i}` ? (
                         <><Check size={12} /> Tersalin</>
@@ -89,14 +88,13 @@ export default function GiftSection({ settings }: Props) {
                     </button>
                   </div>
                 ))}
-
                 {settings.gift_address && (
-                  <div className="border border-cream/15 rounded p-4 bg-white/[0.03]">
-                    <p className="font-poppins text-xs text-cream/50 mb-1">Kirim Kado</p>
-                    <p className="font-cormorant text-sm text-cream">{settings.gift_address}</p>
+                  <div className="rounded-2xl border border-gold/15 bg-midnight-base/50 p-4">
+                    <p className="font-jakarta text-xs text-porcelain/50 mb-1">Kirim Kado</p>
+                    <p className="font-jakarta text-sm text-porcelain">{settings.gift_address}</p>
                     <button
                       onClick={() => handleCopy(settings.gift_address!, "addr")}
-                      className="mt-2 inline-flex items-center gap-1.5 text-xs text-rose hover:underline"
+                      className="mt-2 inline-flex items-center gap-1.5 text-xs text-gold hover:underline"
                     >
                       {copied === "addr" ? (
                         <><Check size={12} /> Tersalin</>
