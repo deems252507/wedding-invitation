@@ -2,36 +2,52 @@ import coverImg from "@/assets/cover.jpg";
 
 export function Cover({ guest, onOpen }: { guest: string; onOpen: () => void }) {
   return (
-    <div className="scene relative h-[100dvh] w-full overflow-hidden">
+    <div className="relative h-[100dvh] w-full overflow-hidden bg-ink">
       <img
         src={coverImg}
-        alt="Foto prewedding Shopia dan Nathan"
+        alt="Foto prewedding"
         width={1024}
         height={1536}
-        className="animate-kenburns absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover animate-kenburns"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-ink/55 via-ink/35 to-ink/70" />
-      <div className="absolute inset-0 flex flex-col items-center justify-between px-8 py-14 text-center">
-        <div className="animate-rise">
-          <p className="font-sans text-[0.62rem] tracking-[0.42em] text-cream/80">
-            WEDDING INVITATION
+      <div className="absolute inset-0 bg-gradient-to-b from-ink/40 via-ink/20 to-ink/75" />
+
+      <div className="absolute inset-0 flex flex-col items-center justify-between px-6 py-12 text-center text-cream">
+        <div className="pt-6">
+          <p className="animate-text-mask font-sans text-[0.58rem] tracking-[0.38em] text-cream/85">
+            The Wedding of
           </p>
-          <h1 className="mt-4 font-display text-4xl tracking-[0.06em] text-cream">
-            Shopia &amp; Nathan
-          </h1>
         </div>
 
-        <div className="animate-rise-slow space-y-3">
-          <p className="font-sans text-[0.6rem] tracking-[0.28em] text-cream/70">
-            KEPADA YTH. BAPAK/IBU/SAUDARA/I
+        <div className="flex flex-col items-center gap-1">
+          <h1 className="animate-text-scale font-script text-[3.4rem] leading-none tracking-wide text-cream drop-shadow-md sm:text-6xl">
+            Shopia
+          </h1>
+          <p className="animate-text-mask stagger-2 font-display text-2xl italic text-cream/90">
+            &amp;
           </p>
-          <p className="font-display text-2xl text-cream">{guest}</p>
-          <p className="mx-auto max-w-xs font-sans text-[0.6rem] leading-relaxed tracking-[0.14em] text-cream/60">
-            Mohon maaf jika ada kesalahan penulisan nama dan gelar
+          <h1 className="animate-text-scale stagger-2 font-script text-[3.4rem] leading-none tracking-wide text-cream drop-shadow-md sm:text-6xl">
+            Nathan
+          </h1>
+          <p className="animate-text-mask stagger-3 mt-4 font-sans text-[0.58rem] tracking-[0.22em] text-cream/75">
+            Sabtu, 30 Januari 2027
           </p>
-          <button onClick={onOpen} className="btn-outline sheen mt-4">
-            OPEN INVITATION
+
+          <button
+            type="button"
+            onClick={onOpen}
+            className="animate-text-scale stagger-4 mt-8 inline-flex items-center gap-2 rounded-full border border-cream/50 bg-ink/40 px-6 py-2.5 font-sans text-[0.62rem] tracking-[0.2em] text-cream backdrop-blur-sm transition hover:bg-cream hover:text-ink"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden>
+              <path d="M4 12h16M12 4l8 8-8 8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            Buka Undangan
           </button>
+        </div>
+
+        <div className="animate-text-mask stagger-4 pb-2">
+          <p className="font-sans text-[0.55rem] tracking-[0.28em] text-cream/60">Kepada</p>
+          <p className="mt-1 font-display text-lg text-cream">{guest}</p>
         </div>
       </div>
     </div>

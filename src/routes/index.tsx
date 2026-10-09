@@ -12,6 +12,7 @@ import {
   Quote,
   Rsvp,
   ThankYou,
+  VideoMoment,
   Wishes,
 } from "@/components/wedding/Sections";
 
@@ -72,6 +73,7 @@ function Invitation() {
           <Events />
           <Countdown />
           <Gallery />
+          <VideoMoment />
           <Rsvp />
           <Wishes />
           <Gift />

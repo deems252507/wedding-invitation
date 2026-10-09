@@ -18,13 +18,30 @@ const WEDDING_DATE = new Date("2027-01-30T10:00:00+07:00");
 
 function SectionTitle({ kicker, title }: { kicker?: string; title: string }) {
   return (
-    <Reveal variant="flip" className="text-center">
+    <Reveal variant="up" className="text-center">
       {kicker ? (
-        <p className="eyebrow animate-rise tracking-[0.42em]">{kicker}</p>
+        <p className="eyebrow tracking-[0.42em]">{kicker}</p>
       ) : null}
-      <h2 className="mt-3 font-display text-4xl italic tracking-tight text-ink animate-rise-slow">
+      <h2 className="mt-3 font-display text-4xl italic tracking-tight text-ink">
         {title}
       </h2>
+    </Reveal>
+  );
+}
+
+/** Soft fade-up block – text + image move together */
+function FadeUp({
+  children,
+  className = "",
+  delay = 0,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}) {
+  return (
+    <Reveal variant="up" className={className} delay={delay}>
+      {children}
     </Reveal>
   );
 }
@@ -35,10 +52,10 @@ export function Hero() {
       kicker="THE WEDDING OF"
       title="Shopia & Nathan"
       layers={[
-        { layer: "1", src: heroImg, alt: "Shopia & Nathan – background" },
-        { layer: "2", src: coverImg, alt: "Cover mid layer" },
+        { layer: "1", src: heroImg, alt: "Background" },
+        { layer: "2", src: coverImg, alt: "Mid layer" },
         { layer: "3", title: "Shopia & Nathan" },
-        { layer: "4", src: story2, alt: "Foreground detail" },
+        { layer: "4", src: story2, alt: "Foreground" },
       ]}
       smoothScroll
     >
@@ -49,92 +66,72 @@ export function Hero() {
   );
 }
 
-
 export function Quote() {
   return (
-    <section className="bg-cream px-5 py-20 sm:px-8 sm:py-24">
-      <Reveal className="mx-auto max-w-md text-center">
-        <p className="font-display text-xl leading-relaxed italic text-ink">
-          &ldquo;Dan mereka keduanya akan menjadi satu daging, jadi mereka tidak lagi menjadi dua
-          orang, melainkan satu. Oleh karena itu apa yang telah dipersatukan Tuhan, janganlah
-          manusia memisahkan.&rdquo;
+    <section className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
+      <FadeUp className="mx-auto max-w-md text-center">
+        <p className="font-display text-3xl leading-none text-ink/20">&ldquo;</p>
+        <p className="mt-2 font-display text-xl leading-relaxed italic text-ink">
+          Dan mereka keduanya akan menjadi satu daging, jadi mereka tidak lagi
+          menjadi dua orang, melainkan satu. Oleh karena itu apa yang telah
+          dipersatukan Tuhan, janganlah manusia memisahkan.
         </p>
         <p className="mt-6 eyebrow">MARKUS 10 : 8-9</p>
-      </Reveal>
+      </FadeUp>
     </section>
   );
 }
 
-function Person({
-  role,
-  name,
-  photo,
-  full,
-  parents,
-  ig,
-  variant = "tilt-left",
-}: {
-  role: string;
-  name: string;
-  photo: string;
-  full: string;
-  parents: string;
-  ig: string;
-  variant?: "tilt-left" | "tilt-right";
-}) {
-  return (
-    <Reveal variant={variant} className="text-center">
-      <Tilt className="relative mx-auto w-[74%] max-w-xs" max={11}>
-        <img
-          src={photo}
-          alt={full}
-          loading="lazy"
-          width={768}
-          height={1024}
-          className="tilt-shadow aspect-[3/4] w-full object-cover"
-        />
-        <p className="lift-z absolute -bottom-6 left-1/2 -translate-x-1/2 font-script text-4xl text-ink">
-          {name}
-        </p>
-      </Tilt>
-      <p className="mt-12 eyebrow">{role}</p>
-      <h3 className="mt-3 font-display text-2xl text-ink">{full}</h3>
-      <p className="mt-3 font-sans text-xs leading-relaxed tracking-wide text-muted-foreground">
-        {parents}
-      </p>
-      <p className="mt-4 font-sans text-[0.62rem] tracking-[0.28em] text-stone">@{ig}</p>
-    </Reveal>
-  );
-
-}
-
 export function Couple() {
   return (
-    <section className="bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
-      <Reveal className="mx-auto max-w-md text-center">
-        <p className="font-display text-base leading-relaxed text-ink/80">
-          Dengan memohon anugerah dan berkat Tuhan, kami memohon kehadiran Bapak/Ibu/Saudara/i pada
-          acara pernikahan kami:
-        </p>
-      </Reveal>
-      <div className="mt-20 space-y-24">
-        <Person
-          role="THE BRIDE"
-          name="Shopia"
-          photo={brideImg}
-          full="Sophia Putri Rahayu"
-          parents="Putri pertama dari Bapak Budi Prasetyo dan Ibu Tri Utami"
-          ig="shopiaputri"
-        />
-        <Person
-          role="THE GROOM"
-          name="Nathan"
-          photo={groomImg}
-          full="Nathan Hermawan Wijaya"
-          parents="Putra kedua dari Bapak Hanung Wijaya dan Ibu Wayan Sari Hermawan"
-          ig="nathanwijaya"
-          variant="tilt-right"
-        />
+    <section className="relative overflow-hidden bg-cream">
+      {/* Full-bleed soft background photo */}
+      <div className="relative mx-auto max-w-[480px]">
+        <FadeUp>
+          <div className="relative aspect-[3/4] w-full overflow-hidden">
+            <img
+              src={heroImg}
+              alt="Shopia & Nathan"
+              className="h-full w-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-cream via-cream/30 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 px-6 pb-10 text-center">
+              <p className="font-sans text-[0.55rem] tracking-[0.3em] text-ink/60">
+                Kami memohon doa &amp; restunya atas pernikahan kami
+              </p>
+              <h3 className="mt-3 font-script text-4xl text-ink">Shopia</h3>
+              <p className="font-display text-lg italic text-ink/70">&amp;</p>
+              <h3 className="font-script text-4xl text-ink">Nathan</h3>
+              <p className="mt-2 font-sans text-[0.6rem] leading-relaxed text-ink/55">
+                Putri ke-1 Bpk. Budi &amp; Ibu Tri · Putra ke-2 Bpk. Hanung &amp; Ibu Wayan
+              </p>
+            </div>
+          </div>
+        </FadeUp>
+
+        {/* Floating portrait card – like demo */}
+        <FadeUp delay={120} className="relative z-10 -mt-16 px-8">
+          <div className="mx-auto overflow-hidden rounded-2xl bg-cream shadow-[0_20px_50px_-20px_rgba(0,0,0,0.25)]">
+            <img
+              src={brideImg}
+              alt="Shopia"
+              className="aspect-[4/5] w-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        </FadeUp>
+
+        <FadeUp delay={180} className="px-6 py-10 text-center">
+          <p className="font-display text-2xl italic text-ink">Sophia Putri Rahayu</p>
+          <p className="mt-2 font-sans text-xs leading-relaxed text-ink/60">
+            Putri pertama dari Bapak Budi Prasetyo dan Ibu Tri Utami
+          </p>
+          <p className="mt-6 font-display text-2xl italic text-ink">Nathan Hermawan Wijaya</p>
+          <p className="mt-2 font-sans text-xs leading-relaxed text-ink/60">
+            Putra kedua dari Bapak Hanung Wijaya dan Ibu Wayan Sari
+          </p>
+        </FadeUp>
       </div>
     </section>
   );
@@ -142,81 +139,58 @@ export function Couple() {
 
 const STORY = [
   {
-    year: "2020",
-    title: "First Meet",
+    title: "Pertemuan Pertama",
     photo: story1,
-    text: "Kami bertemu di sebuah acara kampus. Meski hanya singkat, kami merasa saling tertarik dan ingin mengenal satu sama lain lebih jauh.",
+    text: "Kisah ini berawal ketika jumpa pandangan pertama di kampus Merayakan.",
   },
   {
-    year: "2022",
-    title: "The Journey",
+    title: "Lamaran",
     photo: story2,
-    text: "Kami mulai berkencan dan membangun hubungan yang erat, saling mendukung dan tumbuh bersama melalui berbagai tantangan.",
+    text: "Tak disangka, cerita ini semakin erat untuk mengikat janji suci. Sehingga proses lamaran ini pun berlangsung hangat.",
   },
   {
-    year: "2024",
-    title: "The Proposal",
+    title: "Menuju Hari Bahagia",
     photo: story3,
-    text: "Kami memutuskan untuk mengikat janji suci dalam pernikahan, melangkah ke jenjang hidup baru dengan cinta dan dukungan satu sama lain.",
+    text: "Dengan restu orang tua dan doa keluarga, kami melangkah bersama menuju hari pernikahan.",
   },
 ];
 
 export function LoveStory() {
   return (
-    <section className="bg-cream px-5 py-20 sm:px-8 sm:py-24">
-      <SectionTitle kicker="OUR JOURNEY" title="Love Story" />
-      <div className="mx-auto mt-14 max-w-md space-y-14">
-        {STORY.map((s, i) => (
-          <Reveal key={s.year} variant={i % 2 ? "tilt-right" : "tilt-left"} delay={i * 100}>
-            <div className="grid grid-cols-[minmax(0,1fr)] gap-5 sm:grid-cols-[9rem_minmax(0,1fr)] sm:items-center">
-              <Tilt className="relative" max={10}>
-                <img
-                  src={s.photo}
-                  alt={`${s.title} — Shopia dan Nathan ${s.year}`}
-                  loading="lazy"
-                  width={1024}
-                  height={768}
-                  className="tilt-shadow aspect-[4/3] w-full object-cover sm:aspect-[3/4]"
-                />
-                <span className="lift-z absolute -top-3 -left-2 bg-cream px-3 py-1 font-display text-lg text-ink">
-                  {s.year}
-                </span>
-              </Tilt>
-              <div className="min-w-0">
-                <p className="eyebrow">CHAPTER 0{i + 1}</p>
-                <p className="mt-2 font-display text-2xl italic text-ink">{s.title}</p>
-                <p className="mt-3 font-sans text-xs leading-relaxed tracking-wide text-muted-foreground">
-                  {s.text}
-                </p>
+    <section className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
+      <SectionTitle title="Kisah Cinta" />
+      <div className="relative mx-auto mt-12 max-w-sm">
+        {/* Vertical timeline line */}
+        <div className="absolute top-2 bottom-2 left-[11px] w-px bg-ink/15" aria-hidden />
+        <div className="space-y-10">
+          {STORY.map((s, i) => (
+            <FadeUp key={s.title} delay={i * 90}>
+              <div className="relative flex gap-5 pl-1">
+                <div className="relative z-10 mt-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cream">
+                  <span className="text-ink/70">♥</span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="overflow-hidden rounded-2xl shadow-[0_12px_40px_-18px_rgba(0,0,0,0.2)]">
+                    <img
+                      src={s.photo}
+                      alt={s.title}
+                      loading="lazy"
+                      className="aspect-[16/10] w-full object-cover"
+                    />
+                  </div>
+                  <p className="mt-4 font-display text-xl italic text-ink">{s.title}</p>
+                  <p className="mt-1.5 font-sans text-sm leading-relaxed text-ink/65">
+                    {s.text}
+                  </p>
+                </div>
               </div>
-            </div>
-          </Reveal>
-        ))}
+            </FadeUp>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
-
-const EVENTS = [
-  {
-    name: "Holy Matrimony",
-    desc: "Pemberkatan akan dilaksanakan secara terbatas dan hanya dihadiri oleh keluarga serta kerabat dekat pada:",
-    date: "Sabtu, 30 Januari 2027",
-    time: "10.00 WIB - Selesai",
-    place: "Gereja Katolik Santo Antonius Padua Kotabaru",
-    address: "Jl. Abu Bakar Ali No.1, Kotabaru, Kec. Gondokusuman, Yogyakarta",
-    map: "https://maps.google.com/?q=Gereja+Katolik+Santo+Antonius+Padua+Kotabaru+Yogyakarta",
-  },
-  {
-    name: "Wedding Reception",
-    desc: "Kami mohon kehadiran Bapak/Ibu/Saudara/i pada acara resepsi pernikahan yang akan diselenggarakan pada:",
-    date: "Sabtu, 30 Januari 2027",
-    time: "16.00 - 18.00 WIB",
-    place: "Villa Bluesteps",
-    address: "Jl. Boulevard No. 7, Jl. Karangjati RT. 07, Gedongan, Bangunjiwo, Yogyakarta",
-    map: "https://maps.google.com/?q=Villa+Bluesteps+Bangunjiwo+Yogyakarta",
-  },
-];
 
 export function Events() {
   return (
@@ -294,41 +268,6 @@ export function Countdown() {
   );
 }
 
-const GALLERY_ITEMS: WorksWheelItem[] = [
-  { title: "First Glance", image: gal1 },
-  { title: "Golden Hour", image: gal2 },
-  { title: "Together", image: heroImg },
-  { title: "Quiet Moments", image: gal3 },
-  { title: "In Bloom", image: gal4 },
-  { title: "Shopia", image: brideImg },
-  { title: "The Promise", image: coverImg },
-  { title: "Nathan", image: groomImg },
-  { title: "Love Story", image: story2 },
-];
-
-export function Gallery() {
-  return (
-    <section className="bg-cream relative overflow-hidden">
-      <div className="px-5 pt-16 sm:px-8 sm:pt-20">
-        <SectionTitle kicker="MOMENTS" title="Our Gallery" />
-        <Reveal className="mx-auto mt-3 max-w-xs text-center">
-          <p className="font-display text-base italic text-ink/70 animate-rise">
-            Geser atau scroll untuk menjelajahi momen kami
-          </p>
-        </Reveal>
-      </div>
-      {/* Flexible height: works on all phone sizes without cropping photos */}
-      <div className="relative mx-auto h-[min(72vh,34rem)] min-h-[26rem] w-full max-w-[480px]">
-        <WorksWheel
-          items={GALLERY_ITEMS}
-          label="Our Moments"
-          action="Lihat"
-          className="bg-cream text-ink"
-        />
-      </div>
-    </section>
-  );
-}
 
 export function Rsvp() {
   const [sent, setSent] = useState(false);
@@ -491,6 +430,90 @@ export function ThankYou() {
           BESERTA KELUARGA
         </p>
       </div>
+    </section>
+  );
+}
+
+
+const GALLERY_ITEMS: WorksWheelItem[] = [
+  { title: "First Glance", image: gal1 },
+  { title: "Golden Hour", image: gal2 },
+  { title: "Together", image: heroImg },
+  { title: "Quiet Moments", image: gal3 },
+  { title: "In Bloom", image: gal4 },
+  { title: "Shopia", image: brideImg },
+  { title: "The Promise", image: coverImg },
+  { title: "Nathan", image: groomImg },
+  { title: "Love Story", image: story2 },
+];
+
+export function Gallery() {
+  return (
+    <section className="bg-cream relative overflow-hidden pb-6">
+      <div className="px-5 pt-14 sm:px-8 sm:pt-16">
+        <SectionTitle kicker="MOMENTS" title="Galeri" />
+        <FadeUp className="mx-auto mt-3 max-w-xs text-center">
+          <p className="font-display text-base italic text-ink/60">
+            Geser untuk melihat momen kami
+          </p>
+        </FadeUp>
+      </div>
+      <div className="relative mx-auto h-[min(68vh,32rem)] min-h-[24rem] w-full max-w-[480px]">
+        <WorksWheel
+          items={GALLERY_ITEMS}
+          label="Our Moments"
+          action="Lihat"
+          className="bg-cream text-ink"
+        />
+      </div>
+    </section>
+  );
+}
+
+/** Simple video section – just set VIDEO_URL */
+const VIDEO_URL = ""; // isi URL video (YouTube embed / mp4) di sini
+
+export function VideoMoment() {
+  if (!VIDEO_URL) {
+    return (
+      <section className="bg-sand/40 px-5 py-14 sm:px-8">
+        <SectionTitle kicker="MEMORIES" title="Video" />
+        <FadeUp className="mx-auto mt-8 max-w-sm">
+          <div className="flex aspect-video items-center justify-center rounded-2xl border border-dashed border-ink/20 bg-cream/80">
+            <p className="px-6 text-center font-sans text-sm text-ink/50">
+              Upload video: isi konstanta <code className="text-ink/70">VIDEO_URL</code> di Sections.tsx
+              <br />
+              <span className="text-xs">(link YouTube embed atau file .mp4 di /public)</span>
+            </p>
+          </div>
+        </FadeUp>
+      </section>
+    );
+  }
+  const isYt = VIDEO_URL.includes("youtube") || VIDEO_URL.includes("youtu.be");
+  return (
+    <section className="bg-sand/40 px-5 py-14 sm:px-8">
+      <SectionTitle kicker="MEMORIES" title="Video" />
+      <FadeUp className="mx-auto mt-8 max-w-sm overflow-hidden rounded-2xl shadow-lg">
+        {isYt ? (
+          <div className="aspect-video w-full">
+            <iframe
+              src={VIDEO_URL}
+              title="Video prewedding"
+              className="h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        ) : (
+          <video
+            src={VIDEO_URL}
+            controls
+            playsInline
+            className="aspect-video w-full object-cover"
+          />
+        )}
+      </FadeUp>
     </section>
   );
 }
