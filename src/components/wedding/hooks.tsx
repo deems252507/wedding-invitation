@@ -19,7 +19,7 @@ export function useReveal<T extends HTMLElement>() {
   return ref;
 }
 
-type RevealVariant = "up" | "depth" | "tilt-left" | "tilt-right" | "flip";
+type RevealVariant = "up" | "depth" | "tilt-left" | "tilt-right" | "flip" | "left" | "right";
 
 export function Reveal({
   children,

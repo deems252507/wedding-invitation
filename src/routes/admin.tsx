@@ -145,6 +145,103 @@ function SectionCard({ title, children }: { title: string; children: React.React
   );
 }
 
+function AdminWishesPanel() {
+  const [rows, setRows] = useState<
+    { id: string; guest_name: string; message: string; attendance: string; created_at: string }[]
+  >([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { getWishes } = await import("@/lib/supabase/data");
+      const data = await getWishes();
+      setRows(
+        data.map((w) => ({
+          id: w.id,
+          guest_name: w.guest_name,
+          message: w.message,
+          attendance: w.attendance || "hadir",
+          created_at: w.created_at,
+        })),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const onDelete = async (id: string) => {
+    if (!confirm("Hapus ucapan/RSVP ini?")) return;
+    setBusy(id);
+    try {
+      const { deleteWish } = await import("@/lib/supabase/data");
+      const res = await deleteWish(id);
+      if (res.success) setRows((r) => r.filter((x) => x.id !== id));
+      else alert(res.error || "Gagal hapus");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const labelAtt = (a: string) =>
+    a === "hadir" ? "Hadir" : a === "tidak" ? "Tidak hadir" : a === "ragu" ? "Ragu" : a;
+
+  return (
+    <SectionCard title="Ucapan & Konfirmasi Kehadiran">
+      <p className="font-sans text-xs text-ink/55">
+        Data dari tabel Supabase <code>wishes</code>. Admin bisa lihat dan hapus.
+      </p>
+      <button
+        type="button"
+        className="rounded-full border border-ink/20 px-3 py-1.5 font-sans text-[0.65rem]"
+        onClick={() => void load()}
+      >
+        Refresh
+      </button>
+      {loading ? (
+        <p className="font-sans text-sm text-ink/40">Memuat…</p>
+      ) : rows.length === 0 ? (
+        <p className="font-sans text-sm text-ink/40">Belum ada data.</p>
+      ) : (
+        <div className="max-h-[60vh] space-y-3 overflow-y-auto">
+          {rows.map((r) => (
+            <div
+              key={r.id}
+              className="rounded-xl border border-ink/10 bg-sand/40 p-3"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="font-display text-base text-ink">{r.guest_name}</p>
+                  <p className="mt-0.5 font-sans text-[0.6rem] text-ink/45">
+                    {labelAtt(r.attendance)} ·{" "}
+                    {new Date(r.created_at).toLocaleString("id-ID")}
+                  </p>
+                  <p className="mt-2 font-sans text-xs leading-relaxed text-ink/70">
+                    {r.message}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className="shrink-0 text-xs text-red-600 disabled:opacity-50"
+                  disabled={busy === r.id}
+                  onClick={() => void onDelete(r.id)}
+                >
+                  {busy === r.id ? "…" : "Hapus"}
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </SectionCard>
+  );
+}
+
 function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState("");
@@ -152,7 +249,9 @@ function AdminPage() {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState("");
-  const [tab, setTab] = useState<"umum" | "acara" | "cerita" | "galeri" | "rekening" | "media">("umum");
+  const [tab, setTab] = useState<
+    "umum" | "acara" | "cerita" | "galeri" | "rekening" | "media" | "ucapan"
+  >("umum");
   const supabaseOn = isSupabaseConfigured();
 
   useEffect(() => {
@@ -266,6 +365,7 @@ function AdminPage() {
     { id: "galeri" as const, label: "Galeri" },
     { id: "rekening" as const, label: "Rekening" },
     { id: "media" as const, label: "Media" },
+    { id: "ucapan" as const, label: "Ucapan/RSVP" },
   ];
 
   return (
@@ -512,6 +612,11 @@ function AdminPage() {
 
         {tab === "rekening" && (
           <SectionCard title="Rekening / gift">
+            <PhotoField
+              label="Foto / QR kado (opsional)"
+              value={data.giftPhoto || ""}
+              onChange={(v) => patch("giftPhoto", v)}
+            />
             {data.accounts.map((a, i) => (
               <div key={i} className="space-y-3 rounded-xl border border-ink/10 bg-sand/40 p-4">
                 <div className="flex justify-between">
@@ -534,7 +639,7 @@ function AdminPage() {
                   <Field
                     key={k}
                     label={lab}
-                    value={a[k]}
+                    value={String(a[k] ?? "")}
                     onChange={(v) => {
                       const next = [...data.accounts];
                       next[i] = { ...next[i], [k]: v };
@@ -542,12 +647,23 @@ function AdminPage() {
                     }}
                   />
                 ))}
+                <PhotoField
+                  label="Logo bank (opsional)"
+                  value={a.logo || ""}
+                  onChange={(v) => {
+                    const next = [...data.accounts];
+                    next[i] = { ...next[i], logo: v };
+                    patch("accounts", next);
+                  }}
+                />
               </div>
             ))}
             <button
               type="button"
               className="btn-ink w-full"
-              onClick={() => patch("accounts", [...data.accounts, { bank: "", number: "", owner: "" }])}
+              onClick={() =>
+                patch("accounts", [...data.accounts, { bank: "", number: "", owner: "", logo: "" }])
+              }
             >
               + Tambah rekening
             </button>
@@ -570,6 +686,8 @@ function AdminPage() {
             />
           </SectionCard>
         )}
+
+        {tab === "ucapan" && <AdminWishesPanel />}
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-ink/10 bg-cream/95 px-4 py-3 backdrop-blur">

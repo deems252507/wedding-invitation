@@ -39,6 +39,8 @@ export interface BankAccount {
   bank: string;
   number: string;
   owner: string;
+  /** URL logo bank (opsional) */
+  logo?: string;
 }
 
 export interface GalleryItem {
@@ -61,6 +63,8 @@ export interface WeddingData {
   coupleIntro: string;
   thankYouText: string;
   giftIntro: string;
+  /** Foto / QR kado (opsional) */
+  giftPhoto: string;
   coverPhoto: string;
   heroPhoto: string;
   bridePhoto: string;
@@ -91,6 +95,7 @@ export const DEFAULT_DATA: WeddingData = {
     "Menjadi sebuah kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dalam hari bahagia kami. Terima kasih atas segala ucapan, doa, dan perhatian yang diberikan.",
   giftIntro:
     "Kehadiran Bapak/Ibu/Saudara/i merupakan hadiah terindah. Namun apabila hendak memberikan tanda kasih, dapat melalui rekening berikut:",
+  giftPhoto: "",
   coverPhoto: coverImg,
   heroPhoto: heroImg,
   bridePhoto: brideImg,

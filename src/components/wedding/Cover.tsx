@@ -21,13 +21,13 @@ export function Cover({ guest, onOpen }: { guest: string; onOpen: () => void }) 
         </div>
 
         <div className="flex flex-col items-center gap-1">
-          <h1 className="animate-text-scale font-script text-[3.4rem] leading-none tracking-wide text-cream drop-shadow-md sm:text-6xl">
+          <h1 className="animate-text-left font-script text-[3.4rem] leading-none tracking-wide text-cream drop-shadow-md sm:text-6xl">
             {d.brideName}
           </h1>
           <p className="animate-text-mask stagger-2 font-display text-2xl italic text-cream/90">
             &amp;
           </p>
-          <h1 className="animate-text-scale stagger-2 font-script text-[3.4rem] leading-none tracking-wide text-cream drop-shadow-md sm:text-6xl">
+          <h1 className="animate-text-right stagger-2 font-script text-[3.4rem] leading-none tracking-wide text-cream drop-shadow-md sm:text-6xl">
             {d.groomName}
           </h1>
           <p className="animate-text-mask stagger-3 mt-4 font-sans text-[0.58rem] tracking-[0.22em] text-cream/75">
@@ -46,7 +46,7 @@ export function Cover({ guest, onOpen }: { guest: string; onOpen: () => void }) 
           </button>
         </div>
 
-        <div className="animate-text-mask stagger-4 pb-2">
+        <div className="animate-text-mask stagger-5 pb-2">
           <p className="font-sans text-[0.55rem] tracking-[0.28em] text-cream/60">Kepada</p>
           <p className="mt-1 font-display text-lg text-cream">{guest}</p>
         </div>

@@ -2,9 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { Reveal, Tilt, useCountdown, useParallax } from "./hooks";
 import { useWeddingData } from "@/lib/WeddingContext";
 
-function SectionTitle({ kicker, title }: { kicker?: string; title: string }) {
+function SectionTitle({
+  kicker,
+  title,
+  from = "left",
+}: {
+  kicker?: string;
+  title: string;
+  from?: "left" | "right";
+}) {
   return (
-    <Reveal variant="up" className="text-center">
+    <Reveal variant={from} className="text-center">
       {kicker ? (
         <p className="eyebrow tracking-[0.42em]">{kicker}</p>
       ) : null}
@@ -242,6 +250,9 @@ export function Countdown() {
 
 export function Rsvp() {
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   return (
     <section className="bg-cream px-5 py-20 sm:px-8 sm:py-24">
       <SectionTitle kicker="RSVP" title="Konfirmasi Kehadiran" />
@@ -253,28 +264,57 @@ export function Rsvp() {
         ) : (
           <form
             className="space-y-6"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              setSent(true);
+              setError("");
+              setLoading(true);
+              const form = e.currentTarget;
+              const fd = new FormData(form);
+              const name = String(fd.get("name") ?? "").trim();
+              const attendance = String(fd.get("attendance") ?? "hadir");
+              const guests = String(fd.get("guests") ?? "1");
+              try {
+                const { createWish } = await import("@/lib/supabase/data");
+                const res = await createWish({
+                  guest_name: name,
+                  message: `Konfirmasi kehadiran · ${guests} orang`,
+                  attendance,
+                });
+                if (!res.success) {
+                  setError(res.error || "Gagal menyimpan. Coba lagi.");
+                  return;
+                }
+                setSent(true);
+              } catch {
+                setError("Gagal menyimpan. Periksa koneksi / Supabase.");
+              } finally {
+                setLoading(false);
+              }
             }}
           >
             <p className="text-center font-sans text-[0.7rem] leading-relaxed text-muted-foreground">
               Kehadiran Bapak/Ibu/Saudara/i akan menjadi kehormatan besar bagi kami dan keluarga.
             </p>
-            <input required className="field" placeholder="Nama Tamu" />
-            <select required className="field" defaultValue="">
+            <input name="name" required className="field" placeholder="Nama Tamu" />
+            <select name="attendance" required className="field" defaultValue="">
               <option value="" disabled>
                 Konfirmasi Kehadiran
               </option>
-              <option>Saya akan hadir</option>
-              <option>Maaf, saya belum bisa hadir</option>
+              <option value="hadir">Saya akan hadir</option>
+              <option value="tidak">Maaf, saya belum bisa hadir</option>
+              <option value="ragu">Masih ragu</option>
             </select>
-            <select className="field" defaultValue="1">
+            <select name="guests" className="field" defaultValue="1">
               <option value="1">1 Orang</option>
               <option value="2">2 Orang</option>
+              <option value="3">3 Orang</option>
+              <option value="4">4+ Orang</option>
             </select>
-            <button type="submit" className="btn-ink w-full">
-              KONFIRMASI KEHADIRAN
+            {error ? (
+              <p className="text-center font-sans text-xs text-red-600">{error}</p>
+            ) : null}
+            <button type="submit" className="btn-ink w-full" disabled={loading}>
+              {loading ? "Menyimpan…" : "KONFIRMASI KEHADIRAN"}
             </button>
           </form>
         )}
@@ -283,55 +323,113 @@ export function Rsvp() {
   );
 }
 
-type Wish = { name: string; text: string; time: string };
+type WishRow = { id?: string; name: string; text: string; time: string; attendance?: string };
+
+function formatWishTime(iso?: string) {
+  if (!iso) return "Baru saja";
+  const t = new Date(iso).getTime();
+  const diff = Date.now() - t;
+  if (diff < 60_000) return "Baru saja";
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} menit lalu`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)} jam lalu`;
+  return `${Math.floor(diff / 86_400_000)} hari lalu`;
+}
 
 export function Wishes() {
-  const [wishes, setWishes] = useState<Wish[]>([
-    { name: "Dewi", text: "Selamat menempuh hidup baru, bahagia selalu!", time: "2 jam lalu" },
-    { name: "Arya", text: "Semoga menjadi keluarga yang sakinah dan penuh cinta.", time: "1 hari lalu" },
-  ]);
+  const [wishes, setWishes] = useState<WishRow[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const { getWishes } = await import("@/lib/supabase/data");
+        const rows = await getWishes();
+        setWishes(
+          rows.map((w) => ({
+            id: w.id,
+            name: w.guest_name,
+            text: w.message,
+            time: formatWishTime(w.created_at),
+            attendance: w.attendance,
+          })),
+        );
+      } catch {
+        /* ignore */
+      }
+    })();
+  }, []);
+
   return (
     <section className="bg-cream px-5 py-20 sm:px-8 sm:py-24">
       <SectionTitle kicker="UCAPAN & DOA" title="Prayers & Wishes" />
       <Reveal className="mx-auto mt-10 max-w-sm">
         <form
           className="space-y-5"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             const form = e.currentTarget;
             const data = new FormData(form);
-            setWishes((w) => [
-              {
-                name: String(data.get("name") ?? ""),
-                text: String(data.get("text") ?? ""),
-                time: "Baru saja",
-              },
-              ...w,
-            ]);
-            form.reset();
+            const name = String(data.get("name") ?? "").trim();
+            const text = String(data.get("text") ?? "").trim();
+            if (!name || !text) return;
+            setLoading(true);
+            try {
+              const { createWish } = await import("@/lib/supabase/data");
+              const res = await createWish({
+                guest_name: name,
+                message: text,
+                attendance: "hadir",
+              });
+              if (res.success && res.data) {
+                setWishes((w) => [
+                  {
+                    id: res.data!.id,
+                    name: res.data!.guest_name,
+                    text: res.data!.message,
+                    time: "Baru saja",
+                    attendance: res.data!.attendance,
+                  },
+                  ...w,
+                ]);
+              } else {
+                setWishes((w) => [{ name, text, time: "Baru saja" }, ...w]);
+              }
+              form.reset();
+            } catch {
+              setWishes((w) => [{ name, text, time: "Baru saja" }, ...w]);
+              form.reset();
+            } finally {
+              setLoading(false);
+            }
           }}
         >
           <input name="name" required className="field" placeholder="Nama Tamu" />
           <textarea name="text" required rows={3} className="field" placeholder="Ucapan & Doa" />
-          <button type="submit" className="btn-ink w-full">
-            BERI UCAPAN
+          <button type="submit" className="btn-ink w-full" disabled={loading}>
+            {loading ? "Mengirim…" : "BERI UCAPAN"}
           </button>
         </form>
 
         <div className="mt-10 max-h-72 space-y-5 overflow-y-auto pr-2">
-          {wishes.map((w, i) => (
-            <div key={i} className="border-b border-border pb-4">
-              <div className="flex items-baseline justify-between">
-                <p className="font-display text-lg text-ink">{w.name}</p>
-                <span className="font-sans text-[0.55rem] tracking-[0.2em] text-stone">
-                  {w.time.toUpperCase()}
-                </span>
+          {wishes.length === 0 ? (
+            <p className="text-center font-sans text-sm text-ink/40">
+              Belum ada ucapan. Jadilah yang pertama!
+            </p>
+          ) : (
+            wishes.map((w, i) => (
+              <div key={w.id || i} className="border-b border-border pb-4">
+                <div className="flex items-baseline justify-between">
+                  <p className="font-display text-lg text-ink">{w.name}</p>
+                  <span className="font-sans text-[0.55rem] tracking-[0.2em] text-stone">
+                    {w.time.toUpperCase()}
+                  </span>
+                </div>
+                <p className="mt-1 font-sans text-xs leading-relaxed text-muted-foreground">
+                  {w.text}
+                </p>
               </div>
-              <p className="mt-1 font-sans text-xs leading-relaxed text-muted-foreground">
-                {w.text}
-              </p>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </Reveal>
     </section>
@@ -348,8 +446,24 @@ export function Gift() {
         <p className="text-center font-sans text-[0.7rem] leading-relaxed text-muted-foreground">
           {d.giftIntro}
         </p>
+        {d.giftPhoto ? (
+          <div className="flex justify-center">
+            <div className="overflow-hidden rounded-2xl border border-border bg-white p-3 shadow-sm">
+              <img
+                src={d.giftPhoto}
+                alt="QR / Gift"
+                className="h-40 w-40 object-contain"
+              />
+            </div>
+          </div>
+        ) : null}
         {d.accounts.map((a) => (
           <div key={a.bank + a.number} className="border border-border bg-card px-6 py-6 text-center">
+            {a.logo ? (
+              <div className="mb-3 flex justify-center">
+                <img src={a.logo} alt={a.bank} className="h-10 object-contain" />
+              </div>
+            ) : null}
             <p className="eyebrow">{a.bank}</p>
             <p className="mt-2 font-display text-xl tracking-[0.1em] text-ink">{a.number}</p>
             <p className="font-sans text-[0.68rem] text-muted-foreground">a/n {a.owner}</p>
@@ -400,12 +514,14 @@ export function ThankYou() {
   );
 }
 
-/** Gallery: grid + horizontal scroll + lightbox (klik = besar, swipe/scroll) */
+/** Gallery: auto-slide strip + grid + lightbox */
 export function Gallery() {
   const d = useWeddingData();
   const images = d.gallery || [];
   const [lightbox, setLightbox] = useState<number | null>(null);
   const touchStartX = useRef<number | null>(null);
+  const stripRef = useRef<HTMLDivElement | null>(null);
+  const pauseRef = useRef(false);
 
   useEffect(() => {
     if (lightbox === null) return;
@@ -425,6 +541,24 @@ export function Gallery() {
       document.body.style.overflow = "";
     };
   }, [lightbox, images.length]);
+
+  // Auto-slide horizontal strip
+  useEffect(() => {
+    const el = stripRef.current;
+    if (!el || images.length < 2) return;
+    const id = window.setInterval(() => {
+      if (pauseRef.current || lightbox !== null) return;
+      const max = el.scrollWidth - el.clientWidth;
+      if (max <= 0) return;
+      const next = el.scrollLeft + el.clientWidth * 0.45;
+      if (next >= max - 8) {
+        el.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        el.scrollTo({ left: next, behavior: "smooth" });
+      }
+    }, 3200);
+    return () => window.clearInterval(id);
+  }, [images.length, lightbox]);
 
   if (images.length === 0) {
     return (
@@ -449,14 +583,29 @@ export function Gallery() {
       <SectionTitle kicker="GALLERY" title="Our Moments" />
       <FadeUp className="mx-auto mt-3 max-w-xs text-center">
         <p className="font-display text-base italic text-ink/60">
-          Klik foto untuk memperbesar · geser untuk melihat
+          Geser otomatis · klik untuk memperbesar
         </p>
       </FadeUp>
 
       <div className="mx-auto mt-8 max-w-[480px]">
         <div
-          className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory"
+          ref={stripRef}
+          className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide"
           style={{ WebkitOverflowScrolling: "touch" }}
+          onMouseEnter={() => {
+            pauseRef.current = true;
+          }}
+          onMouseLeave={() => {
+            pauseRef.current = false;
+          }}
+          onTouchStart={() => {
+            pauseRef.current = true;
+          }}
+          onTouchEnd={() => {
+            window.setTimeout(() => {
+              pauseRef.current = false;
+            }, 2500);
+          }}
         >
           {images.map((item, i) => (
             <button

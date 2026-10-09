@@ -34,6 +34,7 @@ export function settingsToWeddingData(s: InvitationSettings): WeddingData {
     bank: a.bank || "",
     number: a.number || "",
     owner: a.name || "",
+    logo: (a as { image_url?: string | null }).image_url || "",
   }));
 
   const dateISO = s.wedding_date
@@ -66,6 +67,7 @@ export function settingsToWeddingData(s: InvitationSettings): WeddingData {
     coupleIntro: s.greeting || DEFAULT_DATA.coupleIntro,
     thankYouText: s.closing_text || DEFAULT_DATA.thankYouText,
     giftIntro: s.gift_intro || DEFAULT_DATA.giftIntro,
+    giftPhoto: s.gift_qr_url || "",
     coverPhoto: s.cover_photo_url || DEFAULT_DATA.coverPhoto,
     heroPhoto:
       (s as { hero_photo_url?: string | null }).hero_photo_url ||
@@ -99,6 +101,7 @@ export function weddingDataToPayload(d: WeddingData): Record<string, unknown> {
     greeting: d.coupleIntro,
     closing_text: d.thankYouText,
     gift_intro: d.giftIntro,
+    gift_qr_url: d.giftPhoto || null,
     cover_photo_url: d.coverPhoto,
     hero_photo_url: d.heroPhoto,
     bride_photo_url: d.bridePhoto,
@@ -128,7 +131,7 @@ export function weddingDataToPayload(d: WeddingData): Record<string, unknown> {
       bank: a.bank,
       number: a.number,
       name: a.owner,
-      image_url: null,
+      image_url: a.logo || null,
     })),
     updated_at: new Date().toISOString(),
   };
