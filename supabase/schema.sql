@@ -83,16 +83,19 @@ ALTER TABLE invitation_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wishes ENABLE ROW LEVEL SECURITY;
 
 -- Public can read settings
+DROP POLICY IF EXISTS "Public read settings" ON invitation_settings;
 CREATE POLICY "Public read settings"
   ON invitation_settings FOR SELECT
   USING (true);
 
 -- Public can insert wishes
+DROP POLICY IF EXISTS "Public insert wishes" ON wishes;
 CREATE POLICY "Public insert wishes"
   ON wishes FOR INSERT
   WITH CHECK (true);
 
 -- Public can read wishes
+DROP POLICY IF EXISTS "Public read wishes" ON wishes;
 CREATE POLICY "Public read wishes"
   ON wishes FOR SELECT
   USING (true);
@@ -130,7 +133,9 @@ CREATE POLICY "Public delete wishes"
 -- ============================================================
 ALTER TABLE invitation_settings
   ADD COLUMN IF NOT EXISTS hero_photo_url TEXT,
-  ADD COLUMN IF NOT EXISTS wedding_date_label TEXT;
+  ADD COLUMN IF NOT EXISTS wedding_date_label TEXT,
+  ADD COLUMN IF NOT EXISTS cover_photos JSONB DEFAULT '[]'::jsonb,
+  ADD COLUMN IF NOT EXISTS hero_photos JSONB DEFAULT '[]'::jsonb;
 
 -- Izinkan update dari client (admin password dilindungi di aplikasi)
 -- HAPUS policy lama dulu jika error "already exists"
