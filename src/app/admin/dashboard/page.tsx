@@ -275,6 +275,17 @@ export default function AdminDashboard() {
                 onChange={(url) => update("logo_url", url)}
                 folder="logo"
               />
+              <ImageUpload
+                label="Foto Cover (latar depan undangan)"
+                value={settings.cover_photo_url}
+                onChange={(url) => update("cover_photo_url", url)}
+                folder="cover"
+              />
+              <div className="md:col-span-2">
+                <label className="admin-label">URL Video Background (setelah buka undangan)</label>
+                <input className="admin-input" value={settings.video_url || ""} onChange={(e) => update("video_url", e.target.value)} placeholder="https://...video.mp4 (host di Supabase Storage / Cloudinary)" />
+                <p className="text-xs text-gray-400 mt-1">Upload video ke Storage, lalu tempel public URL. Disarankan mp4 pendek &lt; 10MB, muted loop.</p>
+              </div>
               <div>
                 <label className="admin-label">URL Musik Background (mp3)</label>
                 <input className="admin-input" value={settings.music_url || ""} onChange={(e) => update("music_url", e.target.value)} placeholder="https://...lagu.mp3" />

@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS invitation_settings (
   closing_text TEXT DEFAULT 'Merupakan suatu kebahagiaan dan kehormatan bagi kami, apabila Bapak/Ibu/Saudara/i, berkenan hadir dan memberikan doa restu kepada kami',
   -- Music
   music_url TEXT,
+  video_url TEXT,
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 

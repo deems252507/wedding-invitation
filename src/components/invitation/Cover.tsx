@@ -12,7 +12,7 @@ interface CoverProps {
 export default function Cover({ settings, guestName, onOpen }: CoverProps) {
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center cover-bg overflow-hidden"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
       initial={{ opacity: 1 }}
       exit={{
         opacity: 0,
@@ -21,12 +21,26 @@ export default function Cover({ settings, guestName, onOpen }: CoverProps) {
         transition: { duration: 0.9, ease: [0.4, 0, 0.2, 1] },
       }}
     >
-      {/* Soft gold glow */}
+      {/* Background photo */}
+      {settings.cover_photo_url ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={settings.cover_photo_url}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-midnight-deep/80 via-midnight-deep/70 to-midnight-deep/90" />
+        </>
+      ) : (
+        <div className="absolute inset-0 cover-bg" />
+      )}
+
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[320px] h-[320px] rounded-full bg-gold/5 blur-3xl pointer-events-none" />
 
       <div className="relative z-10 w-full max-w-md mx-auto px-5">
         <motion.div
-          className="card-dark text-center"
+          className="card-dark text-center backdrop-blur-md bg-midnight-surface/70"
           initial={{ opacity: 0, y: 40, scale: 0.96 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
@@ -86,7 +100,6 @@ export default function Cover({ settings, guestName, onOpen }: CoverProps) {
               : ""}
           </motion.p>
 
-          {/* Guest card */}
           <motion.div
             className="mt-6 rounded-2xl bg-midnight-base/60 border border-gold/15 p-4 backdrop-blur-sm"
             initial={{ opacity: 0, y: 12 }}

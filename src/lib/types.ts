@@ -53,6 +53,7 @@ export interface InvitationSettings {
   gift_address: string | null;
   closing_text: string | null;
   music_url: string | null;
+  video_url: string | null;
   updated_at: string;
 }
 
@@ -142,4 +143,5 @@ export const DEFAULT_SETTINGS: Omit<InvitationSettings, "id" | "updated_at"> = {
   closing_text:
     "Merupakan suatu kebahagiaan dan kehormatan bagi kami, apabila Bapak/Ibu/Saudara/i, berkenan hadir dan memberikan doa restu kepada kami",
   music_url: null,
+  video_url: null,
 };
