@@ -41,6 +41,8 @@ export interface InvitationSettings {
   greeting: string | null;
   logo_url: string | null;
   cover_photo_url: string | null;
+  hero_photo_url?: string | null;
+  wedding_date_label?: string | null;
   groom_photo_url: string | null;
   bride_photo_url: string | null;
   events: EventItem[];
@@ -48,7 +50,7 @@ export interface InvitationSettings {
   dress_code_colors: string[];
   dress_code_note: string | null;
   love_story: LoveStoryItem[];
-  gallery: string[];
+  gallery: (string | { title?: string; image?: string; url?: string })[];
   gift_intro: string | null;
   bank_accounts: BankAccount[];
   gift_address: string | null;

@@ -1,19 +1,6 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Reveal, Tilt, useCountdown, useParallax } from "./hooks";
-import { WorksWheel, type WorksWheelItem } from "@/components/ui/works-wheel";
-import heroImg from "@/assets/hero.jpg";
-import brideImg from "@/assets/bride.jpg";
-import groomImg from "@/assets/groom.jpg";
-import coverImg from "@/assets/cover.jpg";
-import story1 from "@/assets/story-1.jpg";
-import story2 from "@/assets/story-2.jpg";
-import story3 from "@/assets/story-3.jpg";
-import gal1 from "@/assets/gal-1.jpg";
-import gal2 from "@/assets/gal-2.jpg";
-import gal3 from "@/assets/gal-3.jpg";
-import gal4 from "@/assets/gal-4.jpg";
-
-const WEDDING_DATE = new Date("2027-01-30T10:00:00+07:00");
+import { useWeddingData } from "@/lib/WeddingContext";
 
 function SectionTitle({ kicker, title }: { kicker?: string; title: string }) {
   return (
@@ -28,7 +15,6 @@ function SectionTitle({ kicker, title }: { kicker?: string; title: string }) {
   );
 }
 
-/** Soft fade-up block – text + image move together */
 function FadeUp({
   children,
   className = "",
@@ -46,11 +32,12 @@ function FadeUp({
 }
 
 export function Hero() {
+  const d = useWeddingData();
   return (
     <section className="relative h-[100dvh] w-full overflow-hidden">
       <img
-        src={heroImg}
-        alt="Shopia dan Nathan"
+        src={d.heroPhoto}
+        alt={`${d.brideName} dan ${d.groomName}`}
         className="absolute inset-0 h-full w-full object-cover"
       />
       <div className="absolute inset-0 bg-gradient-to-b from-ink/30 via-transparent to-ink/60" />
@@ -59,14 +46,14 @@ export function Hero() {
           THE WEDDING OF
         </p>
         <h2 className="font-script text-5xl leading-none text-cream sm:text-6xl">
-          Shopia
+          {d.brideName}
         </h2>
         <p className="font-display text-xl italic text-cream/80">&amp;</p>
         <h2 className="font-script text-5xl leading-none text-cream sm:text-6xl">
-          Nathan
+          {d.groomName}
         </h2>
         <p className="mt-6 font-sans text-[0.62rem] tracking-[0.42em] text-cream/85">
-          SAVE THE DATE · 30 . 01 . 2027
+          SAVE THE DATE · {d.weddingDateLabel}
         </p>
       </div>
     </section>
@@ -74,55 +61,50 @@ export function Hero() {
 }
 
 export function Quote() {
+  const d = useWeddingData();
   return (
     <section className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
       <FadeUp className="mx-auto max-w-md text-center">
         <p className="font-display text-3xl leading-none text-ink/20">&ldquo;</p>
         <p className="mt-2 font-display text-xl leading-relaxed italic text-ink">
-          Dan mereka keduanya akan menjadi satu daging, jadi mereka tidak lagi
-          menjadi dua orang, melainkan satu. Oleh karena itu apa yang telah
-          dipersatukan Tuhan, janganlah manusia memisahkan.
+          {d.quote}
         </p>
-        <p className="mt-6 eyebrow">MARKUS 10 : 8-9</p>
+        <p className="mt-6 eyebrow">{d.quoteSource}</p>
       </FadeUp>
     </section>
   );
 }
 
 export function Couple() {
+  const d = useWeddingData();
   return (
     <section className="relative overflow-hidden bg-cream">
-      {/* Full-bleed soft background photo */}
       <div className="relative mx-auto max-w-[480px]">
         <FadeUp>
           <div className="relative aspect-[3/4] w-full overflow-hidden">
             <img
-              src={heroImg}
-              alt="Shopia & Nathan"
+              src={d.heroPhoto}
+              alt={`${d.brideName} & ${d.groomName}`}
               className="h-full w-full object-cover"
               loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-cream via-cream/30 to-transparent" />
             <div className="absolute inset-x-0 bottom-0 px-6 pb-10 text-center">
               <p className="font-sans text-[0.55rem] tracking-[0.3em] text-ink/60">
-                Kami memohon doa &amp; restunya atas pernikahan kami
+                {d.coupleIntro}
               </p>
-              <h3 className="mt-3 font-script text-4xl text-ink">Shopia</h3>
+              <h3 className="mt-3 font-script text-4xl text-ink">{d.brideName}</h3>
               <p className="font-display text-lg italic text-ink/70">&amp;</p>
-              <h3 className="font-script text-4xl text-ink">Nathan</h3>
-              <p className="mt-2 font-sans text-[0.6rem] leading-relaxed text-ink/55">
-                Putri ke-1 Bpk. Budi &amp; Ibu Tri · Putra ke-2 Bpk. Hanung &amp; Ibu Wayan
-              </p>
+              <h3 className="font-script text-4xl text-ink">{d.groomName}</h3>
             </div>
           </div>
         </FadeUp>
 
-        {/* Floating portrait card – like demo */}
         <FadeUp delay={120} className="relative z-10 -mt-16 px-8">
           <div className="mx-auto overflow-hidden rounded-2xl bg-cream shadow-[0_20px_50px_-20px_rgba(0,0,0,0.25)]">
             <img
-              src={brideImg}
-              alt="Shopia"
+              src={d.bridePhoto}
+              alt={d.brideName}
               className="aspect-[4/5] w-full object-cover"
               loading="lazy"
             />
@@ -130,13 +112,13 @@ export function Couple() {
         </FadeUp>
 
         <FadeUp delay={180} className="px-6 py-10 text-center">
-          <p className="font-display text-2xl italic text-ink">Sophia Putri Rahayu</p>
+          <p className="font-display text-2xl italic text-ink">{d.brideFullName}</p>
           <p className="mt-2 font-sans text-xs leading-relaxed text-ink/60">
-            Putri pertama dari Bapak Budi Prasetyo dan Ibu Tri Utami
+            {d.brideParents}
           </p>
-          <p className="mt-6 font-display text-2xl italic text-ink">Nathan Hermawan Wijaya</p>
+          <p className="mt-6 font-display text-2xl italic text-ink">{d.groomFullName}</p>
           <p className="mt-2 font-sans text-xs leading-relaxed text-ink/60">
-            Putra kedua dari Bapak Hanung Wijaya dan Ibu Wayan Sari
+            {d.groomParents}
           </p>
         </FadeUp>
       </div>
@@ -144,34 +126,16 @@ export function Couple() {
   );
 }
 
-const STORY = [
-  {
-    title: "Pertemuan Pertama",
-    photo: story1,
-    text: "Kisah ini berawal ketika jumpa pandangan pertama di kampus Merayakan.",
-  },
-  {
-    title: "Lamaran",
-    photo: story2,
-    text: "Tak disangka, cerita ini semakin erat untuk mengikat janji suci. Sehingga proses lamaran ini pun berlangsung hangat.",
-  },
-  {
-    title: "Menuju Hari Bahagia",
-    photo: story3,
-    text: "Dengan restu orang tua dan doa keluarga, kami melangkah bersama menuju hari pernikahan.",
-  },
-];
-
 export function LoveStory() {
+  const d = useWeddingData();
   return (
     <section className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
       <SectionTitle title="Kisah Cinta" />
       <div className="relative mx-auto mt-12 max-w-sm">
-        {/* Vertical timeline line */}
         <div className="absolute top-2 bottom-2 left-[11px] w-px bg-ink/15" aria-hidden />
         <div className="space-y-10">
-          {STORY.map((s, i) => (
-            <FadeUp key={s.title} delay={i * 90}>
+          {d.story.map((s, i) => (
+            <FadeUp key={s.title + i} delay={i * 90}>
               <div className="relative flex gap-5 pl-1">
                 <div className="relative z-10 mt-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cream">
                   <span className="text-ink/70">♥</span>
@@ -198,33 +162,15 @@ export function LoveStory() {
     </section>
   );
 }
-const EVENTS = [
-  {
-    name: "Akad Nikah",
-    desc: "Dengan memohon rahmat Allah SWT, kami mengundang Bapak/Ibu/Saudara/i untuk hadir.",
-    date: "Sabtu, 30 Januari 2027",
-    time: "09.00 WIB",
-    place: "Masjid Gedhe Kauman",
-    address: "Jl. Kauman, Yogyakarta",
-    map: "https://maps.google.com",
-  },
-  {
-    name: "Resepsi",
-    desc: "Mari berbagi kebahagiaan dalam resepsi pernikahan kami.",
-    date: "Sabtu, 30 Januari 2027",
-    time: "11.00 – 14.00 WIB",
-    place: "Gedung Societet Militair",
-    address: "Jl. Pangurakan No.1, Yogyakarta",
-    map: "https://maps.google.com",
-  },
-];
+
 export function Events() {
+  const d = useWeddingData();
   return (
     <section className="bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
       <SectionTitle kicker="WEDDING" title="Event" />
       <div className="mx-auto mt-14 max-w-md space-y-10">
-        {EVENTS.map((e, idx) => (
-          <Reveal key={e.name} variant={idx % 2 ? "tilt-right" : "tilt-left"} delay={idx * 120}>
+        {d.events.map((e, idx) => (
+          <Reveal key={e.name + idx} variant={idx % 2 ? "tilt-right" : "tilt-left"} delay={idx * 120}>
             <Tilt className="border border-border bg-card px-7 py-10 text-center tilt-shadow" max={7}>
               <h3 className="font-display text-2xl italic text-ink">{e.name}</h3>
               <p className="mt-4 font-sans text-[0.7rem] leading-relaxed tracking-wide text-muted-foreground">
@@ -254,7 +200,9 @@ export function Events() {
 }
 
 export function Countdown() {
-  const t = useCountdown(WEDDING_DATE);
+  const d = useWeddingData();
+  const target = new Date(d.weddingDateISO);
+  const t = useCountdown(target);
   const parallax = useParallax<HTMLImageElement>(0.16);
   const items = [
     { v: t.days, l: "Hari" },
@@ -263,30 +211,28 @@ export function Countdown() {
     { v: t.seconds, l: "Detik" },
   ];
   return (
-    <section className="scene relative overflow-hidden px-5 py-24 sm:px-8 sm:py-28">
+    <section className="relative overflow-hidden px-5 py-20 sm:px-8 sm:py-24">
       <img
         ref={parallax}
-        src={coverImg}
+        src={d.heroPhoto}
         alt=""
         aria-hidden
-        loading="lazy"
-        width={1024}
-        height={1536}
-        className="absolute inset-0 h-full w-full scale-110 object-cover"
+        className="absolute inset-0 h-full w-full object-cover will-change-transform"
       />
       <div className="absolute inset-0 bg-ink/65" />
-      <div className="relative text-center">
-        <p className="font-sans text-[0.6rem] tracking-[0.42em] text-cream/75">COUNTING DAYS</p>
-        <div className="mx-auto mt-8 grid max-w-sm grid-cols-4 gap-3">
-          {items.map((i, idx) => (
-            <Reveal key={i.l} variant="flip" delay={idx * 110}>
-              <div className="border border-cream/30 py-4 backdrop-blur-[2px]">
-                <p className="font-display text-3xl text-cream">{i.v}</p>
-                <p className="font-sans text-[0.55rem] tracking-[0.22em] text-cream/70">
-                  {i.l.toUpperCase()}
-                </p>
-              </div>
-            </Reveal>
+      <div className="relative mx-auto max-w-sm text-center">
+        <p className="eyebrow tracking-[0.42em] text-cream/80">COUNTDOWN</p>
+        <h2 className="mt-3 font-display text-3xl italic text-cream">Menuju Hari Bahagia</h2>
+        <div className="mt-10 grid grid-cols-4 gap-3">
+          {items.map((it) => (
+            <div key={it.l} className="rounded-xl bg-cream/10 px-2 py-4 backdrop-blur-sm">
+              <p className="font-display text-3xl text-cream tabular-nums">
+                {String(it.v).padStart(2, "0")}
+              </p>
+              <p className="mt-1 font-sans text-[0.55rem] tracking-[0.2em] text-cream/70">
+                {it.l}
+              </p>
+            </div>
           ))}
         </div>
       </div>
@@ -294,12 +240,11 @@ export function Countdown() {
   );
 }
 
-
 export function Rsvp() {
   const [sent, setSent] = useState(false);
   return (
-    <section className="bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
-      <SectionTitle kicker="KONFIRMASI KEHADIRAN" title="RSVP" />
+    <section className="bg-cream px-5 py-20 sm:px-8 sm:py-24">
+      <SectionTitle kicker="RSVP" title="Konfirmasi Kehadiran" />
       <Reveal className="mx-auto mt-10 max-w-sm">
         {sent ? (
           <p className="text-center font-display text-lg italic text-ink">
@@ -393,23 +338,18 @@ export function Wishes() {
   );
 }
 
-const ACCOUNTS = [
-  { bank: "BCA", number: "8772168386124", owner: "Sophia Putri Rahayu" },
-  { bank: "MANDIRI", number: "5124125213", owner: "Nathan Hermawan Wijaya" },
-];
-
 export function Gift() {
+  const d = useWeddingData();
   const [copied, setCopied] = useState<string | null>(null);
   return (
     <section className="bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
       <SectionTitle kicker="TANDA KASIH" title="Wedding Gift" />
       <Reveal className="mx-auto mt-8 max-w-sm space-y-5">
         <p className="text-center font-sans text-[0.7rem] leading-relaxed text-muted-foreground">
-          Kehadiran Bapak/Ibu/Saudara/i merupakan hadiah terindah. Namun apabila hendak memberikan
-          tanda kasih, dapat melalui rekening berikut:
+          {d.giftIntro}
         </p>
-        {ACCOUNTS.map((a) => (
-          <div key={a.bank} className="border border-border bg-card px-6 py-6 text-center">
+        {d.accounts.map((a) => (
+          <div key={a.bank + a.number} className="border border-border bg-card px-6 py-6 text-center">
             <p className="eyebrow">{a.bank}</p>
             <p className="mt-2 font-display text-xl tracking-[0.1em] text-ink">{a.number}</p>
             <p className="font-sans text-[0.68rem] text-muted-foreground">a/n {a.owner}</p>
@@ -430,28 +370,28 @@ export function Gift() {
 }
 
 export function ThankYou() {
+  const d = useWeddingData();
   return (
     <section className="relative overflow-hidden px-5 py-24 sm:px-8 sm:py-28">
       <img
-        src={heroImg}
+        src={d.heroPhoto}
         alt=""
         aria-hidden
         loading="lazy"
-        width={1536}
-        height={1024}
         className="absolute inset-0 h-full w-full object-cover"
       />
       <div className="absolute inset-0 bg-ink/70" />
       <div className="relative mx-auto max-w-sm text-center">
         <p className="font-script text-5xl text-cream">Thank You</p>
         <p className="mt-6 font-sans text-[0.7rem] leading-relaxed tracking-wide text-cream/75">
-          Menjadi sebuah kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dalam hari
-          bahagia kami. Terima kasih atas segala ucapan, doa, dan perhatian yang diberikan.
+          {d.thankYouText}
         </p>
         <p className="mt-8 font-sans text-[0.6rem] tracking-[0.32em] text-cream/60">
           KAMI YANG BERBAHAGIA
         </p>
-        <p className="mt-3 font-display text-3xl text-cream">Shopia &amp; Nathan</p>
+        <p className="mt-3 font-display text-3xl text-cream">
+          {d.brideName} &amp; {d.groomName}
+        </p>
         <p className="mt-2 font-sans text-[0.6rem] tracking-[0.28em] text-cream/60">
           BESERTA KELUARGA
         </p>
@@ -460,46 +400,182 @@ export function ThankYou() {
   );
 }
 
-
-const GALLERY_ITEMS: WorksWheelItem[] = [
-  { title: "First Glance", image: gal1 },
-  { title: "Golden Hour", image: gal2 },
-  { title: "Together", image: heroImg },
-  { title: "Quiet Moments", image: gal3 },
-  { title: "In Bloom", image: gal4 },
-  { title: "Shopia", image: brideImg },
-  { title: "The Promise", image: coverImg },
-  { title: "Nathan", image: groomImg },
-  { title: "Love Story", image: story2 },
-];
-
+/** Gallery: grid + horizontal scroll + lightbox (klik = besar, swipe/scroll) */
 export function Gallery() {
+  const d = useWeddingData();
+  const images = d.gallery || [];
+  const [lightbox, setLightbox] = useState<number | null>(null);
+  const touchStartX = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (lightbox === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightbox(null);
+      if (e.key === "ArrowRight")
+        setLightbox((i) => (i === null ? null : (i + 1) % images.length));
+      if (e.key === "ArrowLeft")
+        setLightbox((i) =>
+          i === null ? null : (i - 1 + images.length) % images.length,
+        );
+    };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [lightbox, images.length]);
+
+  if (images.length === 0) {
+    return (
+      <section className="bg-cream px-5 py-16 sm:px-8">
+        <SectionTitle kicker="GALLERY" title="Our Moments" />
+        <p className="mt-8 text-center font-sans text-sm text-ink/40">
+          Galeri foto akan segera ditambahkan
+        </p>
+      </section>
+    );
+  }
+
+  const go = (dir: number) => {
+    setLightbox((i) => {
+      if (i === null) return null;
+      return (i + dir + images.length) % images.length;
+    });
+  };
+
   return (
-    <section className="bg-cream relative overflow-hidden pb-6">
-      <div className="px-5 pt-14 sm:px-8 sm:pt-16">
-        <SectionTitle kicker="MOMENTS" title="Galeri" />
-        <FadeUp className="mx-auto mt-3 max-w-xs text-center">
-          <p className="font-display text-base italic text-ink/60">
-            Geser untuk melihat momen kami
-          </p>
-        </FadeUp>
+    <section className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
+      <SectionTitle kicker="GALLERY" title="Our Moments" />
+      <FadeUp className="mx-auto mt-3 max-w-xs text-center">
+        <p className="font-display text-base italic text-ink/60">
+          Klik foto untuk memperbesar · geser untuk melihat
+        </p>
+      </FadeUp>
+
+      <div className="mx-auto mt-8 max-w-[480px]">
+        <div
+          className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          {images.map((item, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setLightbox(i)}
+              className="snap-center shrink-0 w-[42%] aspect-[3/4] overflow-hidden rounded-2xl border border-ink/10 bg-sand/30 focus:outline-none focus:ring-2 focus:ring-ink/30"
+            >
+              <img
+                src={item.image}
+                alt={item.title || `Gallery ${i + 1}`}
+                className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                loading="lazy"
+              />
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="relative mx-auto h-[min(68vh,32rem)] min-h-[24rem] w-full max-w-[480px]">
-        <WorksWheel
-          items={GALLERY_ITEMS}
-          label="Our Moments"
-          action="Lihat"
-          className="bg-cream text-ink"
-        />
+
+      <div className="mx-auto mt-6 grid max-w-[480px] grid-cols-2 gap-2.5 sm:grid-cols-3">
+        {images.map((item, i) => (
+          <button
+            key={`g-${i}`}
+            type="button"
+            onClick={() => setLightbox(i)}
+            className="aspect-[3/4] overflow-hidden rounded-2xl border border-ink/10 bg-sand/30 focus:outline-none focus:ring-2 focus:ring-ink/30"
+          >
+            <img
+              src={item.image}
+              alt={item.title || `Gallery ${i + 1}`}
+              className="h-full w-full object-cover transition-transform duration-500 hover:scale-110"
+              loading="lazy"
+            />
+          </button>
+        ))}
       </div>
+
+      {lightbox !== null && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/92 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setLightbox(null)}
+          onTouchStart={(e) => {
+            touchStartX.current = e.touches[0]?.clientX ?? null;
+          }}
+          onTouchEnd={(e) => {
+            if (touchStartX.current == null) return;
+            const dx = (e.changedTouches[0]?.clientX ?? 0) - touchStartX.current;
+            if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+            touchStartX.current = null;
+          }}
+        >
+          <button
+            type="button"
+            className="absolute right-4 top-4 z-10 rounded-full bg-cream/10 p-2 text-cream hover:bg-cream/20"
+            onClick={() => setLightbox(null)}
+            aria-label="Tutup"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-cream/10 p-3 text-cream hover:bg-cream/20 sm:left-4"
+            onClick={(e) => {
+              e.stopPropagation();
+              go(-1);
+            }}
+            aria-label="Sebelumnya"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-cream/10 p-3 text-cream hover:bg-cream/20 sm:right-4"
+            onClick={(e) => {
+              e.stopPropagation();
+              go(1);
+            }}
+            aria-label="Berikutnya"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </button>
+
+          <div
+            className="relative mx-4 flex max-h-[88vh] max-w-[min(96vw,640px)] flex-col items-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={images[lightbox].image}
+              alt={images[lightbox].title || ""}
+              className="max-h-[80vh] w-auto max-w-full rounded-xl object-contain shadow-2xl"
+            />
+            {images[lightbox].title ? (
+              <p className="mt-3 font-display text-lg italic text-cream/90">
+                {images[lightbox].title}
+              </p>
+            ) : null}
+            <p className="mt-1 font-sans text-[0.65rem] tracking-widest text-cream/50">
+              {lightbox + 1} / {images.length}
+            </p>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
 
-/** Simple video section – just set VIDEO_URL */
-const VIDEO_URL = ""; // isi URL video (YouTube embed / mp4) di sini
-
 export function VideoMoment() {
+  const d = useWeddingData();
+  const VIDEO_URL = d.videoUrl || "";
   if (!VIDEO_URL) {
     return (
       <section className="bg-sand/40 px-5 py-14 sm:px-8">
@@ -507,9 +583,7 @@ export function VideoMoment() {
         <FadeUp className="mx-auto mt-8 max-w-sm">
           <div className="flex aspect-video items-center justify-center rounded-2xl border border-dashed border-ink/20 bg-cream/80">
             <p className="px-6 text-center font-sans text-sm text-ink/50">
-              Upload video: isi konstanta <code className="text-ink/70">VIDEO_URL</code> di Sections.tsx
-              <br />
-              <span className="text-xs">(link YouTube embed atau file .mp4 di /public)</span>
+              Video belum diatur. Buka <strong>/admin</strong> untuk menambahkan URL video.
             </p>
           </div>
         </FadeUp>
@@ -541,5 +615,52 @@ export function VideoMoment() {
         )}
       </FadeUp>
     </section>
+  );
+}
+
+export function MusicControl() {
+  const d = useWeddingData();
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    if (!d.musicUrl || !audioRef.current) return;
+    audioRef.current.play().then(() => setPlaying(true)).catch(() => {});
+  }, [d.musicUrl]);
+
+  if (!d.musicUrl) return null;
+
+  const toggle = () => {
+    if (!audioRef.current) return;
+    if (playing) {
+      audioRef.current.pause();
+      setPlaying(false);
+    } else {
+      audioRef.current.play();
+      setPlaying(true);
+    }
+  };
+
+  return (
+    <>
+      <audio ref={audioRef} src={d.musicUrl} loop preload="auto" />
+      <button
+        type="button"
+        onClick={toggle}
+        className="fixed bottom-5 right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-ink text-cream shadow-lg transition hover:scale-105"
+        aria-label={playing ? "Pause musik" : "Play musik"}
+      >
+        {playing ? (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="6" y="5" width="4" height="14" rx="1" />
+            <rect x="14" y="5" width="4" height="14" rx="1" />
+          </svg>
+        ) : (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        )}
+      </button>
+    </>
   );
 }

@@ -1,10 +1,11 @@
-import coverImg from "@/assets/cover.jpg";
+import { useWeddingData } from "@/lib/WeddingContext";
 
 export function Cover({ guest, onOpen }: { guest: string; onOpen: () => void }) {
+  const d = useWeddingData();
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden bg-ink">
       <img
-        src={coverImg}
+        src={d.coverPhoto}
         alt="Foto prewedding"
         width={1024}
         height={1536}
@@ -15,22 +16,22 @@ export function Cover({ guest, onOpen }: { guest: string; onOpen: () => void }) 
       <div className="absolute inset-0 flex flex-col items-center justify-between px-6 py-12 text-center text-cream">
         <div className="pt-6">
           <p className="animate-text-mask font-sans text-[0.58rem] tracking-[0.38em] text-cream/85">
-            The Wedding of
+            {d.coverTitle || "The Wedding of"}
           </p>
         </div>
 
         <div className="flex flex-col items-center gap-1">
           <h1 className="animate-text-scale font-script text-[3.4rem] leading-none tracking-wide text-cream drop-shadow-md sm:text-6xl">
-            Shopia
+            {d.brideName}
           </h1>
           <p className="animate-text-mask stagger-2 font-display text-2xl italic text-cream/90">
             &amp;
           </p>
           <h1 className="animate-text-scale stagger-2 font-script text-[3.4rem] leading-none tracking-wide text-cream drop-shadow-md sm:text-6xl">
-            Nathan
+            {d.groomName}
           </h1>
           <p className="animate-text-mask stagger-3 mt-4 font-sans text-[0.58rem] tracking-[0.22em] text-cream/75">
-            Sabtu, 30 Januari 2027
+            {d.weddingDateLabel}
           </p>
 
           <button
