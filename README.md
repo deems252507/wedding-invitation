@@ -1,94 +1,24 @@
-# Undangan Pernikahan Digital — Moonlight Symphony
+# Wedding Invitation Designer
 
-Full-stack digital wedding invitation inspired by [inv.kondanganmu.id/art-21](https://inv.kondanganmu.id/art-21/).
+buatkan saya undangan pernikahan buat semirip ini https://helloguest.id/tema-undangan/marjorie/#tombolpopup
 
-**Stack:** Next.js 14 · Tailwind CSS · Framer Motion · Supabase · Vercel
+This project was built with [Lovable](https://lovable.dev).
 
-## Fitur
+## Build with Lovable
 
-### Halaman Undangan (Public)
-- Cover dengan nama tamu (`?to=Nama+Tamu`) + tombol **Buka Undangan**
-- Animasi fade / scale (Framer Motion)
-- Countdown timer
-- Section: Mempelai, Acara (Akad / Resepsi / dll), Dress Code, Love Story, Gallery, Wedding Gift, Ucapan & Doa
-- Desain navy + cream, font Pinyon Script + Cormorant Garamond (sesuai design system)
+Continue developing this project in the [Lovable editor](https://lovable.dev/projects/99a567f4-9524-4431-97ba-c6ece4661dcf).
 
-### Admin Panel (`/admin/login`)
-- Edit semua teks: nama mempelai, orang tua, Instagram, quote, greeting, dll
-- Kelola acara (tambah / hapus / edit)
-- Love Story timeline
-- Wedding Gift (rekening + alamat)
-- Gallery (URL gambar)
-- **Ucapan & Doa**: lihat semua + **hapus**
+- **Ship faster**: describe what you want to build and Lovable handles the code.
+- **Stay in sync**: every change made in Lovable is committed straight to this repository.
+- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
 
----
+## Development
 
-## Setup Cepat (Gratis)
+Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
-### 1. Supabase
-
-1. Buat project di [supabase.com](https://supabase.com) (gratis)
-2. Buka **SQL Editor** → paste isi file `supabase/schema.sql` → Run
-3. (Opsional) Buat Storage bucket `wedding-photos` → Public
-4. Ambil credentials:
-   - **Project Settings → API**
-   - `Project URL` → `NEXT_PUBLIC_SUPABASE_URL`
-   - `anon public` → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `service_role` → `SUPABASE_SERVICE_ROLE_KEY` (jangan expose ke client!)
-
-### 2. Local Development
-
-```bash
-cd wedding-invitation
-cp .env.example .env.local
-# Isi nilai Supabase + ADMIN_PASSWORD di .env.local
-
-npm install
+```sh
+git clone <this-repository-url>
+cd <repository-name>
+npm i
 npm run dev
 ```
-
-Buka:
-- Undangan: http://localhost:3000/?to=Nama+Tamu
-- Admin: http://localhost:3000/admin/login
-
-### 3. Deploy ke Vercel (Gratis)
-
-1. Push repo ke GitHub
-2. Import project di [vercel.com](https://vercel.com)
-3. Tambahkan Environment Variables (sama seperti `.env.local`)
-4. Deploy
-
-Setelah deploy, undangan bisa diakses di:
-`https://your-app.vercel.app/?to=Budi+Santoso`
-
----
-
-## Struktur Folder
-
-```
-src/
-  app/
-    page.tsx              → Halaman undangan
-    admin/login/          → Login admin
-    admin/dashboard/      → Panel edit semua konten
-    api/settings/         → GET/PUT settings
-    api/wishes/           → GET/POST/DELETE ucapan
-  components/invitation/  → Cover, Countdown, Sections...
-  lib/
-    types.ts
-    supabase/             → client, server, data helpers
-supabase/
-  schema.sql              → Jalankan di Supabase SQL Editor
-```
-
-## Catatan
-
-- Tanpa Supabase (env kosong), undangan tetap tampil dengan data default.
-- Password admin dicek via header `x-admin-password` di API (simple, cocok untuk single-user).
-- Untuk upload foto: upload ke Supabase Storage / Imgur / Cloudinary, lalu paste URL di admin.
-- Link undangan per tamu: `/?to=Nama+Tamu`
-
-## Design System
-
-Warna utama: Navy `#0D0E3A` + Cream `#E4EAF6` + Rose accent `#CC3366`  
-Font: Pinyon Script (nama), Cormorant Garamond (body), Poppins (utility)
