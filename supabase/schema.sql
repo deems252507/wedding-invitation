@@ -97,6 +97,12 @@ CREATE POLICY "Public read wishes"
   ON wishes FOR SELECT
   USING (true);
 
+-- Public can delete wishes (admin panel client-side; protect with app password)
+DROP POLICY IF EXISTS "Public delete wishes" ON wishes;
+CREATE POLICY "Public delete wishes"
+  ON wishes FOR DELETE
+  USING (true);
+
 -- Admin (service role / authenticated) can update settings & delete wishes
 -- For simplicity we use service role key on server-side API routes.
 -- If you want client-side admin auth later, add Supabase Auth + policies.
