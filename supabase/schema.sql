@@ -117,3 +117,40 @@ CREATE POLICY "Public read wishes"
 
 -- Allow service role upload (handled via service key on server)
 -- No extra policy needed if using service_role key
+
+
+-- ============================================================
+-- MIGRATION (jalankan jika tabel sudah ada sebelumnya)
+-- ============================================================
+ALTER TABLE invitation_settings
+  ADD COLUMN IF NOT EXISTS hero_photo_url TEXT,
+  ADD COLUMN IF NOT EXISTS wedding_date_label TEXT;
+
+-- Izinkan update dari client (admin password dilindungi di aplikasi)
+-- HAPUS policy lama dulu jika error "already exists"
+DROP POLICY IF EXISTS "Public update settings" ON invitation_settings;
+CREATE POLICY "Public update settings"
+  ON invitation_settings FOR UPDATE
+  USING (true)
+  WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Public insert settings" ON invitation_settings;
+CREATE POLICY "Public insert settings"
+  ON invitation_settings FOR INSERT
+  WITH CHECK (true);
+
+-- Storage policies (bucket wedding-photos harus Public)
+DROP POLICY IF EXISTS "Public read wedding photos" ON storage.objects;
+CREATE POLICY "Public read wedding photos"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'wedding-photos');
+
+DROP POLICY IF EXISTS "Public upload wedding photos" ON storage.objects;
+CREATE POLICY "Public upload wedding photos"
+  ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id = 'wedding-photos');
+
+DROP POLICY IF EXISTS "Public update wedding photos" ON storage.objects;
+CREATE POLICY "Public update wedding photos"
+  ON storage.objects FOR UPDATE
+  USING (bucket_id = 'wedding-photos');
