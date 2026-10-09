@@ -66,7 +66,11 @@ export interface WeddingData {
   /** Foto / QR kado (opsional) */
   giftPhoto: string;
   coverPhoto: string;
+  /** Multiple cover slides (auto). If empty, uses coverPhoto. */
+  coverPhotos: string[];
   heroPhoto: string;
+  /** Multiple hero slides (auto). If empty, uses heroPhoto + gallery. */
+  heroPhotos: string[];
   bridePhoto: string;
   groomPhoto: string;
   musicUrl: string;
@@ -97,7 +101,9 @@ export const DEFAULT_DATA: WeddingData = {
     "Kehadiran Bapak/Ibu/Saudara/i merupakan hadiah terindah. Namun apabila hendak memberikan tanda kasih, dapat melalui rekening berikut:",
   giftPhoto: "",
   coverPhoto: coverImg,
+  coverPhotos: [coverImg],
   heroPhoto: heroImg,
+  heroPhotos: [heroImg],
   bridePhoto: brideImg,
   groomPhoto: groomImg,
   musicUrl: "",

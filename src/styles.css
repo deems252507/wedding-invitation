@@ -640,3 +640,16 @@ html.lenis body {
     height: 100vh;
   }
 }
+
+
+/* Sembunyikan badge Lovable */
+a[href*="lovable.dev"],
+div[id*="lovable"],
+iframe[src*="lovable"],
+[class*="lovable-badge"],
+[data-lovable] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+}

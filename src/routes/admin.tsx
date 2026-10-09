@@ -436,9 +436,97 @@ function AdminPage() {
               <Field label="Teks thank you" value={data.thankYouText} onChange={(v) => patch("thankYouText", v)} multiline />
               <Field label="Intro gift" value={data.giftIntro} onChange={(v) => patch("giftIntro", v)} multiline />
             </SectionCard>
-            <SectionCard title="Foto utama">
-              <PhotoField label="Foto cover" value={data.coverPhoto} onChange={(v) => patch("coverPhoto", v)} />
-              <PhotoField label="Foto hero" value={data.heroPhoto} onChange={(v) => patch("heroPhoto", v)} />
+            <SectionCard title="Foto cover (bisa banyak — slide otomatis)">
+              <p className="font-sans text-[0.65rem] text-ink/50">
+                Tambah beberapa foto. Cover akan berganti otomatis setiap ~4 detik.
+              </p>
+              {(data.coverPhotos?.length ? data.coverPhotos : data.coverPhoto ? [data.coverPhoto] : [""]).map((url, i) => (
+                <div key={`cover-${i}`} className="space-y-1 rounded-xl border border-ink/10 p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-sans text-[0.65rem] text-ink/55">Cover {i + 1}</span>
+                    <button
+                      type="button"
+                      className="text-xs text-red-600"
+                      onClick={() => {
+                        const list = [...(data.coverPhotos?.length ? data.coverPhotos : data.coverPhoto ? [data.coverPhoto] : [])];
+                        list.splice(i, 1);
+                        patch("coverPhotos", list);
+                        patch("coverPhoto", list[0] || "");
+                      }}
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                  <PhotoField
+                    label=""
+                    value={url}
+                    onChange={(v) => {
+                      const list = [...(data.coverPhotos?.length ? data.coverPhotos : data.coverPhoto ? [data.coverPhoto] : [""])];
+                      list[i] = v;
+                      patch("coverPhotos", list);
+                      patch("coverPhoto", list[0] || "");
+                    }}
+                  />
+                </div>
+              ))}
+              <button
+                type="button"
+                className="btn-ink w-full"
+                onClick={() => {
+                  const list = [...(data.coverPhotos?.length ? data.coverPhotos : data.coverPhoto ? [data.coverPhoto] : [])];
+                  patch("coverPhotos", [...list, ""]);
+                }}
+              >
+                + Tambah foto cover
+              </button>
+            </SectionCard>
+
+            <SectionCard title="Foto hero (bisa banyak — slide otomatis setelah buka undangan)">
+              <p className="font-sans text-[0.65rem] text-ink/50">
+                Foto layar penuh setelah undangan dibuka. Bisa banyak, berganti otomatis.
+              </p>
+              {(data.heroPhotos?.length ? data.heroPhotos : data.heroPhoto ? [data.heroPhoto] : [""]).map((url, i) => (
+                <div key={`hero-${i}`} className="space-y-1 rounded-xl border border-ink/10 p-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-sans text-[0.65rem] text-ink/55">Hero {i + 1}</span>
+                    <button
+                      type="button"
+                      className="text-xs text-red-600"
+                      onClick={() => {
+                        const list = [...(data.heroPhotos?.length ? data.heroPhotos : data.heroPhoto ? [data.heroPhoto] : [])];
+                        list.splice(i, 1);
+                        patch("heroPhotos", list);
+                        patch("heroPhoto", list[0] || "");
+                      }}
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                  <PhotoField
+                    label=""
+                    value={url}
+                    onChange={(v) => {
+                      const list = [...(data.heroPhotos?.length ? data.heroPhotos : data.heroPhoto ? [data.heroPhoto] : [""])];
+                      list[i] = v;
+                      patch("heroPhotos", list);
+                      patch("heroPhoto", list[0] || "");
+                    }}
+                  />
+                </div>
+              ))}
+              <button
+                type="button"
+                className="btn-ink w-full"
+                onClick={() => {
+                  const list = [...(data.heroPhotos?.length ? data.heroPhotos : data.heroPhoto ? [data.heroPhoto] : [])];
+                  patch("heroPhotos", [...list, ""]);
+                }}
+              >
+                + Tambah foto hero
+              </button>
+            </SectionCard>
+
+            <SectionCard title="Foto mempelai">
               <PhotoField label="Foto mempelai wanita" value={data.bridePhoto} onChange={(v) => patch("bridePhoto", v)} />
               <PhotoField label="Foto mempelai pria" value={data.groomPhoto} onChange={(v) => patch("groomPhoto", v)} />
             </SectionCard>

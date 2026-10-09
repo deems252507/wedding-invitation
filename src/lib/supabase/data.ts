@@ -69,10 +69,26 @@ export function settingsToWeddingData(s: InvitationSettings): WeddingData {
     giftIntro: s.gift_intro || DEFAULT_DATA.giftIntro,
     giftPhoto: s.gift_qr_url || "",
     coverPhoto: s.cover_photo_url || DEFAULT_DATA.coverPhoto,
+    coverPhotos: (() => {
+      const raw = (s as { cover_photos?: unknown }).cover_photos;
+      if (Array.isArray(raw) && raw.length) {
+        return raw.map((x) => (typeof x === "string" ? x : "")).filter(Boolean);
+      }
+      const one = s.cover_photo_url;
+      return one ? [one] : DEFAULT_DATA.coverPhotos;
+    })(),
     heroPhoto:
       (s as { hero_photo_url?: string | null }).hero_photo_url ||
       s.cover_photo_url ||
       DEFAULT_DATA.heroPhoto,
+    heroPhotos: (() => {
+      const raw = (s as { hero_photos?: unknown }).hero_photos;
+      if (Array.isArray(raw) && raw.length) {
+        return raw.map((x) => (typeof x === "string" ? x : "")).filter(Boolean);
+      }
+      const one = (s as { hero_photo_url?: string | null }).hero_photo_url || s.cover_photo_url;
+      return one ? [one] : DEFAULT_DATA.heroPhotos;
+    })(),
     bridePhoto: s.bride_photo_url || DEFAULT_DATA.bridePhoto,
     groomPhoto: s.groom_photo_url || DEFAULT_DATA.groomPhoto,
     musicUrl: s.music_url || "",
@@ -102,8 +118,10 @@ export function weddingDataToPayload(d: WeddingData): Record<string, unknown> {
     closing_text: d.thankYouText,
     gift_intro: d.giftIntro,
     gift_qr_url: d.giftPhoto || null,
-    cover_photo_url: d.coverPhoto,
-    hero_photo_url: d.heroPhoto,
+    cover_photo_url: (d.coverPhotos && d.coverPhotos[0]) || d.coverPhoto,
+    cover_photos: (d.coverPhotos && d.coverPhotos.length ? d.coverPhotos : [d.coverPhoto]).filter(Boolean),
+    hero_photo_url: (d.heroPhotos && d.heroPhotos[0]) || d.heroPhoto,
+    hero_photos: (d.heroPhotos && d.heroPhotos.length ? d.heroPhotos : [d.heroPhoto]).filter(Boolean),
     bride_photo_url: d.bridePhoto,
     groom_photo_url: d.groomPhoto,
     music_url: d.musicUrl || null,

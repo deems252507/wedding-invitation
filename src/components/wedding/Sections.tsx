@@ -41,28 +41,68 @@ function FadeUp({
 
 export function Hero() {
   const d = useWeddingData();
+  const slides = (
+    d.heroPhotos?.length
+      ? d.heroPhotos
+      : [d.heroPhoto, ...(d.gallery || []).map((g) => g.image)]
+  )
+    .filter(Boolean)
+    .filter((src, i, arr) => arr.indexOf(src) === i);
+
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    if (slides.length < 2) return;
+    const id = window.setInterval(() => {
+      setIdx((i) => (i + 1) % slides.length);
+    }, 4500);
+    return () => clearInterval(id);
+  }, [slides.length]);
+
   return (
     <section className="relative h-[100dvh] w-full overflow-hidden">
-      <img
-        src={d.heroPhoto}
-        alt={`${d.brideName} dan ${d.groomName}`}
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-ink/30 via-transparent to-ink/60" />
+      {slides.map((src, i) => (
+        <img
+          key={`${src}-${i}`}
+          src={src}
+          alt={i === 0 ? `${d.brideName} dan ${d.groomName}` : ""}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1200ms] ease-in-out ${
+            i === idx ? "opacity-100" : "opacity-0"
+          }`}
+        />
+      ))}
+      <div className="absolute inset-0 bg-gradient-to-b from-ink/45 via-ink/20 to-ink/70" />
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center">
-        <p className="font-sans text-[0.6rem] tracking-[0.42em] text-cream/85">
+        <p className="animate-text-mask font-sans text-xs tracking-[0.42em] text-cream/90">
           THE WEDDING OF
         </p>
-        <h2 className="font-script text-5xl leading-none text-cream sm:text-6xl">
+        <h2 className="animate-text-left font-script text-5xl leading-none text-cream drop-shadow-md sm:text-6xl">
           {d.brideName}
         </h2>
-        <p className="font-display text-xl italic text-cream/80">&amp;</p>
-        <h2 className="font-script text-5xl leading-none text-cream sm:text-6xl">
+        <p className="animate-text-mask stagger-2 font-display text-2xl italic text-cream/85">
+          &amp;
+        </p>
+        <h2 className="animate-text-right stagger-2 font-script text-5xl leading-none text-cream drop-shadow-md sm:text-6xl">
           {d.groomName}
         </h2>
-        <p className="mt-6 font-sans text-[0.62rem] tracking-[0.42em] text-cream/85">
+        <p className="animate-text-mask stagger-3 mt-6 font-sans text-sm tracking-[0.28em] text-cream/90">
           SAVE THE DATE · {d.weddingDateLabel}
         </p>
+        {slides.length > 1 && (
+          <div className="absolute bottom-10 flex gap-2">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Slide ${i + 1}`}
+                onClick={() => setIdx(i)}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === idx ? "w-6 bg-cream" : "w-1.5 bg-cream/40"
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -74,7 +114,7 @@ export function Quote() {
     <section className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
       <FadeUp className="mx-auto max-w-md text-center">
         <p className="font-display text-3xl leading-none text-ink/20">&ldquo;</p>
-        <p className="mt-2 font-display text-xl leading-relaxed italic text-ink">
+        <p className="mt-2 font-display text-xl leading-relaxed italic text-ink sm:text-2xl">
           {d.quote}
         </p>
         <p className="mt-6 eyebrow">{d.quoteSource}</p>
@@ -86,50 +126,50 @@ export function Quote() {
 export function Couple() {
   const d = useWeddingData();
   return (
-    <section className="relative overflow-hidden bg-cream">
-      <div className="relative mx-auto max-w-[480px]">
-        <FadeUp>
-          <div className="relative aspect-[3/4] w-full overflow-hidden">
-            <img
-              src={d.heroPhoto}
-              alt={`${d.brideName} & ${d.groomName}`}
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-cream via-cream/30 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 px-6 pb-10 text-center">
-              <p className="font-sans text-[0.55rem] tracking-[0.3em] text-ink/60">
-                {d.coupleIntro}
-              </p>
-              <h3 className="mt-3 font-script text-4xl text-ink">{d.brideName}</h3>
-              <p className="font-display text-lg italic text-ink/70">&amp;</p>
-              <h3 className="font-script text-4xl text-ink">{d.groomName}</h3>
-            </div>
-          </div>
-        </FadeUp>
+    <section className="relative overflow-hidden bg-cream px-5 py-16 sm:px-8 sm:py-20">
+      <FadeUp className="mx-auto max-w-md text-center">
+        <p className="font-sans text-sm leading-relaxed text-ink/70 sm:text-base">
+          {d.coupleIntro}
+        </p>
+      </FadeUp>
 
-        <FadeUp delay={120} className="relative z-10 -mt-16 px-8">
-          <div className="mx-auto overflow-hidden rounded-2xl bg-cream shadow-[0_20px_50px_-20px_rgba(0,0,0,0.25)]">
-            <img
-              src={d.bridePhoto}
-              alt={d.brideName}
-              className="aspect-[4/5] w-full object-cover"
-              loading="lazy"
-            />
-          </div>
-        </FadeUp>
+      {/* Mempelai Wanita */}
+      <FadeUp delay={100} className="mx-auto mt-12 max-w-[280px] text-center">
+        <div className="overflow-hidden rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.25)]">
+          <img
+            src={d.bridePhoto}
+            alt={d.brideName}
+            className="aspect-[3/4] w-full object-cover"
+            loading="lazy"
+          />
+        </div>
+        <p className="mt-5 font-script text-4xl text-ink sm:text-5xl">{d.brideName}</p>
+        <p className="mt-1.5 font-display text-lg italic text-ink/80">{d.brideFullName}</p>
+        <p className="mt-2 font-sans text-sm leading-relaxed text-ink/60">
+          {d.brideParents}
+        </p>
+      </FadeUp>
 
-        <FadeUp delay={180} className="px-6 py-10 text-center">
-          <p className="font-display text-2xl italic text-ink">{d.brideFullName}</p>
-          <p className="mt-2 font-sans text-xs leading-relaxed text-ink/60">
-            {d.brideParents}
-          </p>
-          <p className="mt-6 font-display text-2xl italic text-ink">{d.groomFullName}</p>
-          <p className="mt-2 font-sans text-xs leading-relaxed text-ink/60">
-            {d.groomParents}
-          </p>
-        </FadeUp>
-      </div>
+      <FadeUp delay={160} className="py-8 text-center">
+        <p className="font-script text-5xl text-ink/35">&amp;</p>
+      </FadeUp>
+
+      {/* Mempelai Pria */}
+      <FadeUp delay={200} className="mx-auto max-w-[280px] text-center">
+        <div className="overflow-hidden rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.25)]">
+          <img
+            src={d.groomPhoto}
+            alt={d.groomName}
+            className="aspect-[3/4] w-full object-cover"
+            loading="lazy"
+          />
+        </div>
+        <p className="mt-5 font-script text-4xl text-ink sm:text-5xl">{d.groomName}</p>
+        <p className="mt-1.5 font-display text-lg italic text-ink/80">{d.groomFullName}</p>
+        <p className="mt-2 font-sans text-sm leading-relaxed text-ink/60">
+          {d.groomParents}
+        </p>
+      </FadeUp>
     </section>
   );
 }
@@ -438,47 +478,92 @@ export function Wishes() {
 
 export function Gift() {
   const d = useWeddingData();
+  const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
+
   return (
     <section className="bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
       <SectionTitle kicker="TANDA KASIH" title="Wedding Gift" />
-      <Reveal className="mx-auto mt-8 max-w-sm space-y-5">
-        <p className="text-center font-sans text-[0.7rem] leading-relaxed text-muted-foreground">
+      <Reveal className="mx-auto mt-8 max-w-sm space-y-5 text-center">
+        <p className="font-sans text-sm leading-relaxed text-muted-foreground">
           {d.giftIntro}
         </p>
-        {d.giftPhoto ? (
-          <div className="flex justify-center">
-            <div className="overflow-hidden rounded-2xl border border-border bg-white p-3 shadow-sm">
-              <img
-                src={d.giftPhoto}
-                alt="QR / Gift"
-                className="h-40 w-40 object-contain"
-              />
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="btn-ink sheen inline-flex items-center gap-2 px-6 py-3"
+        >
+          <span aria-hidden>🎁</span> Kirim Kado
+        </button>
+      </Reveal>
+
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center bg-ink/50 p-4 backdrop-blur-sm sm:items-center"
+          onClick={() => setOpen(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="max-h-[85vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-cream p-6 shadow-xl animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="font-display text-xl italic text-ink">Kado Cashless</h3>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-full px-2 py-1 text-ink/50 hover:bg-ink/5 hover:text-ink"
+                aria-label="Tutup"
+              >
+                ✕
+              </button>
             </div>
-          </div>
-        ) : null}
-        {d.accounts.map((a) => (
-          <div key={a.bank + a.number} className="border border-border bg-card px-6 py-6 text-center">
-            {a.logo ? (
-              <div className="mb-3 flex justify-center">
-                <img src={a.logo} alt={a.bank} className="h-10 object-contain" />
+            <p className="mb-5 font-sans text-sm text-ink/60">
+              Anda dapat memberikan kado cashless. Pilih metode pembayaran di bawah.
+            </p>
+            {d.giftPhoto ? (
+              <div className="mb-5 flex justify-center">
+                <div className="overflow-hidden rounded-2xl border border-border bg-white p-3">
+                  <img
+                    src={d.giftPhoto}
+                    alt="QR / Gift"
+                    className="h-36 w-36 object-contain"
+                  />
+                </div>
               </div>
             ) : null}
-            <p className="eyebrow">{a.bank}</p>
-            <p className="mt-2 font-display text-xl tracking-[0.1em] text-ink">{a.number}</p>
-            <p className="font-sans text-[0.68rem] text-muted-foreground">a/n {a.owner}</p>
-            <button
-              className="btn-ink mt-4"
-              onClick={() => {
-                navigator.clipboard?.writeText(a.number);
-                setCopied(a.bank);
-              }}
-            >
-              {copied === a.bank ? "TERSALIN" : "SALIN"}
-            </button>
+            <div className="space-y-3">
+              {d.accounts.map((a) => (
+                <div
+                  key={a.bank + a.number}
+                  className="rounded-xl border border-border bg-card px-4 py-4 text-center"
+                >
+                  {a.logo ? (
+                    <div className="mb-2 flex justify-center">
+                      <img src={a.logo} alt={a.bank} className="h-8 object-contain" />
+                    </div>
+                  ) : null}
+                  <p className="eyebrow">{a.bank}</p>
+                  <p className="mt-1 font-display text-lg tracking-wide text-ink">{a.number}</p>
+                  <p className="font-sans text-sm text-muted-foreground">a/n {a.owner}</p>
+                  <button
+                    type="button"
+                    className="btn-ink mt-3"
+                    onClick={() => {
+                      navigator.clipboard?.writeText(a.number);
+                      setCopied(a.bank);
+                      setTimeout(() => setCopied(null), 2000);
+                    }}
+                  >
+                    {copied === a.bank ? "TERSALIN ✓" : "SALIN"}
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
-      </Reveal>
+        </div>
+      )}
     </section>
   );
 }
@@ -497,7 +582,7 @@ export function ThankYou() {
       <div className="absolute inset-0 bg-ink/70" />
       <div className="relative mx-auto max-w-sm text-center">
         <p className="font-script text-5xl text-cream">Thank You</p>
-        <p className="mt-6 font-sans text-[0.7rem] leading-relaxed tracking-wide text-cream/75">
+        <p className="mt-6 font-sans text-sm leading-relaxed tracking-wide text-cream/80">
           {d.thankYouText}
         </p>
         <p className="mt-8 font-sans text-[0.6rem] tracking-[0.32em] text-cream/60">
