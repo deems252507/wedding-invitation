@@ -474,6 +474,12 @@ export default function AdminDashboard() {
               <label className="admin-label">Alamat Kirim Kado</label>
               <input className="admin-input" value={settings.gift_address || ""} onChange={(e) => update("gift_address", e.target.value)} />
             </div>
+            <ImageUpload
+              label="Foto QR / Gambar Gift"
+              value={settings.gift_qr_url}
+              onChange={(url) => update("gift_qr_url", url)}
+              folder="gift"
+            />
             <h3 className="font-semibold text-gray-800 mt-4">Rekening Bank</h3>
             {(settings.bank_accounts || []).map((acc, i) => (
               <div key={i} className="border rounded p-3 space-y-2 relative">
@@ -500,6 +506,11 @@ export default function AdminDashboard() {
                 <input className="admin-input" placeholder="Atas Nama" value={acc.name} onChange={(e) => {
                   const next = [...settings.bank_accounts];
                   next[i] = { ...next[i], name: e.target.value };
+                  update("bank_accounts", next);
+                }} />
+                <input className="admin-input" placeholder="URL logo/foto bank (opsional)" value={acc.image_url || ""} onChange={(e) => {
+                  const next = [...settings.bank_accounts];
+                  next[i] = { ...next[i], image_url: e.target.value };
                   update("bank_accounts", next);
                 }} />
               </div>

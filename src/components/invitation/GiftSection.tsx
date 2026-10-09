@@ -44,31 +44,57 @@ export default function GiftSection({ settings }: Props) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
             onClick={() => setOpen(false)}
           >
             <motion.div
-              className="card-dark max-w-sm w-full max-h-[80vh] overflow-y-auto relative"
-              initial={{ scale: 0.92, y: 24 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.92, y: 24 }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="card-dark max-w-sm w-full max-h-[85vh] overflow-y-auto relative backdrop-blur-md"
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={() => setOpen(false)}
-                className="absolute top-3 right-3 text-porcelain/40 hover:text-porcelain"
+                className="absolute top-3 right-3 text-porcelain/40 hover:text-porcelain transition-colors"
               >
                 <X size={20} />
               </button>
               <h3 className="font-jakarta text-xs tracking-[0.2em] uppercase text-gold mb-5 text-center">
                 Wedding Gift
               </h3>
+
+              {/* QR / gift photo */}
+              {settings.gift_qr_url && (
+                <div className="mb-5 flex justify-center">
+                  <div className="rounded-2xl overflow-hidden border border-gold/20 p-2 bg-white">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={settings.gift_qr_url}
+                      alt="QR / Gift"
+                      className="w-40 h-40 object-contain"
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-3">
                 {accounts.map((acc, i) => (
                   <div
                     key={i}
                     className="rounded-2xl border border-gold/15 bg-midnight-base/50 p-4"
                   >
+                    {acc.image_url && (
+                      <div className="mb-3 flex justify-center">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={acc.image_url}
+                          alt={acc.bank}
+                          className="h-10 object-contain"
+                        />
+                      </div>
+                    )}
                     <p className="font-jakarta text-xs text-porcelain/50">{acc.bank}</p>
                     <p className="font-playfair text-lg text-porcelain tracking-wide my-1">
                       {acc.number}
@@ -78,7 +104,7 @@ export default function GiftSection({ settings }: Props) {
                     )}
                     <button
                       onClick={() => handleCopy(acc.number, `bank-${i}`)}
-                      className="mt-2 inline-flex items-center gap-1.5 text-xs text-gold hover:underline"
+                      className="mt-2 inline-flex items-center gap-1.5 text-xs text-gold hover:underline transition-opacity"
                     >
                       {copied === `bank-${i}` ? (
                         <><Check size={12} /> Tersalin</>

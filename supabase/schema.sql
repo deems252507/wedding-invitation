@@ -52,6 +52,7 @@ CREATE TABLE IF NOT EXISTS invitation_settings (
     {"bank":"Kondanganmu ID","number":"123456","name":""}
   ]'::jsonb,
   gift_address TEXT DEFAULT 'Putraa - +62 8500000000 - btn dutamas blok D/6',
+  gift_qr_url TEXT,
   -- Closing
   closing_text TEXT DEFAULT 'Merupakan suatu kebahagiaan dan kehormatan bagi kami, apabila Bapak/Ibu/Saudara/i, berkenan hadir dan memberikan doa restu kepada kami',
   -- Music

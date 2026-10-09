@@ -20,6 +20,7 @@ export interface BankAccount {
   bank: string;
   number: string;
   name: string;
+  image_url?: string | null;
 }
 
 export interface InvitationSettings {
@@ -51,6 +52,7 @@ export interface InvitationSettings {
   gift_intro: string | null;
   bank_accounts: BankAccount[];
   gift_address: string | null;
+  gift_qr_url: string | null;
   closing_text: string | null;
   music_url: string | null;
   video_url: string | null;
@@ -136,10 +138,11 @@ export const DEFAULT_SETTINGS: Omit<InvitationSettings, "id" | "updated_at"> = {
   gift_intro:
     "Doa Restu Anda merupakan karunia yang sangat berarti bagi kami. Namun jika memberi adalah ungkapan tanda kasih Anda, Anda dapat memberi kado secara cashless.",
   bank_accounts: [
-    { bank: "BCA", number: "1234567890", name: "Putra Setiawan" },
-    { bank: "Mandiri", number: "0987654321", name: "Putri Pratiwi" },
+    { bank: "BCA", number: "1234567890", name: "Putra Setiawan", image_url: null },
+    { bank: "Mandiri", number: "0987654321", name: "Putri Pratiwi", image_url: null },
   ],
   gift_address: "Alamat pengiriman kado...",
+  gift_qr_url: null,
   closing_text:
     "Merupakan suatu kebahagiaan dan kehormatan bagi kami, apabila Bapak/Ibu/Saudara/i, berkenan hadir dan memberikan doa restu kepada kami",
   music_url: null,

@@ -1,16 +1,17 @@
 "use client";
 
+/** Very subtle floating dots – low opacity, slow */
 export default function Particles() {
-  const items = Array.from({ length: 14 }, (_, i) => ({
+  const items = Array.from({ length: 6 }, (_, i) => ({
     id: i,
-    left: `${(i * 7 + 3) % 100}%`,
-    delay: `${(i * 0.7) % 7}s`,
-    duration: `${10 + (i % 6)}s`,
-    size: 3 + (i % 4),
+    left: `${12 + i * 15}%`,
+    delay: `${i * 1.5}s`,
+    duration: `${14 + i * 2}s`,
+    size: 2 + (i % 2),
   }));
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden">
+    <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden opacity-40">
       {items.map((p) => (
         <span
           key={p.id}
