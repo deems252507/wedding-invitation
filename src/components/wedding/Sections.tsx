@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Reveal, Tilt, useCountdown, useParallax } from "./hooks";
 import { WorksWheel, type WorksWheelItem } from "@/components/ui/works-wheel";
-import { ParallaxScrolling } from "@/components/ui/parallax-scrolling";
 import heroImg from "@/assets/hero.jpg";
 import brideImg from "@/assets/bride.jpg";
 import groomImg from "@/assets/groom.jpg";
@@ -48,21 +47,29 @@ function FadeUp({
 
 export function Hero() {
   return (
-    <ParallaxScrolling
-      kicker="THE WEDDING OF"
-      title="Shopia & Nathan"
-      layers={[
-        { layer: "1", src: heroImg, alt: "Background" },
-        { layer: "2", src: coverImg, alt: "Mid layer" },
-        { layer: "3", title: "Shopia & Nathan" },
-        { layer: "4", src: story2, alt: "Foreground" },
-      ]}
-      smoothScroll
-    >
-      <p className="font-sans text-[0.62rem] tracking-[0.42em] text-ink/70">
-        SAVE THE DATE · 30 . 01 . 2027
-      </p>
-    </ParallaxScrolling>
+    <section className="relative h-[100dvh] w-full overflow-hidden">
+      <img
+        src={heroImg}
+        alt="Shopia dan Nathan"
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-ink/30 via-transparent to-ink/60" />
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center">
+        <p className="font-sans text-[0.6rem] tracking-[0.42em] text-cream/85">
+          THE WEDDING OF
+        </p>
+        <h2 className="font-script text-5xl leading-none text-cream sm:text-6xl">
+          Shopia
+        </h2>
+        <p className="font-display text-xl italic text-cream/80">&amp;</p>
+        <h2 className="font-script text-5xl leading-none text-cream sm:text-6xl">
+          Nathan
+        </h2>
+        <p className="mt-6 font-sans text-[0.62rem] tracking-[0.42em] text-cream/85">
+          SAVE THE DATE · 30 . 01 . 2027
+        </p>
+      </div>
+    </section>
   );
 }
 
@@ -191,7 +198,26 @@ export function LoveStory() {
     </section>
   );
 }
-
+const EVENTS = [
+  {
+    name: "Akad Nikah",
+    desc: "Dengan memohon rahmat Allah SWT, kami mengundang Bapak/Ibu/Saudara/i untuk hadir.",
+    date: "Sabtu, 30 Januari 2027",
+    time: "09.00 WIB",
+    place: "Masjid Gedhe Kauman",
+    address: "Jl. Kauman, Yogyakarta",
+    map: "https://maps.google.com",
+  },
+  {
+    name: "Resepsi",
+    desc: "Mari berbagi kebahagiaan dalam resepsi pernikahan kami.",
+    date: "Sabtu, 30 Januari 2027",
+    time: "11.00 – 14.00 WIB",
+    place: "Gedung Societet Militair",
+    address: "Jl. Pangurakan No.1, Yogyakarta",
+    map: "https://maps.google.com",
+  },
+];
 export function Events() {
   return (
     <section className="bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
