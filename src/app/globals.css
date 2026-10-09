@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Aboreto&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Cormorant+Infant:wght@400;600&family=Caudex:wght@400;700&family=Poppins:wght@300;400;500;600&display=swap");
+
+:root {
+  --navy: #0d0e3a;
+  --cream: #e4eaf6;
+  --rose: #cc3366;
+  --neutral: #5a5a5a;
+  --canvas: #ffffff;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--cream);
+  background: var(--navy);
+  font-family: "Cormorant Garamond", serif;
+  overflow-x: hidden;
+}
+
+/* Ornamental double border button */
+.btn-ornamental {
+  @apply inline-flex items-center justify-center h-[45px] px-5
+    font-cormorant text-[13px] font-bold uppercase tracking-[1.4px]
+    bg-cream text-navy border-[4px] border-double border-navy
+    rounded-full transition-all duration-300;
+}
+
+.btn-ornamental:hover {
+  @apply bg-navy text-cream border-cream shadow-invitation;
+}
+
+/* Section spacing */
+.section-band {
+  @apply py-band px-4 md:px-8;
+}
+
+/* Fade in animation utility */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-up {
+  animation: fadeUp 0.8s ease-out forwards;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.6s ease-out forwards;
+}
+
+/* Cover open overlay */
+.cover-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(13, 14, 58, 0.85) 0%,
+    rgba(13, 14, 58, 0.95) 100%
+  );
+}
+
+/* Decorative divider */
+.ornament-line {
+  @apply w-16 h-px bg-cream/40 mx-auto my-4;
+}
+
+/* Scrollbar subtle */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0d0e3a;
+}
+::-webkit-scrollbar-thumb {
+  background: #e4eaf6;
+  border-radius: 3px;
+}
+
+/* Admin form styles */
+.admin-input {
+  @apply w-full px-3 py-2 rounded border border-gray-300 bg-white text-gray-900
+    text-sm focus:outline-none focus:ring-2 focus:ring-navy/40;
+}
+
+.admin-label {
+  @apply block text-sm font-medium text-gray-700 mb-1;
+}
+
+.admin-card {
+  @apply bg-white rounded-lg shadow-md p-6 mb-6;
+}
