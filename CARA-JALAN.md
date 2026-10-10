@@ -137,3 +137,15 @@ Dependensi: lucide-react sudah ada. Tidak perlu install tambahan untuk komponen 
 
 Semua efek mati otomatis jika perangkat memakai `prefers-reduced-motion`.
 Foto Expand diambil dari foto hero ke-2, lalu galeri, lalu foto hero utama (atur di admin).
+
+## 5. Update terbaru (perbaikan tampilan & kehadiran)
+
+**WAJIB sekali:** Supabase → SQL Editor → paste isi `supabase/ADD-RSVPS.sql` → Run.
+Ini membuat tabel `rsvps` supaya konfirmasi kehadiran tersimpan terpisah dari ucapan & doa.
+
+- Undangan hanya menampilkan **Prayers & Wishes**. Di form itu tamu juga memilih hadir / berhalangan
+  (dan jumlah orang). Pilihan kehadiran **tidak** muncul di daftar ucapan.
+- Admin → tab **Kehadiran**: total tamu yang akan datang (jumlah orang), daftar hadir, daftar berhalangan, cetak PDF.
+- Admin → tab **Ucapan & Doa**: hanya ucapan.
+- Data konfirmasi lama (yang dulu masuk ke tabel `wishes`) otomatis ikut terbaca di tab Kehadiran
+  dan tidak lagi tampil di daftar ucapan.
