@@ -79,3 +79,44 @@ import RsvpReport from "@/components/admin/RsvpReport";
 ```
 
 Jika file route admin Anda ada di repo (mis. `src/routes/admin.tsx`), letakkan komponen di sana sebagai section terpisah.
+
+## Komponen Baru (Animasi)
+
+### Flow Button
+```tsx
+import { FlowButton } from "@/components/ui/flow-button";
+<FlowButton text="Buka Undangan" onClick={onOpen} />
+```
+
+### Text Particle (nama mempelai di cover)
+```tsx
+import { TextParticle } from "@/components/ui/text-particle";
+<TextParticle text="Bride & Groom" particleColor="#f5f0e8" fontSize={100} />
+```
+Cover sudah memakai TextParticle + FlowButton.
+
+### Cinematic Footer (scroll reveal bottom)
+```tsx
+import { CinematicFooter } from "@/components/ui/motion-footer";
+// Di layout setelah konten utama (z-10), footer fixed z-0
+<main className="relative z-10 ...">...</main>
+<CinematicFooter />
+```
+ThankYou section sudah disiapkan dengan "Scroll down to reveal".
+
+### Scroll Expansion Hero
+```tsx
+import ScrollExpandMedia from "@/components/ui/scroll-expansion-hero";
+<ScrollExpandMedia
+  mediaType="image"
+  mediaSrc="..."
+  bgImageSrc="..."
+  title="Our Story"
+  date="Wedding"
+  scrollToExpand="Scroll to Expand"
+>
+  <p>Konten setelah expand</p>
+</ScrollExpandMedia>
+```
+
+Dependensi: lucide-react sudah ada. Tidak perlu install tambahan untuk komponen di atas.

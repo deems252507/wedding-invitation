@@ -555,16 +555,22 @@ export function Gift() {
 export function ThankYou() {
   const d = useWeddingData();
   return (
-    <section className="relative overflow-hidden px-5 py-24 sm:px-8 sm:py-28">
-      <img
-        src={d.heroPhoto}
-        alt=""
-        aria-hidden
-        loading="lazy"
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-      <div className="absolute inset-0 bg-ink/70" />
+    <section className="relative z-10 overflow-hidden rounded-b-3xl border-b border-white/10 bg-ink px-5 py-24 shadow-2xl sm:px-8 sm:py-28">
+      {d.heroPhoto && (
+        <img
+          src={d.heroPhoto}
+          alt=""
+          aria-hidden
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover opacity-40"
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-b from-ink/80 via-ink/70 to-ink" />
       <div className="relative mx-auto max-w-sm text-center">
+        <p className="mb-4 font-sans text-xs tracking-[0.35em] text-cream/60 uppercase">
+          Scroll down to reveal
+        </p>
+        <div className="mx-auto mb-8 h-24 w-px bg-gradient-to-b from-cream/50 to-transparent" />
         <p className="font-script text-5xl text-cream">Thank You</p>
         <p className="mt-6 font-sans text-sm leading-relaxed tracking-wide text-cream/80">
           {d.thankYouText}
@@ -582,6 +588,10 @@ export function ThankYou() {
     </section>
   );
 }
+
+/** Cinematic scroll-reveal footer – place after main content */
+export { CinematicFooter } from "@/components/ui/motion-footer";
+
 
 /** Gallery: auto-slide strip + grid + lightbox */
 export function Gallery() {
