@@ -2,7 +2,12 @@
 
 import { Fragment, useEffect, useRef, useState, type ElementType } from "react";
 
-/** Memicu sekali saat elemen masuk layar. */
+const STEPS = Array.from({ length: 21 }, (_, i) => i / 20);
+
+/**
+ * Bernilai true selama elemen terlihat di layar dan kembali false setelah benar-benar keluar,
+ * sehingga animasi yang memakainya berulang setiap kali digulir (ke bawah maupun ke atas).
+ */
 export function useInView<T extends Element>(threshold = 0.25) {
   const ref = useRef<T | null>(null);
   const [inView, setInView] = useState(false);
@@ -16,12 +21,15 @@ export function useInView<T extends Element>(threshold = 0.25) {
     }
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting) {
-          setInView(true);
-          io.disconnect();
-        }
+        if (!entry) return;
+        const vh = entry.rootBounds?.height ?? window.innerHeight;
+        const seen =
+          entry.isIntersecting &&
+          (entry.intersectionRatio >= threshold || entry.intersectionRect.height >= vh * 0.3);
+        if (seen) setInView(true);
+        else if (!entry.isIntersecting) setInView(false);
       },
-      { threshold, rootMargin: "0px 0px -8% 0px" },
+      { threshold: STEPS, rootMargin: "0px 0px -8% 0px" },
     );
     io.observe(el);
     return () => io.disconnect();

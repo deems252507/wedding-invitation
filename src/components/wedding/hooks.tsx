@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
+const STEPS = Array.from({ length: 21 }, (_, i) => i / 20);
+
+/**
+ * Animasi masuk yang BOLAK-BALIK: kelas `is-visible` dipasang saat elemen masuk layar dan
+ * dicabut saat elemen sudah benar-benar keluar layar. Jadi animasi ikut berulang setiap kali
+ * digulir, baik ke bawah maupun kembali ke atas.
+ */
 export function useReveal<T extends HTMLElement>() {
   const ref = useRef<T | null>(null);
   useEffect(() => {
@@ -8,10 +15,14 @@ export function useReveal<T extends HTMLElement>() {
     const io = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
-          if (e.isIntersecting) el.classList.add("is-visible");
+          const vh = e.rootBounds?.height ?? window.innerHeight;
+          const seen =
+            e.isIntersecting && (e.intersectionRatio >= 0.15 || e.intersectionRect.height >= vh * 0.25);
+          if (seen) el.classList.add("is-visible");
+          else if (!e.isIntersecting) el.classList.remove("is-visible");
         });
       },
-      { threshold: 0.15 },
+      { threshold: STEPS },
     );
     io.observe(el);
     return () => io.disconnect();

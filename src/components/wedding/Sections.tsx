@@ -241,8 +241,12 @@ function PersonPanel({
   const [sharp, setSharp] = useState(false);
   const ig = igHandle(instagram);
 
+  // Berulang tiap kali digulir: keluar layar -> reset, masuk lagi -> animasi dari awal.
   useEffect(() => {
-    if (!inView) return;
+    if (!inView) {
+      setSharp(false);
+      return;
+    }
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const t = window.setTimeout(() => setSharp(true), reduce ? 0 : 1300);
     return () => window.clearTimeout(t);
@@ -259,15 +263,25 @@ function PersonPanel({
 
   return (
     <div ref={viewRef} className="mx-auto w-full max-w-[19rem] text-center">
-      <div className="rounded-t-[999px] rounded-b-[2rem] border border-[#b8933f]/50 bg-card p-2.5 shadow-[0_34px_60px_-34px_rgba(0,0,0,0.55)]">
+      {/* Bingkai tumbuh dari kecil ke ukuran penuh; foto di dalamnya buram -> tajam */}
+      <div
+        className="person-frame rounded-t-[999px] rounded-b-[2rem] border border-[#b8933f]/50 bg-card p-2.5 shadow-[0_34px_60px_-34px_rgba(0,0,0,0.55)]"
+        style={{
+          transform: inView ? "scale(1)" : "scale(0.55)",
+          opacity: inView ? 1 : 0,
+        }}
+      >
         <div className="relative aspect-[3/4] overflow-hidden rounded-t-[999px] rounded-b-[1.5rem] bg-ink/10">
           {photo ? (
             <img
               src={photo}
               alt={name}
               loading="lazy"
-              className="person-photo absolute inset-0 h-full w-full scale-[1.08] object-cover object-[50%_20%]"
-              style={{ filter: inView ? "blur(0px)" : "blur(24px)" }}
+              className="person-photo absolute inset-0 h-full w-full object-cover object-[50%_20%]"
+              style={{
+                filter: inView ? "blur(0px)" : "blur(24px)",
+                transform: inView ? "scale(1.06)" : "scale(1.35)",
+              }}
             />
           ) : null}
         </div>
