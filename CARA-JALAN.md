@@ -149,3 +149,20 @@ Ini membuat tabel `rsvps` supaya konfirmasi kehadiran tersimpan terpisah dari uc
 - Admin → tab **Ucapan & Doa**: hanya ucapan.
 - Data konfirmasi lama (yang dulu masuk ke tabel `wishes`) otomatis ikut terbaca di tab Kehadiran
   dan tidak lagi tampil di daftar ucapan.
+
+## 8. Update tampilan profesional (terbaru)
+
+**WAJIB sekali:** Supabase → SQL Editor → paste isi `supabase/ADD-MOMENTS.sql` → Run.
+Ini menambah kolom foto zoom + momen. (Sebelum dijalankan, data lain tetap tersimpan, tetapi foto zoom & momen belum.)
+
+| Perubahan | Keterangan |
+|---|---|
+| Navbar melayang | Beranda · Mempelai · Acara · Galeri · Ucapan · Kado. Muncul setelah mulai scroll, item aktif mengikuti halaman. Tombol musik pindah ke kanan atas. |
+| Momen (baru) | Layar penuh yang menempel saat scroll; foto/video berganti otomatis. Admin → tab **Momen** (bisa foto atau video, atur urutan ↑ ↓). Kosong = bagian tidak tampil. |
+| Foto zoom | Admin → **Umum → Foto zoom**. Terpisah dari hero/galeri sehingga gambarnya tidak kembar. Teks tidak lagi menimpa wajah. |
+| Galeri 3D | Kisi foto miring yang terbentang rata saat digulir. Semua kartu seragam 3:4. Ketuk foto → lightbox dengan zoom (cubit, roda mouse, tombol +/−, ketuk dua kali) dan geser. |
+| Upload galeri massal | Admin → Galeri → **Pilih banyak foto sekaligus**. |
+| Ucapan & Doa | Formulir dalam kartu 2 langkah, daftar "Ucapan dari Tamu (jumlah)", dan **popup terima kasih** setelah kirim. Jika gagal kirim, pesan error tampil (tidak lagi pura-pura sukses). |
+| Penutup | Tulisan "Thank You", "Scroll down to reveal", teks "Admin", dan teks berjalan dihapus. Footer hanya: Putri / & / Putra, tanggal, © tahun · nama. Admin tetap bisa dibuka lewat `/admin`. |
+
+Catatan video Momen: gunakan MP4 (H.264) ≤ 20 MB; paket gratis Supabase membatasi 50 MB per file.
