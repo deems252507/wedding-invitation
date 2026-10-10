@@ -1,19 +1,8 @@
 /**
  * Central wedding invitation data + localStorage admin persistence.
  * Admin saves here; invitation reads with fallback to defaults.
+ * Foto default dihapus — semua foto diambil dari database / admin upload.
  */
-
-import heroImg from "@/assets/hero.jpg";
-import brideImg from "@/assets/bride.jpg";
-import groomImg from "@/assets/groom.jpg";
-import coverImg from "@/assets/cover.jpg";
-import story1 from "@/assets/story-1.jpg";
-import story2 from "@/assets/story-2.jpg";
-import story3 from "@/assets/story-3.jpg";
-import gal1 from "@/assets/gal-1.jpg";
-import gal2 from "@/assets/gal-2.jpg";
-import gal3 from "@/assets/gal-3.jpg";
-import gal4 from "@/assets/gal-4.jpg";
 
 export const ADMIN_PASSWORD = "admin123"; // ganti di admin panel atau di sini
 export const STORAGE_KEY = "wedding-invitation-data-v1";
@@ -100,28 +89,28 @@ export const DEFAULT_DATA: WeddingData = {
   giftIntro:
     "Kehadiran Bapak/Ibu/Saudara/i merupakan hadiah terindah. Namun apabila hendak memberikan tanda kasih, dapat melalui rekening berikut:",
   giftPhoto: "",
-  coverPhoto: coverImg,
-  coverPhotos: [coverImg],
-  heroPhoto: heroImg,
-  heroPhotos: [heroImg],
-  bridePhoto: brideImg,
-  groomPhoto: groomImg,
+  coverPhoto: "",
+  coverPhotos: [],
+  heroPhoto: "",
+  heroPhotos: [],
+  bridePhoto: "",
+  groomPhoto: "",
   musicUrl: "",
   videoUrl: "",
   story: [
     {
       title: "Pertemuan Pertama",
-      photo: story1,
+      photo: "",
       text: "Kisah ini berawal ketika jumpa pandangan pertama di kampus Merayakan.",
     },
     {
       title: "Lamaran",
-      photo: story2,
+      photo: "",
       text: "Tak disangka, cerita ini semakin erat untuk mengikat janji suci. Sehingga proses lamaran ini pun berlangsung hangat.",
     },
     {
       title: "Menuju Hari Bahagia",
-      photo: story3,
+      photo: "",
       text: "Dengan restu orang tua dan doa keluarga, kami melangkah bersama menuju hari pernikahan.",
     },
   ],
@@ -149,17 +138,7 @@ export const DEFAULT_DATA: WeddingData = {
     { bank: "BCA", number: "1234567890", owner: "Sophia Putri Rahayu" },
     { bank: "MANDIRI", number: "5124125213", owner: "Nathan Hermawan Wijaya" },
   ],
-  gallery: [
-    { title: "First Glance", image: gal1 },
-    { title: "Golden Hour", image: gal2 },
-    { title: "Together", image: heroImg },
-    { title: "Quiet Moments", image: gal3 },
-    { title: "In Bloom", image: gal4 },
-    { title: "Shopia", image: brideImg },
-    { title: "The Promise", image: coverImg },
-    { title: "Nathan", image: groomImg },
-    { title: "Love Story", image: story2 },
-  ],
+  gallery: [],
 };
 
 export function loadWeddingData(): WeddingData {

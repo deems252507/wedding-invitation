@@ -81,7 +81,6 @@ export default function WishesSection() {
         >
           <option value="hadir" className="text-black">InsyaAllah Hadir</option>
           <option value="tidak" className="text-black">Maaf, Tidak Bisa Hadir</option>
-          <option value="ragu" className="text-black">Masih Ragu</option>
         </select>
         <button type="submit" disabled={loading} className="btn-gold w-full disabled:opacity-50">
           {loading ? "Mengirim..." : submitted ? "Terkirim ✓" : "Kirim Ucapan"}

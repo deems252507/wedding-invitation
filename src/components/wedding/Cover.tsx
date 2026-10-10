@@ -73,21 +73,6 @@ export function Cover({ guest, onOpen }: { guest: string; onOpen: () => void }) 
             Buka Undangan
           </button>
 
-          {slides.length > 1 && (
-            <div className="mt-6 flex gap-2">
-              {slides.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  aria-label={`Cover ${i + 1}`}
-                  onClick={() => setIdx(i)}
-                  className={`h-1.5 rounded-full transition-all ${
-                    i === idx ? "w-6 bg-cream" : "w-1.5 bg-cream/40"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
         </div>
 
         <div className="animate-text-mask stagger-5 pb-2">

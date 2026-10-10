@@ -88,21 +88,6 @@ export function Hero() {
         <p className="animate-text-mask stagger-3 mt-6 font-sans text-sm tracking-[0.28em] text-cream/90">
           SAVE THE DATE · {d.weddingDateLabel}
         </p>
-        {slides.length > 1 && (
-          <div className="absolute bottom-10 flex gap-2">
-            {slides.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                aria-label={`Slide ${i + 1}`}
-                onClick={() => setIdx(i)}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === idx ? "w-6 bg-cream" : "w-1.5 bg-cream/40"
-                }`}
-              />
-            ))}
-          </div>
-        )}
       </div>
     </section>
   );
@@ -342,7 +327,6 @@ export function Rsvp() {
               </option>
               <option value="hadir">Saya akan hadir</option>
               <option value="tidak">Maaf, saya belum bisa hadir</option>
-              <option value="ragu">Masih ragu</option>
             </select>
             <select name="guests" className="field" defaultValue="1">
               <option value="1">1 Orang</option>

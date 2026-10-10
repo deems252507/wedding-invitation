@@ -6,12 +6,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import { cn } from "@/lib/utils";
 
-// Local wedding assets – full photo, never cropped by object-fit cover at layer level
-import heroImg from "@/assets/hero.jpg";
-import coverImg from "@/assets/cover.jpg";
-import story2 from "@/assets/story-2.jpg";
-import gal1 from "@/assets/gal-1.jpg";
-
 export interface ParallaxLayer {
   /** Image src (imported or URL) */
   src?: string;
@@ -36,16 +30,17 @@ export interface ParallaxScrollingProps
   children?: React.ReactNode;
 }
 
+/** Default tanpa foto — isi via props dari data undangan */
 const DEFAULT_LAYERS: ParallaxLayer[] = [
-  { layer: "1", src: heroImg, alt: "Shopia & Nathan – background" },
-  { layer: "2", src: coverImg, alt: "Cover mid layer" },
-  { layer: "3", title: "Shopia & Nathan" },
-  { layer: "4", src: story2, alt: "Foreground detail" },
+  { layer: "1", src: "", alt: "" },
+  { layer: "2", src: "", alt: "" },
+  { layer: "3", title: "" },
+  { layer: "4", src: "", alt: "" },
 ];
 
 export function ParallaxScrolling({
   layers = DEFAULT_LAYERS,
-  title = "Shopia & Nathan",
+  title = "",
   kicker = "THE WEDDING OF",
   smoothScroll = true,
   children,
