@@ -218,9 +218,9 @@ function InstagramIcon() {
 }
 
 /**
- * Satu mempelai = satu layar penuh.
- * Urutan: foto muncul BURAM -> perlahan jadi tajam -> setelah foto tajam sepenuhnya,
- * barulah nama, orang tua, dan Instagram masuk satu per satu.
+ * Kartu satu mempelai: foto dalam bingkai lengkung emas.
+ * Urutan: foto muncul BURAM -> menajam jadi foto asli -> setelah itu nama, orang tua,
+ * dan Instagram muncul perlahan di bawah foto (teks di atas latar krem: selalu jelas terbaca).
  */
 function PersonPanel({
   photo,
@@ -237,84 +237,79 @@ function PersonPanel({
   parents: string;
   instagram: string;
 }) {
-  const scrollRef = useScrollProgress<HTMLDivElement>("through");
-  const [viewRef, inView] = useInView<HTMLDivElement>(0.5);
+  const [viewRef, inView] = useInView<HTMLDivElement>(0.4);
   const [sharp, setSharp] = useState(false);
   const ig = igHandle(instagram);
 
-  // Foto mulai menajam saat masuk layar; teks baru muncul setelah foto benar-benar tajam.
   useEffect(() => {
     if (!inView) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const t = window.setTimeout(() => setSharp(true), reduce ? 0 : 1400);
+    const t = window.setTimeout(() => setSharp(true), reduce ? 0 : 1300);
     return () => window.clearTimeout(t);
   }, [inView]);
 
+  // Teks selalu menempati ruangnya (tidak membuat halaman bergeser), hanya muncul bertahap.
+  const rise = (delay: number) =>
+    ({
+      transitionDelay: sharp ? `${delay}ms` : "0ms",
+    }) as React.CSSProperties;
+  const riseCls = `transition-all duration-700 ease-out ${
+    sharp ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+  }`;
+
   return (
-    <div ref={viewRef} className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink">
-      <div ref={scrollRef} className="absolute inset-0" style={{ "--p": 0 } as React.CSSProperties}>
-        {photo ? (
-          <img
-            src={photo}
-            alt={name}
-            loading="lazy"
-            className="person-photo absolute inset-0 h-full w-full object-cover object-[50%_22%] will-change-transform"
-            style={{
-              transform: "translateY(calc((var(--p) - 0.5) * -8svh)) scale(1.14)",
-              filter: inView ? "blur(0px)" : "blur(26px)",
-            }}
-          />
-        ) : null}
-      </div>
-
-      {/* Bayangan hanya muncul setelah foto tajam, agar foto asli terlihat utuh dulu */}
-      <div
-        className={`pointer-events-none absolute inset-0 transition-opacity duration-[900ms] ease-out ${
-          sharp ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-transparent via-30% to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-[64%] bg-gradient-to-t from-ink via-ink/85 to-transparent" />
-      </div>
-
-      {sharp ? (
-        <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-6 pb-[max(5.5rem,calc(env(safe-area-inset-bottom)+5rem))] text-center">
-          <Smooth>
-            <p className="font-kicker text-[0.64rem] tracking-[0.5em] text-[#ecd48f]">{role}</p>
-          </Smooth>
-          <RevealText
-            as="h3"
-            text={name}
-            by="char"
-            stagger={55}
-            delay={80}
-            className="mt-3 block font-script text-[3.6rem] leading-[1.05] text-white [text-shadow:0_4px_24px_rgba(0,0,0,0.5)]"
-          />
-          <Smooth delay={250}>
-            <p className="mt-2 font-display text-[1.35rem] italic text-cream/90">{fullName}</p>
-          </Smooth>
-          {parents ? (
-            <Smooth delay={400}>
-              <p className="mx-auto mt-3 max-w-[18rem] font-sans text-[0.78rem] leading-relaxed text-cream/65">
-                {parents}
-              </p>
-            </Smooth>
-          ) : null}
-          {ig ? (
-            <Smooth delay={550} variant="zoom">
-              <a
-                href={`https://instagram.com/${ig}`}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-5 inline-flex items-center gap-2 rounded-full border border-cream/70 px-4 py-1.5 font-sans text-[0.75rem] text-cream transition hover:bg-cream hover:text-ink"
-              >
-                <InstagramIcon />
-                {ig}
-              </a>
-            </Smooth>
+    <div ref={viewRef} className="mx-auto w-full max-w-[19rem] text-center">
+      <div className="rounded-t-[999px] rounded-b-[2rem] border border-[#b8933f]/50 bg-card p-2.5 shadow-[0_34px_60px_-34px_rgba(0,0,0,0.55)]">
+        <div className="relative aspect-[3/4] overflow-hidden rounded-t-[999px] rounded-b-[1.5rem] bg-ink/10">
+          {photo ? (
+            <img
+              src={photo}
+              alt={name}
+              loading="lazy"
+              className="person-photo absolute inset-0 h-full w-full scale-[1.08] object-cover object-[50%_20%]"
+              style={{ filter: inView ? "blur(0px)" : "blur(24px)" }}
+            />
           ) : null}
         </div>
-      ) : null}
+      </div>
+
+      <div className="mt-7">
+        <p className={`font-kicker text-[0.64rem] tracking-[0.45em] text-[#8a6a1f] ${riseCls}`} style={rise(0)}>
+          {role}
+        </p>
+        <h3
+          className={`mt-2 font-script text-[3.4rem] leading-[1.05] text-[#a8822f] ${riseCls}`}
+          style={rise(120)}
+        >
+          {name}
+        </h3>
+        {fullName ? (
+          <p className={`mt-1 font-display text-[1.3rem] italic text-ink ${riseCls}`} style={rise(240)}>
+            {fullName}
+          </p>
+        ) : null}
+        {parents ? (
+          <p
+            className={`mx-auto mt-3 max-w-[17rem] whitespace-pre-line font-sans text-[0.78rem] leading-relaxed text-ink/60 ${riseCls}`}
+            style={rise(360)}
+          >
+            {parents}
+          </p>
+        ) : null}
+        {ig ? (
+          <div className={riseCls} style={rise(480)}>
+            <a
+              href={`https://instagram.com/${ig}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#b8933f]/70 px-4 py-1.5 font-sans text-[0.75rem] text-[#8a6a1f] transition hover:bg-[#b8933f] hover:text-white"
+            >
+              <InstagramIcon />
+              {ig}
+            </a>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -322,35 +317,47 @@ function PersonPanel({
 export function Couple() {
   const d = useWeddingData();
   return (
-    <section id="mempelai" className="relative bg-cream">
-      <div className="px-5 py-20 sm:px-8 sm:py-24">
-        <Smooth className="mx-auto max-w-md text-center">
-          <Ornament className="mb-6" />
-          <p className="block whitespace-pre-line font-display text-[1.15rem] leading-[1.75] text-ink/75">
+    <section id="mempelai" className="relative bg-cream px-5 pb-20 pt-6 sm:px-8">
+      <SectionTitle kicker="THE HAPPY COUPLE" title="Mempelai" />
+      {d.coupleIntro ? (
+        <Smooth delay={150} className="mx-auto mt-6 max-w-sm text-center">
+          <p className="block whitespace-pre-line font-display text-[1.1rem] leading-[1.8] text-ink/70">
             {d.coupleIntro}
           </p>
         </Smooth>
+      ) : null}
+
+      <div className="mt-12 flex flex-col items-center">
+        {d.brideName ? (
+          <PersonPanel
+            photo={d.bridePhoto}
+            role="MEMPELAI WANITA"
+            name={d.brideName}
+            fullName={d.brideFullName}
+            parents={d.brideParents}
+            instagram={d.brideInstagram}
+          />
+        ) : null}
+
+        {d.brideName && d.groomName ? (
+          <Smooth variant="zoom" className="my-10 flex items-center gap-4">
+            <span aria-hidden className="h-px w-16 bg-gradient-to-r from-transparent to-[#b8933f]/60" />
+            <span className="font-script text-[3rem] leading-none text-[#b8933f]">&amp;</span>
+            <span aria-hidden className="h-px w-16 bg-gradient-to-l from-transparent to-[#b8933f]/60" />
+          </Smooth>
+        ) : null}
+
+        {d.groomName ? (
+          <PersonPanel
+            photo={d.groomPhoto}
+            role="MEMPELAI PRIA"
+            name={d.groomName}
+            fullName={d.groomFullName}
+            parents={d.groomParents}
+            instagram={d.groomInstagram}
+          />
+        ) : null}
       </div>
-      {d.brideName ? (
-        <PersonPanel
-          photo={d.bridePhoto}
-          role="MEMPELAI WANITA"
-          name={d.brideName}
-          fullName={d.brideFullName}
-          parents={d.brideParents}
-          instagram={d.brideInstagram}
-        />
-      ) : null}
-      {d.groomName ? (
-        <PersonPanel
-          photo={d.groomPhoto}
-          role="MEMPELAI PRIA"
-          name={d.groomName}
-          fullName={d.groomFullName}
-          parents={d.groomParents}
-          instagram={d.groomInstagram}
-        />
-      ) : null}
     </section>
   );
 }
