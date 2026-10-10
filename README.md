@@ -1,24 +1,17 @@
-# Wedding Invitation Designer
+# Wedding Invitation
 
-buatkan saya undangan pernikahan buat semirip ini https://helloguest.id/tema-undangan/marjorie/#tombolpopup
+Undangan pernikahan digital dengan admin panel dan Supabase.
 
-This project was built with [Lovable](https://lovable.dev).
+## Menjalankan lokal
 
-## Build with Lovable
-
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/99a567f4-9524-4431-97ba-c6ece4661dcf).
-
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+```bash
+npm install
+cp .env.example .env
+# isi VITE_SUPABASE_URL dan VITE_SUPABASE_ANON_KEY
 npm run dev
 ```
+
+- Undangan: http://localhost:5173
+- Admin: http://localhost:5173/admin (password default: `admin123`)
+
+Lihat `CARA-JALAN.md` dan `SETUP-SUPABASE.md` untuk detail setup.

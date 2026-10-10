@@ -54,3 +54,28 @@ Redeploy setelah ubah env.
 - Gift: tombol → modal
 - Badge Lovable disembunyikan
 - Schema aman di-run ulang
+
+## 6. Perubahan terbaru (perbaikan)
+
+- Semua foto default dihapus — undangan hanya menampilkan foto dari database/admin.
+- Indikator garis slide (dots) di cover & hero dihilangkan.
+- Opsi "Masih Ragu" di form RSVP dihapus (hanya Hadir / Tidak Hadir).
+- Favicon default & jejak branding AI dihilangkan.
+- Komponen admin baru: `src/components/admin/RsvpReport.tsx`
+  - Tab khusus Konfirmasi Kehadiran
+  - Ringkasan jumlah Hadir / Tidak Hadir
+  - Daftar nama tamu jelas
+  - Tombol **Unduh / Cetak PDF**
+
+### Cara pasang RsvpReport di admin
+
+Di halaman admin (tab Ucapan/RSVP atau tab baru), impor dan render:
+
+```tsx
+import RsvpReport from "@/components/admin/RsvpReport";
+
+// di dalam JSX admin:
+<RsvpReport />
+```
+
+Jika file route admin Anda ada di repo (mis. `src/routes/admin.tsx`), letakkan komponen di sana sebagai section terpisah.
