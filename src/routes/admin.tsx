@@ -11,11 +11,13 @@ import {
   type BankAccount,
   type EventItem,
   type GalleryItem,
+  type MomentItem,
   type StoryItem,
   type WeddingData,
 } from "@/lib/wedding-data";
 import {
   getWeddingDataFromSupabase,
+  normalizeDate,
   updateSettingsFromWeddingData,
   uploadWeddingPhoto,
 } from "@/lib/supabase/data";
@@ -137,6 +139,148 @@ function PhotoField({
   );
 }
 
+const isVideoUrl = (u: string) => /\.(mp4|webm|mov|m4v)(\?|$)/i.test(u);
+
+/** Unggah foto ATAU video (video wajib lewat Supabase Storage; maks ~50 MB di paket gratis). */
+function MediaField({
+  value,
+  type,
+  onChange,
+}: {
+  value: string;
+  type: "image" | "video";
+  onChange: (url: string, type: "image" | "video") => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+
+  const onFile = async (file: File | undefined) => {
+    if (!file) return;
+    const kind: "image" | "video" = file.type.startsWith("video/") ? "video" : "image";
+    setUploading(true);
+    try {
+      if (isSupabaseConfigured()) {
+        const res = await uploadWeddingPhoto(file, "moments");
+        if (res.url) {
+          onChange(res.url, kind);
+          return;
+        }
+        alert(`Upload gagal: ${res.error || "periksa bucket wedding-photos (Public) di Supabase."}`);
+        return;
+      }
+      if (kind === "video") {
+        alert("Video harus diunggah lewat Supabase Storage. Isi .env Supabase dulu.");
+        return;
+      }
+      if (file.size > 1_500_000) {
+        alert("Supabase belum disetel. Foto maksimal 1.5MB untuk simpan lokal.");
+        return;
+      }
+      onChange(await fileToDataUrl(file), "image");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const video = type === "video" || isVideoUrl(value);
+
+  return (
+    <div className="space-y-2">
+      <span className="font-sans text-[0.65rem] tracking-wide text-ink/60">Foto atau video</span>
+      <div className="flex items-start gap-3">
+        {value ? (
+          video ? (
+            <video src={value} muted playsInline preload="metadata" className="h-24 w-16 rounded-lg border border-ink/10 object-cover" />
+          ) : (
+            <img src={value} alt="" className="h-24 w-16 rounded-lg border border-ink/10 object-cover" />
+          )
+        ) : (
+          <div className="flex h-24 w-16 items-center justify-center rounded-lg border border-dashed border-ink/20 text-[0.6rem] text-ink/40">
+            kosong
+          </div>
+        )}
+        <div className="flex-1 space-y-2">
+          <input
+            type="url"
+            className="field w-full text-xs"
+            value={value.startsWith("data:") ? "" : value}
+            onChange={(e) =>
+              onChange(e.target.value, isVideoUrl(e.target.value) ? "video" : "image")
+            }
+            placeholder="URL foto / video (https://...)"
+          />
+          <input
+            type="file"
+            accept="image/*,video/mp4,video/webm,video/quicktime"
+            disabled={uploading}
+            className="block w-full text-xs text-ink/70"
+            onChange={(e) => void onFile(e.target.files?.[0])}
+          />
+          {uploading ? <p className="text-[0.6rem] text-ink/50">Mengupload… (video bisa agak lama)</p> : null}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Pilih banyak foto sekaligus → semua langsung masuk galeri. */
+function BulkUpload({ onDone }: { onDone: (urls: string[]) => void }) {
+  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState("");
+
+  const run = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setBusy(true);
+    const urls: string[] = [];
+    let failed = 0;
+    try {
+      const list = Array.from(files);
+      for (let i = 0; i < list.length; i++) {
+        setProgress(`Mengunggah ${i + 1} dari ${list.length}…`);
+        const f = list[i];
+        if (isSupabaseConfigured()) {
+          const res = await uploadWeddingPhoto(f, "gallery");
+          if (res.url) urls.push(res.url);
+          else failed++;
+        } else if (f.size <= 1_500_000) {
+          urls.push(await fileToDataUrl(f));
+        } else {
+          failed++;
+        }
+      }
+      if (urls.length) onDone(urls);
+      if (failed) alert(`${failed} foto gagal diunggah (cek Supabase Storage / ukuran file).`);
+    } finally {
+      setBusy(false);
+      setProgress("");
+    }
+  };
+
+  return (
+    <label
+      className={`flex cursor-pointer flex-col items-center gap-1 rounded-xl border-2 border-dashed border-ink/25 px-4 py-5 text-center transition hover:border-ink/50 ${
+        busy ? "pointer-events-none opacity-60" : ""
+      }`}
+    >
+      <span className="font-sans text-xs font-medium text-ink/75">
+        {busy ? progress : "Pilih banyak foto sekaligus"}
+      </span>
+      <span className="font-sans text-[0.6rem] text-ink/45">
+        Semua foto otomatis dipotong seragam (3:4) di undangan
+      </span>
+      <input
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={(e) => {
+          void run(e.target.files);
+          e.target.value = "";
+        }}
+      />
+    </label>
+  );
+}
+
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="rounded-2xl border border-ink/10 bg-cream p-5 shadow-sm">
@@ -247,7 +391,7 @@ function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState("");
   const [tab, setTab] = useState<
-    "umum" | "acara" | "cerita" | "galeri" | "rekening" | "media" | "kehadiran" | "ucapan"
+    "umum" | "acara" | "cerita" | "momen" | "galeri" | "rekening" | "media" | "kehadiran" | "ucapan"
   >("umum");
   const supabaseOn = isSupabaseConfigured();
 
@@ -359,6 +503,7 @@ function AdminPage() {
     { id: "umum" as const, label: "Umum" },
     { id: "acara" as const, label: "Acara" },
     { id: "cerita" as const, label: "Cerita" },
+    { id: "momen" as const, label: "Momen" },
     { id: "galeri" as const, label: "Galeri" },
     { id: "rekening" as const, label: "Rekening" },
     { id: "media" as const, label: "Media" },
@@ -426,12 +571,22 @@ function AdminPage() {
             </SectionCard>
             <SectionCard title="Tanggal & teks">
               <Field label="Label tanggal (tampil di cover)" value={data.weddingDateLabel} onChange={(v) => patch("weddingDateLabel", v)} placeholder="Sabtu, 30 Januari 2027" />
-              <Field label="Tanggal ISO (countdown)" value={data.weddingDateISO} onChange={(v) => patch("weddingDateISO", v)} placeholder="2027-01-30T10:00:00+07:00" />
+              <Field
+                label="Tanggal & jam acara (untuk hitung mundur)"
+                type="datetime-local"
+                value={(() => {
+                  const day = normalizeDate(data.weddingDateISO);
+                  if (!day) return "";
+                  const t = data.weddingDateISO.match(/T(\d{2}:\d{2})/);
+                  return `${day}T${t ? t[1] : "10:00"}`;
+                })()}
+                onChange={(v) => patch("weddingDateISO", v ? `${v}:00+07:00` : "")}
+              />
               <Field label="Judul cover" value={data.coverTitle} onChange={(v) => patch("coverTitle", v)} />
               <Field label="Intro pasangan" value={data.coupleIntro} onChange={(v) => patch("coupleIntro", v)} multiline />
               <Field label="Kutipan" value={data.quote} onChange={(v) => patch("quote", v)} multiline />
               <Field label="Sumber kutipan" value={data.quoteSource} onChange={(v) => patch("quoteSource", v)} />
-              <Field label="Teks thank you" value={data.thankYouText} onChange={(v) => patch("thankYouText", v)} multiline />
+              <Field label="Teks ucapan terima kasih (bagian penutup)" value={data.thankYouText} onChange={(v) => patch("thankYouText", v)} multiline />
               <Field label="Intro gift" value={data.giftIntro} onChange={(v) => patch("giftIntro", v)} multiline />
             </SectionCard>
             <SectionCard title="Foto cover (bisa banyak — slide otomatis)">
@@ -522,6 +677,14 @@ function AdminPage() {
               >
                 + Tambah foto hero
               </button>
+            </SectionCard>
+
+            <SectionCard title="Foto zoom (membesar saat digulir)">
+              <p className="font-sans text-[0.65rem] text-ink/50">
+                Foto khusus untuk bagian yang membesar menjadi layar penuh. Pilih foto vertikal dengan
+                wajah di bagian atas/tengah supaya tidak terpotong. Jika kosong, dipakai foto hero ke-2.
+              </p>
+              <PhotoField label="Foto zoom" value={data.expandPhoto} onChange={(v) => patch("expandPhoto", v)} />
             </SectionCard>
 
             <SectionCard title="Foto mempelai">
@@ -649,11 +812,111 @@ function AdminPage() {
           </SectionCard>
         )}
 
+        {tab === "momen" && (
+          <SectionCard title="Momen (foto / video saat scroll)">
+            <p className="font-sans text-xs text-ink/55">
+              Layar penuh yang berganti otomatis saat tamu menggulir. Tiap momen boleh foto atau video
+              (video diputar tanpa suara). Disarankan 3–6 momen, video ≤ 20 MB, rasio vertikal 9:16 atau 3:4.
+              Jika daftar kosong, bagian ini tidak tampil.
+            </p>
+            {data.moments.map((m, i) => (
+              <div key={i} className="space-y-3 rounded-xl border border-ink/10 bg-sand/40 p-4">
+                <div className="flex justify-between">
+                  <p className="font-sans text-xs text-ink/70">Momen #{i + 1}</p>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      disabled={i === 0}
+                      className="text-xs text-ink/60 disabled:opacity-30"
+                      onClick={() => {
+                        const next = [...data.moments];
+                        [next[i - 1], next[i]] = [next[i], next[i - 1]];
+                        patch("moments", next);
+                      }}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      type="button"
+                      disabled={i === data.moments.length - 1}
+                      className="text-xs text-ink/60 disabled:opacity-30"
+                      onClick={() => {
+                        const next = [...data.moments];
+                        [next[i + 1], next[i]] = [next[i], next[i + 1]];
+                        patch("moments", next);
+                      }}
+                    >
+                      ↓
+                    </button>
+                    <button
+                      type="button"
+                      className="text-xs text-red-600"
+                      onClick={() => patch("moments", data.moments.filter((_, j) => j !== i))}
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                </div>
+                <MediaField
+                  value={m.url}
+                  type={m.type}
+                  onChange={(url, type) => {
+                    const next = [...data.moments];
+                    next[i] = { ...next[i], url, type };
+                    patch("moments", next);
+                  }}
+                />
+                <Field
+                  label="Judul singkat (opsional)"
+                  value={m.title}
+                  placeholder="Pertama Bertemu"
+                  onChange={(v) => {
+                    const next = [...data.moments];
+                    next[i] = { ...next[i], title: v };
+                    patch("moments", next);
+                  }}
+                />
+                <Field
+                  label="Keterangan (opsional)"
+                  value={m.caption}
+                  multiline
+                  onChange={(v) => {
+                    const next = [...data.moments];
+                    next[i] = { ...next[i], caption: v };
+                    patch("moments", next);
+                  }}
+                />
+              </div>
+            ))}
+            <button
+              type="button"
+              className="btn-ink w-full"
+              onClick={() =>
+                patch("moments", [
+                  ...data.moments,
+                  { type: "image", url: "", title: "", caption: "" } as MomentItem,
+                ])
+              }
+            >
+              + Tambah momen
+            </button>
+          </SectionCard>
+        )}
+
         {tab === "galeri" && (
           <SectionCard title="Galeri foto">
             <p className="font-sans text-xs text-ink/50">
-              Upload ke Supabase Storage (bucket wedding-photos) atau tempel URL. Klik foto di undangan untuk memperbesar.
+              Upload ke Supabase Storage (bucket wedding-photos) atau tempel URL. Di undangan, foto tampil
+              dalam kisi 3D yang terbentang saat digulir; ketuk foto untuk memperbesar (bisa dicubit / zoom).
             </p>
+            <BulkUpload
+              onDone={(urls) =>
+                patch("gallery", [
+                  ...data.gallery.filter((g) => g.image),
+                  ...urls.map((u) => ({ title: "", image: u }) as GalleryItem),
+                ])
+              }
+            />
             {data.gallery.map((g, i) => (
               <div key={i} className="space-y-3 rounded-xl border border-ink/10 bg-sand/40 p-4">
                 <div className="flex justify-between">

@@ -42,6 +42,8 @@ export interface InvitationSettings {
   logo_url: string | null;
   cover_photo_url: string | null;
   hero_photo_url?: string | null;
+  expand_photo_url?: string | null;
+  moments?: { type?: string; url?: string; title?: string; caption?: string }[];
   wedding_date_label?: string | null;
   groom_photo_url: string | null;
   bride_photo_url: string | null;

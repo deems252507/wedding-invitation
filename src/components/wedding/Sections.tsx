@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Reveal, Tilt, useCountdown, useParallax } from "./hooks";
 import { useWeddingData } from "@/lib/WeddingContext";
 import { RevealImage, RevealText, useInView } from "@/components/ui/image-text-reveal";
@@ -90,6 +91,7 @@ export function Hero() {
 
   return (
     <section
+      id="beranda"
       ref={heroRef}
       className="relative h-[100svh] min-h-[520px] w-full overflow-hidden bg-ink"
       style={{ "--p": 0 } as React.CSSProperties}
@@ -164,7 +166,7 @@ export function Quote() {
 export function Couple() {
   const d = useWeddingData();
   return (
-    <section className="relative overflow-hidden bg-cream px-5 py-16 sm:px-8 sm:py-20">
+    <section id="mempelai" className="relative overflow-hidden bg-cream px-5 py-16 sm:px-8 sm:py-20">
       <FadeUp className="mx-auto max-w-md text-center">
         <Ornament className="mb-6" />
         <RevealText
@@ -246,7 +248,7 @@ export function LoveStory() {
 export function Events() {
   const d = useWeddingData();
   return (
-    <section className="bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
+    <section id="acara" className="bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
       <SectionTitle kicker="WEDDING" title="Event" />
       <div className="mx-auto mt-14 max-w-md space-y-10">
         {d.events.map((e, idx) => (
@@ -344,12 +346,13 @@ function formatWishTime(iso?: string) {
 }
 
 export function Wishes() {
+  const d = useWeddingData();
   const [wishes, setWishes] = useState<WishRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [attendance, setAttendance] = useState<"" | "hadir" | "tidak">("");
   const [guests, setGuests] = useState(1);
   const [error, setError] = useState("");
-  const [thanks, setThanks] = useState(false);
+  const [thanks, setThanks] = useState<{ name: string; attendance: "hadir" | "tidak" } | null>(null);
 
   useEffect(() => {
     void (async () => {
@@ -371,12 +374,33 @@ export function Wishes() {
     })();
   }, []);
 
+  // Notifikasi terima kasih: tutup otomatis, bisa ditutup dengan Esc.
+  useEffect(() => {
+    if (!thanks) return;
+    const t = window.setTimeout(() => setThanks(null), 8000);
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setThanks(null);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.clearTimeout(t);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [thanks]);
+
+  const couple = [d.brideName, d.groomName].filter(Boolean).join(" & ");
+
   return (
-    <section className="bg-cream px-5 py-20 sm:px-8 sm:py-24">
+    <section id="ucapan" className="bg-cream px-5 py-20 sm:px-8 sm:py-24">
       <SectionTitle kicker="UCAPAN & DOA" title="Prayers & Wishes" />
-      <Reveal className="mx-auto mt-10 max-w-sm">
+      <Reveal className="mx-auto mt-6 max-w-sm text-center">
+        <p className="font-display text-[1.1rem] italic leading-relaxed text-ink/65">
+          Tuliskan ucapan dan doa restu untuk kedua mempelai, lalu konfirmasi kehadiran Anda.
+        </p>
+      </Reveal>
+
+      {/* ---- Formulir ---- */}
+      <Reveal className="mx-auto mt-8 max-w-sm" variant="up">
         <form
-          className="space-y-6"
+          className="space-y-7 rounded-3xl border border-border bg-card px-6 py-8 shadow-[0_24px_50px_-28px_rgba(0,0,0,0.35)]"
           onSubmit={async (e) => {
             e.preventDefault();
             const form = e.currentTarget;
@@ -392,30 +416,23 @@ export function Wishes() {
             setLoading(true);
             try {
               const { createWish, createRsvp } = await import("@/lib/supabase/data");
-              const res = await createWish({
-                guest_name: name,
-                message: text,
-                attendance,
-              });
+              const res = await createWish({ guest_name: name, message: text, attendance });
+              if (!res.success) {
+                setError("Ucapan belum terkirim. Periksa koneksi lalu coba lagi.");
+                return;
+              }
               // Kehadiran disimpan terpisah (tabel rsvps) agar tidak tercampur dengan ucapan.
               const rsvp = await createRsvp({ guest_name: name, attendance, guests });
               if (!rsvp.success) console.warn("RSVP belum tersimpan:", rsvp.error);
 
               setWishes((w) => [
-                {
-                  id: res.success && res.data ? res.data.id : undefined,
-                  name,
-                  text,
-                  time: "Baru saja",
-                  fresh: true,
-                },
+                { id: res.data?.id, name, text, time: "Baru saja", fresh: true },
                 ...w,
               ]);
               form.reset();
+              setThanks({ name, attendance });
               setAttendance("");
               setGuests(1);
-              setThanks(true);
-              window.setTimeout(() => setThanks(false), 6000);
             } catch {
               setError("Gagal mengirim. Periksa koneksi lalu coba lagi.");
             } finally {
@@ -423,13 +440,14 @@ export function Wishes() {
             }
           }}
         >
-          <input name="name" required className="field" placeholder="Nama Tamu" autoComplete="name" />
-          <textarea name="text" required rows={3} className="field" placeholder="Ucapan & Doa" />
+          <div className="space-y-4">
+            <p className="font-kicker text-[0.6rem] tracking-[0.32em] text-gold">1 · TULIS UCAPAN</p>
+            <input name="name" required className="field" placeholder="Nama Anda" autoComplete="name" />
+            <textarea name="text" required rows={3} className="field resize-none" placeholder="Ucapan & doa untuk kedua mempelai" />
+          </div>
 
-          <div className="space-y-3">
-            <p className="text-center font-display text-base italic text-ink/70">
-              Apakah Anda dapat hadir?
-            </p>
+          <div className="space-y-4">
+            <p className="font-kicker text-[0.6rem] tracking-[0.32em] text-gold">2 · KONFIRMASI KEHADIRAN</p>
             <div className="seg" role="radiogroup" aria-label="Konfirmasi kehadiran">
               <label>
                 <input
@@ -471,40 +489,97 @@ export function Wishes() {
             ) : null}
           </div>
 
-          {error ? <p className="text-center font-sans text-xs text-red-600">{error}</p> : null}
-          {thanks ? (
-            <p className="wish-new text-center font-display text-base italic text-gold">
-              Terima kasih, ucapan Anda telah kami terima.
+          {error ? (
+            <p role="alert" className="text-center font-sans text-xs text-red-600">
+              {error}
             </p>
           ) : null}
-          <button type="submit" className="btn-ink w-full" disabled={loading}>
+          <button type="submit" className="btn-ink sheen w-full" disabled={loading}>
             {loading ? "Mengirim…" : "KIRIM UCAPAN"}
           </button>
         </form>
+      </Reveal>
 
-        <div className="mt-10 max-h-80 space-y-5 overflow-y-auto pr-2">
+      {/* ---- Daftar ucapan ---- */}
+      <div className="mx-auto mt-14 max-w-sm">
+        <div className="mb-5 flex items-center justify-between">
+          <p className="font-display text-2xl italic text-ink">Ucapan dari Tamu</p>
+          <span className="rounded-full border border-gold/40 px-3 py-1 font-kicker text-[0.6rem] tracking-[0.2em] text-gold">
+            {wishes.length} UCAPAN
+          </span>
+        </div>
+        <div className="max-h-[28rem] space-y-3 overflow-y-auto pr-1" data-lenis-prevent>
           {wishes.length === 0 ? (
-            <p className="text-center font-display text-base italic text-ink/45">
+            <p className="rounded-2xl border border-dashed border-border py-8 text-center font-display text-base italic text-ink/45">
               Belum ada ucapan. Jadilah yang pertama!
             </p>
           ) : (
             wishes.map((w, i) => (
-              <div
+              <article
                 key={w.id || i}
-                className={`border-b border-border pb-4 ${w.fresh ? "wish-new" : ""}`}
+                className={`flex gap-3 rounded-2xl border border-border bg-card p-4 ${w.fresh ? "wish-new" : ""}`}
               >
-                <div className="flex items-baseline justify-between gap-3">
-                  <p className="font-display text-xl font-medium text-ink">{w.name}</p>
-                  <span className="shrink-0 font-kicker text-[0.55rem] tracking-[0.18em] text-gold">
-                    {w.time.toUpperCase()}
-                  </span>
+                <div
+                  aria-hidden
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink font-display text-lg text-[#ecd48f]"
+                >
+                  {(w.name.trim()[0] || "?").toUpperCase()}
                 </div>
-                <p className="mt-1 font-display text-base leading-relaxed text-ink/70">{w.text}</p>
-              </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="truncate font-display text-lg font-medium text-ink">{w.name}</p>
+                    <span className="shrink-0 font-kicker text-[0.52rem] tracking-[0.16em] text-gold">
+                      {w.time.toUpperCase()}
+                    </span>
+                  </div>
+                  <p className="mt-1 break-words font-display text-base leading-relaxed text-ink/70">
+                    {w.text}
+                  </p>
+                </div>
+              </article>
             ))
           )}
         </div>
-      </Reveal>
+      </div>
+
+      {/* ---- Notifikasi terima kasih ---- */}
+      {thanks &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[110] flex items-center justify-center bg-ink/60 p-6 backdrop-blur-sm animate-in fade-in duration-300"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="thanks-title"
+            onClick={() => setThanks(null)}
+          >
+            <div
+              className="relative w-full max-w-xs overflow-hidden rounded-3xl bg-cream px-7 pb-8 pt-9 text-center shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-4 duration-500"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#b8933f] via-[#ecd48f] to-[#b8933f]" />
+              <div className="thanks-check mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#b8933f]/50 bg-[#b8933f]/10">
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#b8933f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                  <path d="M5 12.5l4.5 4.5L19 7.5" className="thanks-check-path" />
+                </svg>
+              </div>
+              <h3 id="thanks-title" className="mt-5 font-display text-[1.7rem] italic leading-tight text-ink">
+                Terima kasih, {thanks.name}!
+              </h3>
+              <p className="mt-3 font-sans text-[0.82rem] leading-relaxed text-ink/65">
+                {thanks.attendance === "hadir"
+                  ? "Ucapan dan konfirmasi kehadiran Anda telah kami terima. Sampai jumpa di hari bahagia kami."
+                  : "Ucapan dan doa Anda telah kami terima. Kami sangat menghargai perhatian Anda."}
+              </p>
+              {couple ? (
+                <p className="mt-5 font-script text-[1.9rem] leading-tight text-gold-grad">{couple}</p>
+              ) : null}
+              <button type="button" className="btn-ink mt-6 w-full" onClick={() => setThanks(null)}>
+                TUTUP
+              </button>
+            </div>
+          </div>,
+          document.body,
+        )}
     </section>
   );
 }
@@ -515,7 +590,7 @@ export function Gift() {
   const [copied, setCopied] = useState<string | null>(null);
 
   return (
-    <section className="bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
+    <section id="kado" className="bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
       <SectionTitle kicker="TANDA KASIH" title="Wedding Gift" />
       <Reveal className="mx-auto mt-8 max-w-sm space-y-5 text-center">
         <RevealText
@@ -530,9 +605,9 @@ export function Gift() {
         </div>
       </Reveal>
 
-      {open && (
+      {open && createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-end justify-center bg-ink/50 p-4 backdrop-blur-sm sm:items-center"
+          className="fixed inset-0 z-[90] flex items-end justify-center bg-ink/50 p-4 backdrop-blur-sm sm:items-center"
           onClick={() => setOpen(false)}
           role="dialog"
           aria-modal="true"
@@ -595,7 +670,8 @@ export function Gift() {
               ))}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </section>
   );
@@ -616,17 +692,13 @@ export function ThankYou() {
       )}
       <div className="absolute inset-0 bg-gradient-to-b from-ink/80 via-ink/70 to-ink" />
       <div className="relative mx-auto max-w-sm text-center">
-        <p className="mb-4 font-sans text-xs tracking-[0.35em] text-cream/60 uppercase">
-          Scroll down to reveal
-        </p>
-        <div className="mx-auto mb-8 h-24 w-px bg-gradient-to-b from-cream/50 to-transparent" />
-        <RevealText as="p" text="Thank You" by="char" stagger={60} className="block font-script text-6xl text-gold-light" />
+        <Ornament className="mb-8" />
         <RevealText
           as="p"
           text={d.thankYouText}
           variant="blur"
           stagger={26}
-          className="mt-6 block font-display text-[1.1rem] leading-[1.75] text-cream/85"
+          className="block font-display text-[1.1rem] leading-[1.75] text-cream/85"
         />
         <p className="mt-8 font-sans text-[0.6rem] tracking-[0.32em] text-cream/60">
           KAMI YANG BERBAHAGIA
@@ -650,214 +722,8 @@ export function ThankYou() {
 export { CinematicFooter } from "@/components/ui/motion-footer";
 
 
-/** Gallery: auto-slide strip + grid + lightbox */
-export function Gallery() {
-  const d = useWeddingData();
-  const images = d.gallery || [];
-  const [lightbox, setLightbox] = useState<number | null>(null);
-  const touchStartX = useRef<number | null>(null);
-  const stripRef = useRef<HTMLDivElement | null>(null);
-  const pauseRef = useRef(false);
-
-  useEffect(() => {
-    if (lightbox === null) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setLightbox(null);
-      if (e.key === "ArrowRight")
-        setLightbox((i) => (i === null ? null : (i + 1) % images.length));
-      if (e.key === "ArrowLeft")
-        setLightbox((i) =>
-          i === null ? null : (i - 1 + images.length) % images.length,
-        );
-    };
-    window.addEventListener("keydown", onKey);
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
-  }, [lightbox, images.length]);
-
-  // Auto-slide horizontal strip
-  useEffect(() => {
-    const el = stripRef.current;
-    if (!el || images.length < 2) return;
-    const id = window.setInterval(() => {
-      if (pauseRef.current || lightbox !== null) return;
-      const max = el.scrollWidth - el.clientWidth;
-      if (max <= 0) return;
-      const next = el.scrollLeft + el.clientWidth * 0.45;
-      if (next >= max - 8) {
-        el.scrollTo({ left: 0, behavior: "smooth" });
-      } else {
-        el.scrollTo({ left: next, behavior: "smooth" });
-      }
-    }, 3200);
-    return () => window.clearInterval(id);
-  }, [images.length, lightbox]);
-
-  if (images.length === 0) {
-    return (
-      <section className="bg-cream px-5 py-16 sm:px-8">
-        <SectionTitle kicker="GALLERY" title="Our Moments" />
-        <p className="mt-8 text-center font-sans text-sm text-ink/40">
-          Galeri foto akan segera ditambahkan
-        </p>
-      </section>
-    );
-  }
-
-  const go = (dir: number) => {
-    setLightbox((i) => {
-      if (i === null) return null;
-      return (i + dir + images.length) % images.length;
-    });
-  };
-
-  return (
-    <section className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
-      <SectionTitle kicker="GALLERY" title="Our Moments" />
-      <FadeUp className="mx-auto mt-3 max-w-xs text-center">
-        <p className="font-display text-base italic text-ink/60">
-          Geser otomatis · klik untuk memperbesar
-        </p>
-      </FadeUp>
-
-      <div className="mx-auto mt-8 max-w-[480px]">
-        <div
-          ref={stripRef}
-          className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide"
-          style={{ WebkitOverflowScrolling: "touch" }}
-          onMouseEnter={() => {
-            pauseRef.current = true;
-          }}
-          onMouseLeave={() => {
-            pauseRef.current = false;
-          }}
-          onTouchStart={() => {
-            pauseRef.current = true;
-          }}
-          onTouchEnd={() => {
-            window.setTimeout(() => {
-              pauseRef.current = false;
-            }, 2500);
-          }}
-        >
-          {images.map((item, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setLightbox(i)}
-              className="snap-center shrink-0 w-[42%] aspect-[3/4] overflow-hidden rounded-2xl border border-ink/10 bg-sand/30 focus:outline-none focus:ring-2 focus:ring-ink/30"
-            >
-              <img
-                src={item.image}
-                alt={item.title || `Gallery ${i + 1}`}
-                className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
-                loading="lazy"
-              />
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mx-auto mt-6 grid max-w-[480px] grid-cols-2 gap-2.5 sm:grid-cols-3">
-        {images.map((item, i) => (
-          <Reveal key={`g-${i}`} variant={i % 2 ? "flip" : "depth"} delay={(i % 3) * 110}>
-          <button
-            type="button"
-            onClick={() => setLightbox(i)}
-            className="aspect-[3/4] w-full overflow-hidden rounded-2xl border border-ink/10 bg-sand/30 focus:outline-none focus:ring-2 focus:ring-ink/30"
-          >
-            <img
-              src={item.image}
-              alt={item.title || `Gallery ${i + 1}`}
-              className="h-full w-full object-cover transition-transform duration-500 hover:scale-110"
-              loading="lazy"
-            />
-          </button>
-          </Reveal>
-        ))}
-      </div>
-
-      {lightbox !== null && (
-        <div
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-ink/92 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setLightbox(null)}
-          onTouchStart={(e) => {
-            touchStartX.current = e.touches[0]?.clientX ?? null;
-          }}
-          onTouchEnd={(e) => {
-            if (touchStartX.current == null) return;
-            const dx = (e.changedTouches[0]?.clientX ?? 0) - touchStartX.current;
-            if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
-            touchStartX.current = null;
-          }}
-        >
-          <button
-            type="button"
-            className="absolute right-4 top-4 z-10 rounded-full bg-cream/10 p-2 text-cream hover:bg-cream/20"
-            onClick={() => setLightbox(null)}
-            aria-label="Tutup"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
-            </svg>
-          </button>
-
-          <button
-            type="button"
-            className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-cream/10 p-3 text-cream hover:bg-cream/20 sm:left-4"
-            onClick={(e) => {
-              e.stopPropagation();
-              go(-1);
-            }}
-            aria-label="Sebelumnya"
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-
-          <button
-            type="button"
-            className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-cream/10 p-3 text-cream hover:bg-cream/20 sm:right-4"
-            onClick={(e) => {
-              e.stopPropagation();
-              go(1);
-            }}
-            aria-label="Berikutnya"
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M9 18l6-6-6-6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-
-          <div
-            className="relative mx-4 flex max-h-[88vh] max-w-[min(96vw,640px)] flex-col items-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src={images[lightbox].image}
-              alt={images[lightbox].title || ""}
-              className="max-h-[80vh] w-auto max-w-full rounded-xl object-contain shadow-2xl"
-            />
-            {images[lightbox].title ? (
-              <p className="mt-3 font-display text-lg italic text-cream/90">
-                {images[lightbox].title}
-              </p>
-            ) : null}
-            <p className="mt-1 font-sans text-[0.65rem] tracking-widest text-cream/50">
-              {lightbox + 1} / {images.length}
-            </p>
-          </div>
-        </div>
-      )}
-    </section>
-  );
-}
+export { Gallery } from "./Gallery";
+export { Moments } from "./Moments";
 
 export function VideoMoment() {
   const d = useWeddingData();
@@ -919,11 +785,12 @@ export function MusicControl() {
   return (
     <>
       <audio ref={audioRef} src={d.musicUrl} loop preload="auto" />
+      <div className="pointer-events-none fixed inset-x-0 top-0 z-40 mx-auto flex max-w-[480px] justify-end px-4 pt-[max(1rem,env(safe-area-inset-top))]">
       <button
         type="button"
         onClick={toggle}
-        className="fixed bottom-5 right-5 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-ink text-cream shadow-lg transition hover:scale-105"
-        aria-label={playing ? "Pause musik" : "Play musik"}
+        className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-ink/80 text-cream shadow-lg backdrop-blur-md transition hover:scale-105"
+        aria-label={playing ? "Jeda musik" : "Putar musik"}
       >
         {playing ? (
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -936,6 +803,7 @@ export function MusicControl() {
           </svg>
         )}
       </button>
+      </div>
     </>
   );
 }

@@ -37,6 +37,14 @@ export interface GalleryItem {
   image: string;
 }
 
+/** Momen sinematik saat scroll: foto atau video yang diunggah dari admin. */
+export interface MomentItem {
+  type: "image" | "video";
+  url: string;
+  title: string;
+  caption: string;
+}
+
 export interface WeddingData {
   groomName: string;
   brideName: string;
@@ -57,6 +65,8 @@ export interface WeddingData {
   coverPhoto: string;
   /** Multiple cover slides (auto). If empty, uses coverPhoto. */
   coverPhotos: string[];
+  /** Foto khusus untuk bagian "zoom" (foto membesar saat digulir). */
+  expandPhoto: string;
   heroPhoto: string;
   /** Multiple hero slides (auto). If empty, uses heroPhoto + gallery. */
   heroPhotos: string[];
@@ -68,6 +78,7 @@ export interface WeddingData {
   events: EventItem[];
   accounts: BankAccount[];
   gallery: GalleryItem[];
+  moments: MomentItem[];
 }
 
 /** Keadaan kosong: tidak ada data demo. Semua konten berasal dari database / admin. */
@@ -89,6 +100,7 @@ export const EMPTY_WEDDING_DATA: WeddingData = {
   giftPhoto: "",
   coverPhoto: "",
   coverPhotos: [],
+  expandPhoto: "",
   heroPhoto: "",
   heroPhotos: [],
   bridePhoto: "",
@@ -99,6 +111,7 @@ export const EMPTY_WEDDING_DATA: WeddingData = {
   events: [],
   accounts: [],
   gallery: [],
+  moments: [],
 };
 
 export function loadWeddingData(): WeddingData {

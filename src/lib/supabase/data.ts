@@ -1,8 +1,27 @@
 import { createClient, isSupabaseConfigured } from "./client";
 import type { InvitationSettings, Rsvp, Wish } from "@/lib/types";
 import { EMPTY_SETTINGS } from "@/lib/types";
-import type { WeddingData, EventItem, StoryItem, GalleryItem, BankAccount } from "@/lib/wedding-data";
+import type {
+  WeddingData,
+  EventItem,
+  StoryItem,
+  GalleryItem,
+  BankAccount,
+  MomentItem,
+} from "@/lib/wedding-data";
 
+
+/** Ubah teks tanggal apa pun (mis. "2026-011-1") menjadi "YYYY-MM-DD" yang valid, atau null. */
+export function normalizeDate(raw: string | null | undefined): string | null {
+  const m = String(raw || "").match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/);
+  if (!m) return null;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  const dt = new Date(Date.UTC(y, mo - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return null;
+  return `${y}-${String(mo).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+}
 
 /** Map DB row → UI WeddingData */
 export function settingsToWeddingData(s: InvitationSettings): WeddingData {
@@ -29,6 +48,19 @@ export function settingsToWeddingData(s: InvitationSettings): WeddingData {
     const obj = g as { title?: string; image?: string; url?: string };
     return { title: obj.title || `Foto ${i + 1}`, image: obj.image || obj.url || "" };
   });
+
+  const moments: MomentItem[] = (s.moments || [])
+    .map((m) => {
+      const url = m.url || "";
+      const isVideo = m.type === "video" || /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url);
+      return {
+        type: (isVideo ? "video" : "image") as MomentItem["type"],
+        url,
+        title: m.title || "",
+        caption: m.caption || "",
+      };
+    })
+    .filter((m) => m.url);
 
   const accounts: BankAccount[] = (s.bank_accounts || []).map((a) => ({
     bank: a.bank || "",
@@ -89,6 +121,7 @@ export function settingsToWeddingData(s: InvitationSettings): WeddingData {
       const one = (s as { hero_photo_url?: string | null }).hero_photo_url || s.cover_photo_url;
       return one ? [one] : [];
     })(),
+    expandPhoto: s.expand_photo_url || "",
     bridePhoto: s.bride_photo_url || "",
     groomPhoto: s.groom_photo_url || "",
     musicUrl: s.music_url || "",
@@ -97,6 +130,7 @@ export function settingsToWeddingData(s: InvitationSettings): WeddingData {
     events: events,
     accounts: accounts,
     gallery: gallery,
+    moments: moments,
   };
 }
 
@@ -110,7 +144,7 @@ export function weddingDataToPayload(d: WeddingData): Record<string, unknown> {
     groom_parents: d.groomParents,
     bride_parents: d.brideParents,
     cover_title: d.coverTitle,
-    wedding_date: d.weddingDateISO.slice(0, 10),
+    wedding_date: normalizeDate(d.weddingDateISO),
     wedding_date_label: d.weddingDateLabel,
     opening_quote: d.quote,
     opening_quote_source: d.quoteSource,
@@ -122,6 +156,7 @@ export function weddingDataToPayload(d: WeddingData): Record<string, unknown> {
     cover_photos: (d.coverPhotos && d.coverPhotos.length ? d.coverPhotos : [d.coverPhoto]).filter(Boolean),
     hero_photo_url: (d.heroPhotos && d.heroPhotos[0]) || d.heroPhoto,
     hero_photos: (d.heroPhotos && d.heroPhotos.length ? d.heroPhotos : [d.heroPhoto]).filter(Boolean),
+    expand_photo_url: d.expandPhoto || null,
     bride_photo_url: d.bridePhoto,
     groom_photo_url: d.groomPhoto,
     music_url: d.musicUrl || null,
@@ -145,6 +180,9 @@ export function weddingDataToPayload(d: WeddingData): Record<string, unknown> {
       photo: s.photo,
     })),
     gallery: d.gallery.map((g) => ({ title: g.title, image: g.image })),
+    moments: (d.moments || [])
+      .filter((m) => m.url)
+      .map((m) => ({ type: m.type, url: m.url, title: m.title, caption: m.caption })),
     bank_accounts: d.accounts.map((a) => ({
       bank: a.bank,
       number: a.number,
@@ -205,16 +243,28 @@ export async function updateSettingsFromWeddingData(
 
     if (fetchErr) return { success: false, error: fetchErr.message };
 
-    if (!existing) {
-      const { error } = await supabase.from("invitation_settings").insert(payload);
-      if (error) return { success: false, error: error.message };
-      return { success: true };
-    }
+    const write = (body: Record<string, unknown>) =>
+      existing
+        ? supabase.from("invitation_settings").update(body).eq("id", existing.id)
+        : supabase.from("invitation_settings").insert(body);
 
-    const { error } = await supabase
-      .from("invitation_settings")
-      .update(payload)
-      .eq("id", existing.id);
+    let { error } = await write(payload);
+
+    // Kolom baru (expand_photo_url, moments) belum dibuat? Simpan sisanya dulu supaya data tidak hilang.
+    if (error && /expand_photo_url|moments|schema cache|column/i.test(error.message)) {
+      const { expand_photo_url: _a, moments: _b, ...legacyPayload } = payload;
+      void _a;
+      void _b;
+      const retry = await write(legacyPayload);
+      if (!retry.error) {
+        return {
+          success: false,
+          error:
+            "Data lama tersimpan, tetapi foto zoom & momen BELUM — jalankan supabase/ADD-MOMENTS.sql di Supabase SQL Editor lalu simpan lagi.",
+        };
+      }
+      error = retry.error;
+    }
 
     if (error) return { success: false, error: error.message };
     return { success: true };

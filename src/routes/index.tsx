@@ -4,6 +4,7 @@ import { Cover } from "@/components/wedding/Cover";
 import { Expand } from "@/components/wedding/Expand";
 import { CinematicFooter } from "@/components/ui/motion-footer";
 import { ScrollProgressBar } from "@/components/ui/scroll-progress";
+import { Navbar } from "@/components/wedding/Navbar";
 import {
   Couple,
   Countdown,
@@ -12,6 +13,7 @@ import {
   Gift,
   Hero,
   LoveStory,
+  Moments,
   MusicControl,
   Quote,
   ThankYou,
@@ -86,6 +88,7 @@ function Invitation() {
             <Expand />
             {d.quote && <Quote />}
             {(d.brideName || d.groomName) && <Couple />}
+            {d.moments.length > 0 && <Moments />}
             {d.story.length > 0 && <LoveStory />}
             {d.events.length > 0 && <Events />}
             {d.weddingDateISO && <Countdown />}
@@ -96,6 +99,7 @@ function Invitation() {
             {d.thankYouText && <ThankYou />}
           </div>
           <MusicControl />
+          <Navbar />
           <CinematicFooter />
         </>
       )}

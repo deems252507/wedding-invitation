@@ -14,6 +14,7 @@ interface ScrollExpandMediaProps {
   titleEnd?: string;
   date?: string;
   scrollToExpand?: string;
+  id?: string;
   children?: ReactNode;
 }
 
@@ -29,6 +30,7 @@ export default function ScrollExpandMedia({
   titleEnd = "",
   date = "",
   scrollToExpand = "Gulir untuk melihat",
+  id,
   children,
 }: ScrollExpandMediaProps) {
   const sectionRef = useScrollProgress<HTMLElement>("sticky");
@@ -72,6 +74,7 @@ export default function ScrollExpandMedia({
 
   return (
     <section
+      id={id}
       ref={sectionRef}
       className="relative h-[240svh] w-full bg-ink"
       style={{ "--p": 0 } as CSSProperties}
@@ -106,7 +109,7 @@ export default function ScrollExpandMedia({
               <img src={still} alt={title} className="h-full w-full object-cover" />
             )}
           </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-black/35" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/25" />
 
           {useVideo && (
             <button
@@ -122,16 +125,16 @@ export default function ScrollExpandMedia({
 
         {/* Teks: kedua judul bergeser berlawanan arah lalu memudar */}
         <div
-          className="pointer-events-none absolute inset-0 z-[2] flex flex-col items-center justify-end px-6 pb-[24svh] text-center text-white"
+          className="pointer-events-none absolute inset-0 z-[2] flex flex-col items-center justify-end px-6 pb-[4svh] text-center text-white"
           style={{ opacity: "calc(1 - var(--p) * 1.7)" }}
         >
           {date && (
-            <p className="mb-3 font-kicker text-[0.7rem] tracking-[0.35em] text-white/90 uppercase [text-shadow:0_2px_12px_rgba(0,0,0,0.6)]">{date}</p>
+            <p className="mb-2 font-kicker text-[0.66rem] tracking-[0.35em] text-white/90 uppercase [text-shadow:0_2px_12px_rgba(0,0,0,0.6)]">{date}</p>
           )}
           {title && (
             <h2
               className="font-script text-gold-light leading-[1.1]"
-              style={{ fontSize: "clamp(2.4rem, 12vw, 3.8rem)", transform: "translateX(calc(var(--p) * -55vw))" }}
+              style={{ fontSize: "clamp(2.2rem, 10.5vw, 3.2rem)", transform: "translateX(calc(var(--p) * -55vw))" }}
             >
               {title}
             </h2>
@@ -139,7 +142,7 @@ export default function ScrollExpandMedia({
           {titleEnd && (
             <h2
               className="mt-1 font-script text-gold-light leading-[1.1]"
-              style={{ fontSize: "clamp(2.4rem, 12vw, 3.8rem)", transform: "translateX(calc(var(--p) * 55vw))" }}
+              style={{ fontSize: "clamp(2.2rem, 10.5vw, 3.2rem)", transform: "translateX(calc(var(--p) * 55vw))" }}
             >
               {titleEnd}
             </h2>
@@ -148,7 +151,7 @@ export default function ScrollExpandMedia({
 
         {scrollToExpand && (
           <p
-            className="pointer-events-none absolute bottom-8 z-[2] animate-pulse font-sans text-[0.65rem] tracking-[0.3em] text-white/80 uppercase"
+            className="pointer-events-none absolute top-[6svh] z-[2] animate-pulse font-sans text-[0.65rem] tracking-[0.3em] text-white/80 uppercase"
             style={{ opacity: "calc(1 - var(--p) * 8)" }}
           >
             {scrollToExpand}
