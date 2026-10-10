@@ -52,7 +52,6 @@ Redeploy setelah ubah env.
 - Cover & Hero: multi-foto + slideshow
 - Galeri unlimited
 - Gift: tombol → modal
-- Badge Lovable disembunyikan
 - Schema aman di-run ulang
 
 ## 6. Perubahan terbaru (perbaikan)
@@ -120,3 +119,21 @@ import ScrollExpandMedia from "@/components/ui/scroll-expansion-hero";
 ```
 
 Dependensi: lucide-react sudah ada. Tidak perlu install tambahan untuk komponen di atas.
+
+## 7. Animasi skrol
+
+| Bagian | Efek |
+|---|---|
+| Hero | Foto zoom + bergeser, nama naik dan memudar saat digulir keluar |
+| Expand (Scroll Expansion Hero) | Foto membesar jadi layar penuh, nama bergeser berlawanan arah |
+| Kutipan | Kata demi kata muncul dari buram, menimpa Hero (overlap) |
+| Mempelai | Foto terbuka seperti tirai dari kiri/kanan, nama muncul huruf demi huruf |
+| Kisah cinta | Garis waktu tergambar mengikuti skrol, kartu bergantian dari kiri/kanan |
+| Acara | Kartu miring 3D |
+| Hitung mundur | Latar parallax, angka muncul berurutan |
+| Galeri | Kotak foto muncul berurutan, lalu lightbox |
+| Penutup | Teks terungkap, lalu Cinematic Footer terungkap di belakang konten |
+| Global | Garis emas progres skrol di atas layar |
+
+Semua efek mati otomatis jika perangkat memakai `prefers-reduced-motion`.
+Foto Expand diambil dari foto hero ke-2, lalu galeri, lalu foto hero utama (atur di admin).
