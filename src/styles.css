@@ -764,10 +764,10 @@ html.lenis body {
   background-image: linear-gradient(
     105deg,
     #7d5d17 0%,
-    #b8933f 22%,
-    #f3dd9c 44%,
-    #c9a24a 60%,
-    #8a6a1f 100%
+    #a8822f 25%,
+    #c9a24a 48%,
+    #a8822f 70%,
+    #7d5d17 100%
   );
   background-size: 220% 100%;
   -webkit-background-clip: text;
@@ -1092,14 +1092,14 @@ html { scroll-behavior: auto; }
   filter: blur(8px);
   transform: translate3d(0, 38px, 0);
   transition:
-    opacity 1.7s cubic-bezier(0.22, 1, 0.36, 1),
-    transform 1.8s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 1.5s ease-out;
+    opacity 2s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 2.2s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 1.8s ease-out;
   transition-delay: var(--d, 0ms);
   will-change: opacity, transform;
 }
-.sm-left { transform: translate3d(-44px, 0, 0); }
-.sm-right { transform: translate3d(44px, 0, 0); }
+.sm-left { transform: translate3d(-70px, 0, 0); }
+.sm-right { transform: translate3d(70px, 0, 0); }
 .sm-zoom { transform: scale(0.92); }
 .sm.is-visible {
   opacity: 1;

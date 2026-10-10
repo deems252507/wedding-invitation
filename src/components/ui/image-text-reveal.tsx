@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ElementType } from "react";
+import { Fragment, useEffect, useRef, useState, type ElementType } from "react";
 
 /** Memicu sekali saat elemen masuk layar. */
 export function useInView<T extends Element>(threshold = 0.25) {
@@ -71,19 +71,21 @@ export function RevealText({
       {words.map((word, wi) => {
         const units = by === "char" ? Array.from(word) : [word];
         return (
-          <span key={`${word}-${wi}`} aria-hidden="true" className="inline-block whitespace-nowrap">
-            {units.map((u, ui) => {
-              const i = n++;
-              return (
-                <span key={ui} className="rt-mask">
-                  <span className="rt-inner" style={{ transitionDelay: `${delay + i * stagger}ms` }}>
-                    {u}
+          <Fragment key={`${word}-${wi}`}>
+            <span aria-hidden="true" className="inline-block whitespace-nowrap">
+              {units.map((u, ui) => {
+                const i = n++;
+                return (
+                  <span key={ui} className="rt-mask">
+                    <span className="rt-inner" style={{ transitionDelay: `${delay + i * stagger}ms` }}>
+                      {u}
+                    </span>
                   </span>
-                </span>
-              );
-            })}
+                );
+              })}
+            </span>
             {wi < words.length - 1 ? " " : null}
-          </span>
+          </Fragment>
         );
       })}
     </Tag>

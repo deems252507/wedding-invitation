@@ -1,10 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Reveal, Smooth, useCountdown, useParallax } from "./hooks";
-import { CalendarPlus, ChevronDown, Navigation } from "lucide-react";
+import {
+  CalendarCheck,
+  CalendarPlus,
+  CalendarX,
+  ChevronDown,
+  Gift as GiftIcon,
+  MessageCircle,
+  Navigation,
+  Send,
+} from "lucide-react";
 import { useWeddingData } from "@/lib/WeddingContext";
 import { RevealImage, RevealText, useInView } from "@/components/ui/image-text-reveal";
-import { FlowButton } from "@/components/ui/flow-button";
 import { useScrollProgress } from "@/hooks/use-scroll-progress";
 import { Ornament } from "./Ornament";
 
@@ -196,7 +204,7 @@ function PersonPanel({
       <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-transparent via-30% to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-[64%] bg-gradient-to-t from-ink via-ink/85 to-transparent" />
 
-      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-6 pb-[max(7.5rem,calc(env(safe-area-inset-bottom)+6.5rem))] text-center">
+      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-6 pb-[max(5.5rem,calc(env(safe-area-inset-bottom)+5rem))] text-center">
         <Smooth>
           <p className="font-kicker text-[0.64rem] tracking-[0.5em] text-[#ecd48f]">{role}</p>
         </Smooth>
@@ -280,36 +288,59 @@ export function LoveStory() {
   const d = useWeddingData();
   const timelineRef = useScrollProgress<HTMLDivElement>("through");
   return (
-    <section className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
-      <SectionTitle title="Kisah Cinta" />
-      <div ref={timelineRef} className="relative mx-auto mt-12 max-w-sm" style={{ "--p": 0 } as React.CSSProperties}>
-        <div className="absolute top-2 bottom-2 left-[11px] w-px bg-ink/10" aria-hidden />
+    <section id="kisah" className="relative overflow-hidden bg-cream px-5 py-20 sm:px-8 sm:py-24">
+      <SectionTitle kicker="OUR STORY" title="Kisah Cinta" />
+      <div
+        ref={timelineRef}
+        className="relative mx-auto mt-16 max-w-sm"
+        style={{ "--p": 0 } as React.CSSProperties}
+      >
+        <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[#b8933f]/20" aria-hidden />
         <div
-          className="absolute top-2 bottom-2 left-[11px] w-px origin-top bg-ink/60"
-          style={{ transform: "scaleY(min(1, calc(var(--p) * 1.8)))" }}
+          className="absolute inset-y-0 left-1/2 w-px origin-top bg-gradient-to-b from-[#b8933f] to-[#ecd48f]"
+          style={{ transform: "translateX(-50%) scaleY(min(1, calc(var(--p) * 1.6)))" }}
           aria-hidden
         />
-        <div className="space-y-10">
-          {d.story.map((s, i) => (
-            <Reveal key={s.title + i} variant={i % 2 ? "right" : "left"} delay={i * 60}>
-              <div className="relative flex gap-5 pl-1">
-                <div className="relative z-10 mt-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cream">
-                  <span className="text-ink/70">♥</span>
+        <div className="space-y-24">
+          {d.story.map((s, i) => {
+            const left = i % 2 === 0;
+            return (
+              <div key={s.title + i} className="relative pt-4">
+                <div className="absolute left-1/2 top-0 z-20 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full border border-[#b8933f] bg-cream font-display text-[0.85rem] text-[#8a6a1f] shadow-sm">
+                  {String(i + 1).padStart(2, "0")}
                 </div>
-                <div className="min-w-0 flex-1">
-                  {s.photo && (
-                    <div className="overflow-hidden rounded-2xl shadow-[0_12px_40px_-18px_rgba(0,0,0,0.2)]">
-                      <RevealImage src={s.photo} alt={s.title} from="center" imgClassName="aspect-[16/10] w-full object-cover" />
+                {s.photo ? (
+                  <Smooth variant={left ? "left" : "right"} className="pt-8">
+                    <div className={`relative w-[74%] ${left ? "" : "ml-auto"}`}>
+                      <div className="rounded-t-[999px] rounded-b-3xl border border-[#b8933f]/40 bg-card p-2 shadow-[0_30px_55px_-30px_rgba(0,0,0,0.5)]">
+                        <div className="aspect-[4/5] overflow-hidden rounded-t-[999px] rounded-b-2xl">
+                          <img
+                            src={s.photo}
+                            alt={s.title}
+                            loading="lazy"
+                            className="h-full w-full object-cover transition duration-[2200ms] ease-out hover:scale-105"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  <p className="mt-4 font-display text-xl italic text-ink">{s.title}</p>
-                  <p className="mt-1.5 font-sans text-sm leading-relaxed text-ink/65">
-                    {s.text}
-                  </p>
-                </div>
+                  </Smooth>
+                ) : null}
+                <Smooth
+                  delay={400}
+                  variant={left ? "right" : "left"}
+                  className={`relative z-10 ${s.photo ? "-mt-10" : "pt-8"} ${
+                    s.photo ? (left ? "ml-auto w-[82%]" : "mr-auto w-[82%]") : "mx-auto w-[88%]"
+                  }`}
+                >
+                  <div className="rounded-2xl border border-border bg-card/95 px-6 py-6 text-center shadow-[0_20px_40px_-24px_rgba(0,0,0,0.4)] backdrop-blur">
+                    <p className="font-display text-[1.5rem] italic leading-tight text-ink">{s.title}</p>
+                    <Ornament className="my-3" />
+                    <p className="font-sans text-[0.82rem] leading-relaxed text-ink/65">{s.text}</p>
+                  </div>
+                </Smooth>
               </div>
-            </Reveal>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
@@ -569,123 +600,151 @@ export function Wishes() {
 
   const couple = [d.brideName, d.groomName].filter(Boolean).join(" & ");
 
+  const input =
+    "w-full rounded-xl border border-border bg-white/70 px-4 py-3 font-sans text-[0.85rem] text-ink outline-none transition placeholder:text-ink/40 focus:border-[#b8933f] focus:bg-white focus:shadow-[0_0_0_3px_rgba(184,147,63,0.15)]";
+  const choice =
+    "flex flex-col items-center gap-1.5 rounded-2xl border border-border bg-white/60 px-3 py-4 text-center font-sans text-[0.78rem] text-ink/65 transition peer-checked:border-[#b8933f] peer-checked:bg-[#b8933f]/10 peer-checked:text-ink peer-checked:shadow-md peer-focus-visible:ring-2 peer-focus-visible:ring-[#b8933f]";
+
   return (
     <section id="ucapan" className="bg-cream px-5 py-20 sm:px-8 sm:py-24">
       <SectionTitle kicker="UCAPAN & DOA" title="Prayers & Wishes" />
-      <Reveal className="mx-auto mt-6 max-w-sm text-center">
+      <Smooth className="mx-auto mt-6 max-w-sm text-center">
         <p className="font-display text-[1.1rem] italic leading-relaxed text-ink/65">
           Tuliskan ucapan dan doa restu untuk kedua mempelai, lalu konfirmasi kehadiran Anda.
         </p>
-      </Reveal>
+      </Smooth>
 
       {/* ---- Formulir ---- */}
-      <Reveal className="mx-auto mt-8 max-w-sm" variant="up">
-        <form
-          className="space-y-7 rounded-3xl border border-border bg-card px-6 py-8 shadow-[0_24px_50px_-28px_rgba(0,0,0,0.35)]"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            const form = e.currentTarget;
-            const data = new FormData(form);
-            const name = String(data.get("name") ?? "").trim();
-            const text = String(data.get("text") ?? "").trim();
-            if (!name || !text) return;
-            if (!attendance) {
-              setError("Mohon pilih konfirmasi kehadiran Anda.");
-              return;
-            }
-            setError("");
-            setLoading(true);
-            try {
-              const { createWish, createRsvp } = await import("@/lib/supabase/data");
-              const res = await createWish({ guest_name: name, message: text, attendance });
-              if (!res.success) {
-                setError("Ucapan belum terkirim. Periksa koneksi lalu coba lagi.");
+      <Smooth variant="left" delay={150} className="mx-auto mt-9 max-w-sm">
+        <div className="rounded-[2rem] border border-[#b8933f]/30 bg-card p-2 shadow-[0_28px_60px_-34px_rgba(0,0,0,0.45)]">
+          <form
+            className="space-y-7 rounded-[1.5rem] border border-[#b8933f]/20 px-5 py-8"
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.currentTarget;
+              const data = new FormData(form);
+              const name = String(data.get("name") ?? "").trim();
+              const text = String(data.get("text") ?? "").trim();
+              if (!name || !text) return;
+              if (!attendance) {
+                setError("Mohon pilih konfirmasi kehadiran Anda.");
                 return;
               }
-              // Kehadiran disimpan terpisah (tabel rsvps) agar tidak tercampur dengan ucapan.
-              const rsvp = await createRsvp({ guest_name: name, attendance, guests });
-              if (!rsvp.success) console.warn("RSVP belum tersimpan:", rsvp.error);
-
-              setWishes((w) => [
-                { id: res.data?.id, name, text, time: "Baru saja", fresh: true },
-                ...w,
-              ]);
-              form.reset();
-              setThanks({ name, attendance });
-              setAttendance("");
-              setGuests(1);
-            } catch {
-              setError("Gagal mengirim. Periksa koneksi lalu coba lagi.");
-            } finally {
-              setLoading(false);
-            }
-          }}
-        >
-          <div className="space-y-4">
-            <p className="font-kicker text-[0.6rem] tracking-[0.32em] text-gold">1 · TULIS UCAPAN</p>
-            <input name="name" required className="field" placeholder="Nama Anda" autoComplete="name" />
-            <textarea name="text" required rows={3} className="field resize-none" placeholder="Ucapan & doa untuk kedua mempelai" />
-          </div>
-
-          <div className="space-y-4">
-            <p className="font-kicker text-[0.6rem] tracking-[0.32em] text-gold">2 · KONFIRMASI KEHADIRAN</p>
-            <div className="seg" role="radiogroup" aria-label="Konfirmasi kehadiran">
-              <label>
-                <input
-                  type="radio"
-                  name="attendance"
-                  value="hadir"
-                  checked={attendance === "hadir"}
-                  onChange={() => setAttendance("hadir")}
-                />
-                <span>Ya, saya hadir</span>
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="attendance"
-                  value="tidak"
-                  checked={attendance === "tidak"}
-                  onChange={() => setAttendance("tidak")}
-                />
-                <span>Maaf, berhalangan</span>
-              </label>
+              setError("");
+              setLoading(true);
+              try {
+                const { createWish, createRsvp } = await import("@/lib/supabase/data");
+                const res = await createWish({ guest_name: name, message: text, attendance });
+                if (!res.success) {
+                  setError("Ucapan belum terkirim. Periksa koneksi lalu coba lagi.");
+                  return;
+                }
+                const rsvp = await createRsvp({ guest_name: name, attendance, guests });
+                if (!rsvp.success) console.warn("RSVP belum tersimpan:", rsvp.error);
+                setWishes((w) => [{ id: res.data?.id, name, text, time: "Baru saja", fresh: true }, ...w]);
+                form.reset();
+                setThanks({ name, attendance });
+                setAttendance("");
+                setGuests(1);
+              } catch {
+                setError("Gagal mengirim. Periksa koneksi lalu coba lagi.");
+              } finally {
+                setLoading(false);
+              }
+            }}
+          >
+            <div className="flex flex-col items-center gap-2 text-center">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ink text-[#ecd48f]">
+                <MessageCircle className="h-5 w-5" strokeWidth={1.6} aria-hidden />
+              </span>
+              <p className="font-display text-[1.4rem] italic text-ink">Kirim Ucapan</p>
             </div>
-            {attendance === "hadir" ? (
-              <div className="wish-new">
-                <select
-                  name="guests"
-                  className="field"
-                  value={guests}
-                  onChange={(e) => setGuests(Number(e.target.value))}
-                  aria-label="Jumlah tamu yang hadir"
-                >
-                  {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
-                    <option key={n} value={n}>
-                      {n} orang
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : null}
-          </div>
 
-          {error ? (
-            <p role="alert" className="text-center font-sans text-xs text-red-600">
-              {error}
-            </p>
-          ) : null}
-          <button type="submit" className="btn-ink sheen w-full" disabled={loading}>
-            {loading ? "Mengirim…" : "KIRIM UCAPAN"}
-          </button>
-        </form>
-      </Reveal>
+            <div className="space-y-3">
+              <p className="font-kicker text-[0.6rem] tracking-[0.3em] text-[#8a6a1f]">1 · TULIS UCAPAN</p>
+              <input name="name" required className={input} placeholder="Nama Anda" autoComplete="name" />
+              <textarea
+                name="text"
+                required
+                rows={4}
+                className={`${input} resize-none`}
+                placeholder="Ucapan & doa untuk kedua mempelai"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <p className="font-kicker text-[0.6rem] tracking-[0.3em] text-[#8a6a1f]">2 · KONFIRMASI KEHADIRAN</p>
+              <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Konfirmasi kehadiran">
+                <label className="relative cursor-pointer">
+                  <input
+                    type="radio"
+                    name="attendance"
+                    value="hadir"
+                    className="peer sr-only"
+                    checked={attendance === "hadir"}
+                    onChange={() => setAttendance("hadir")}
+                  />
+                  <span className={choice}>
+                    <CalendarCheck className="h-5 w-5 text-[#8a6a1f]" strokeWidth={1.6} aria-hidden />
+                    Ya, saya hadir
+                  </span>
+                </label>
+                <label className="relative cursor-pointer">
+                  <input
+                    type="radio"
+                    name="attendance"
+                    value="tidak"
+                    className="peer sr-only"
+                    checked={attendance === "tidak"}
+                    onChange={() => setAttendance("tidak")}
+                  />
+                  <span className={choice}>
+                    <CalendarX className="h-5 w-5 text-[#8a6a1f]" strokeWidth={1.6} aria-hidden />
+                    Maaf, berhalangan
+                  </span>
+                </label>
+              </div>
+              {attendance === "hadir" ? (
+                <div className="wish-new">
+                  <select
+                    name="guests"
+                    className={input}
+                    value={guests}
+                    onChange={(e) => setGuests(Number(e.target.value))}
+                    aria-label="Jumlah tamu yang hadir"
+                  >
+                    {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>
+                        {n} orang
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
+            </div>
+
+            {error ? (
+              <p role="alert" className="text-center font-sans text-xs text-red-600">
+                {error}
+              </p>
+            ) : null}
+            <button
+              type="submit"
+              disabled={loading}
+              className="group flex w-full items-center justify-center gap-2.5 rounded-full bg-ink px-6 py-4 font-sans text-[0.68rem] tracking-[0.3em] text-cream transition duration-500 hover:bg-[#8a6a1f] disabled:opacity-60"
+            >
+              <Send className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" strokeWidth={1.6} aria-hidden />
+              {loading ? "MENGIRIM…" : "KIRIM UCAPAN"}
+            </button>
+          </form>
+        </div>
+      </Smooth>
 
       {/* ---- Daftar ucapan ---- */}
-      <div className="mx-auto mt-14 max-w-sm">
+      <Smooth variant="right" delay={150} className="mx-auto mt-14 max-w-sm">
         <div className="mb-5 flex items-center justify-between">
           <p className="font-display text-2xl italic text-ink">Ucapan dari Tamu</p>
-          <span className="rounded-full border border-gold/40 px-3 py-1 font-kicker text-[0.6rem] tracking-[0.2em] text-gold">
+          <span className="rounded-full border border-[#b8933f]/50 px-3 py-1 font-kicker text-[0.6rem] tracking-[0.2em] text-[#8a6a1f]">
             {wishes.length} UCAPAN
           </span>
         </div>
@@ -709,19 +768,17 @@ export function Wishes() {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline justify-between gap-3">
                     <p className="truncate font-display text-lg font-medium text-ink">{w.name}</p>
-                    <span className="shrink-0 font-kicker text-[0.52rem] tracking-[0.16em] text-gold">
+                    <span className="shrink-0 font-kicker text-[0.52rem] tracking-[0.16em] text-[#8a6a1f]">
                       {w.time.toUpperCase()}
                     </span>
                   </div>
-                  <p className="mt-1 break-words font-display text-base leading-relaxed text-ink/70">
-                    {w.text}
-                  </p>
+                  <p className="mt-1 break-words font-display text-base leading-relaxed text-ink/70">{w.text}</p>
                 </div>
               </article>
             ))
           )}
         </div>
-      </div>
+      </Smooth>
 
       {/* ---- Notifikasi terima kasih ---- */}
       {thanks &&
@@ -784,23 +841,38 @@ export function Gift() {
   }, [open]);
 
   const rows = [
-    ...d.accounts.map((a, i) => ({ key: `acc-${i}`, account: a })),
+    ...d.accounts
+      .filter((a) => a.bank || a.number)
+      .map((a, i) => ({ key: `acc-${i}`, account: a })),
     ...(d.giftPhoto ? [{ key: "qr", account: null }] : []),
   ];
 
   return (
-    <section id="kado" className="bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
+    <section id="kado" className="relative overflow-hidden bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
       <SectionTitle kicker="TANDA KASIH" title="Wedding Gift" />
-      <Smooth className="mx-auto mt-8 max-w-sm space-y-6 text-center">
-        <RevealText
-          as="p"
-          text={d.giftIntro}
-          variant="blur"
-          stagger={28}
-          className="block font-display text-[1.1rem] leading-[1.75] text-ink/70"
-        />
-        <div className="flex justify-center">
-          <FlowButton text="Lihat Daftar Kado" onClick={() => setOpen(true)} />
+      <Smooth variant="zoom" delay={150} className="mx-auto mt-10 max-w-sm">
+        <div className="rounded-[2rem] border border-[#b8933f]/30 bg-card p-2 shadow-[0_28px_60px_-34px_rgba(0,0,0,0.45)]">
+          <div className="rounded-[1.5rem] border border-[#b8933f]/25 px-7 py-10 text-center">
+            <span className="animate-float mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-ink text-[#ecd48f] shadow-lg">
+              <GiftIcon className="h-7 w-7" strokeWidth={1.4} aria-hidden />
+            </span>
+            <p className="mt-6 font-display text-[1.15rem] leading-[1.75] text-ink/75">
+              {d.giftIntro ||
+                "Doa restu Anda adalah hadiah terindah bagi kami. Namun jika Anda ingin memberi tanda kasih, dengan senang hati kami menerimanya."}
+            </p>
+            <Ornament className="my-6" />
+            <button
+              type="button"
+              onClick={() => {
+                setExpanded(rows[0]?.key ?? null);
+                setOpen(true);
+              }}
+              className="group inline-flex items-center gap-2.5 rounded-full bg-ink px-7 py-3.5 font-sans text-[0.68rem] tracking-[0.28em] text-cream transition duration-500 hover:bg-[#8a6a1f]"
+            >
+              <GiftIcon className="h-4 w-4" strokeWidth={1.6} aria-hidden />
+              LIHAT DAFTAR KADO
+            </button>
+          </div>
         </div>
       </Smooth>
 
@@ -851,12 +923,11 @@ export function Gift() {
                         >
                           <span className="flex min-w-0 items-center gap-3">
                             {a?.logo ? (
-                              <img src={a.logo} alt={a.bank} className="h-6 max-w-[7rem] object-contain" />
-                            ) : (
-                              <span className="truncate font-display text-[1.05rem] font-medium text-ink">
-                                {a ? a.bank || "Rekening" : "QR Code"}
-                              </span>
-                            )}
+                              <img src={a.logo} alt="" className="h-7 max-w-[5.5rem] shrink-0 object-contain" />
+                            ) : null}
+                            <span className="truncate font-display text-[1.05rem] font-medium text-ink">
+                              {a ? a.bank || "Rekening" : "QR Code"}
+                            </span>
                           </span>
                           <ChevronDown
                             className={`h-4 w-4 shrink-0 text-ink/50 transition-transform duration-500 ${on ? "rotate-180" : ""}`}
@@ -872,7 +943,6 @@ export function Gift() {
                             <div className="px-4 pb-5 pt-1 text-center">
                               {a ? (
                                 <>
-                                  {a.logo ? <p className="eyebrow">{a.bank}</p> : null}
                                   <p className="mt-1 font-display text-[1.4rem] tracking-wide text-ink">{a.number}</p>
                                   <p className="font-sans text-[0.8rem] text-ink/60">a/n {a.owner}</p>
                                   <button
@@ -928,28 +998,32 @@ export function ThankYou() {
         />
       )}
       <div className="absolute inset-0 bg-gradient-to-b from-ink/80 via-ink/70 to-ink" />
-      <div className="relative mx-auto max-w-sm text-center">
+      <div className="relative mx-auto max-w-sm overflow-hidden text-center">
         <Ornament className="mb-8" />
-        <RevealText
-          as="p"
-          text={d.thankYouText}
-          variant="blur"
-          stagger={26}
-          className="block font-display text-[1.1rem] leading-[1.75] text-cream/85"
-        />
-        <p className="mt-8 font-sans text-[0.6rem] tracking-[0.32em] text-cream/60">
-          KAMI YANG BERBAHAGIA
-        </p>
-        <RevealText
-          as="p"
-          text={[d.brideName, d.groomName].filter(Boolean).join(" & ")}
-          variant="blur"
-          stagger={110}
-          className="mt-3 block font-display text-[2rem] font-medium text-gold-light"
-        />
-        <p className="mt-2 font-sans text-[0.6rem] tracking-[0.28em] text-cream/60">
-          BESERTA KELUARGA
-        </p>
+        <Smooth variant="left">
+          <p className="font-display text-[1.15rem] leading-[1.8] text-cream/90">{d.thankYouText}</p>
+        </Smooth>
+        <Smooth variant="right" delay={300}>
+          <p className="mt-9 font-kicker text-[0.62rem] tracking-[0.4em] text-cream/65">KAMI YANG BERBAHAGIA</p>
+        </Smooth>
+        {d.brideName ? (
+          <Smooth variant="left" delay={500}>
+            <p className="mt-4 font-script text-[3.2rem] leading-none text-[#ecd48f]">{d.brideName}</p>
+          </Smooth>
+        ) : null}
+        {d.brideName && d.groomName ? (
+          <Smooth variant="zoom" delay={800}>
+            <p className="my-2 font-display text-2xl italic text-cream/80">&amp;</p>
+          </Smooth>
+        ) : null}
+        {d.groomName ? (
+          <Smooth variant="right" delay={1000}>
+            <p className="font-script text-[3.2rem] leading-none text-[#ecd48f]">{d.groomName}</p>
+          </Smooth>
+        ) : null}
+        <Smooth delay={1300}>
+          <p className="mt-8 font-kicker text-[0.62rem] tracking-[0.4em] text-cream/65">BESERTA KELUARGA</p>
+        </Smooth>
       </div>
     </section>
   );
