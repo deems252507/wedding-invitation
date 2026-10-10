@@ -799,13 +799,38 @@ html.lenis body {
   100% { background-position: 100% 50%; }
 }
 
-/* RevealText memakai span per huruf: gradien harus ikut ke anak-anaknya */
+/* RevealText memakai span per huruf: `background: inherit` membuat huruf transparan
+   (induk langsungnya tidak punya gradien). Pakai warna emas solid agar selalu terlihat. */
 .text-gold-grad .rt-inner,
 .text-gold-light .rt-inner {
-  -webkit-text-fill-color: transparent;
-  background: inherit;
-  -webkit-background-clip: text;
-  background-clip: text;
+  background: none;
+  -webkit-text-fill-color: #a8822f;
+  color: #a8822f;
+}
+.text-gold-light .rt-inner {
+  -webkit-text-fill-color: #ecd48f;
+  color: #ecd48f;
+}
+
+/* Foto mempelai: dari buram menjadi tajam */
+.person-photo {
+  transition: filter 2.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Ikon hati penanda kisah cinta */
+@keyframes heart-beat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.12); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.08); }
+  70% { transform: scale(1); }
+}
+.heart-beat {
+  animation: heart-beat 2.6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .heart-beat { animation: none; }
+  .person-photo { transition: none; }
 }
 
 /* ---------- Ornamen pemisah ---------- */

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Reveal, Smooth, useCountdown, useParallax } from "./hooks";
 import {
@@ -7,6 +7,7 @@ import {
   CalendarX,
   ChevronDown,
   Gift as GiftIcon,
+  Heart,
   MessageCircle,
   Navigation,
   Send,
@@ -29,7 +30,7 @@ function SectionTitle({ kicker, title }: { kicker?: string; title: string; from?
         text={title}
         by="char"
         stagger={42}
-        className="mt-3 block font-display text-[2.5rem] font-medium italic leading-tight tracking-tight text-gold-grad"
+        className="mt-3 block font-display text-[2.5rem] font-medium italic leading-tight tracking-tight text-[#a8822f]"
       />
       <Ornament className="mt-4" />
     </div>
@@ -168,7 +169,11 @@ function InstagramIcon() {
   );
 }
 
-/** Satu mempelai = satu layar penuh: foto bergeser halus saat digulir, teks masuk perlahan satu per satu. */
+/**
+ * Satu mempelai = satu layar penuh.
+ * Urutan: foto muncul BURAM -> perlahan jadi tajam -> setelah foto tajam sepenuhnya,
+ * barulah nama, orang tua, dan Instagram masuk satu per satu.
+ */
 function PersonPanel({
   photo,
   role,
@@ -184,62 +189,84 @@ function PersonPanel({
   parents: string;
   instagram: string;
 }) {
-  const ref = useScrollProgress<HTMLDivElement>("through");
+  const scrollRef = useScrollProgress<HTMLDivElement>("through");
+  const [viewRef, inView] = useInView<HTMLDivElement>(0.5);
+  const [sharp, setSharp] = useState(false);
   const ig = igHandle(instagram);
-  return (
-    <div
-      ref={ref}
-      className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink"
-      style={{ "--p": 0 } as React.CSSProperties}
-    >
-      {photo ? (
-        <img
-          src={photo}
-          alt={name}
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover object-[50%_22%] will-change-transform"
-          style={{ transform: "translateY(calc((var(--p) - 0.5) * -8svh)) scale(1.14)" }}
-        />
-      ) : null}
-      <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-transparent via-30% to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-[64%] bg-gradient-to-t from-ink via-ink/85 to-transparent" />
 
-      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-6 pb-[max(5.5rem,calc(env(safe-area-inset-bottom)+5rem))] text-center">
-        <Smooth>
-          <p className="font-kicker text-[0.64rem] tracking-[0.5em] text-[#ecd48f]">{role}</p>
-        </Smooth>
-        <RevealText
-          as="h3"
-          text={name}
-          by="char"
-          stagger={90}
-          delay={250}
-          className="mt-3 block font-script text-[3.6rem] leading-[1.05] text-white [text-shadow:0_4px_24px_rgba(0,0,0,0.5)]"
-        />
-        <Smooth delay={700}>
-          <p className="mt-2 font-display text-[1.35rem] italic text-cream/90">{fullName}</p>
-        </Smooth>
-        {parents ? (
-          <Smooth delay={950}>
-            <p className="mx-auto mt-3 max-w-[18rem] font-sans text-[0.78rem] leading-relaxed text-cream/65">
-              {parents}
-            </p>
-          </Smooth>
-        ) : null}
-        {ig ? (
-          <Smooth delay={1200} variant="zoom">
-            <a
-              href={`https://instagram.com/${ig}`}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-5 inline-flex items-center gap-2 rounded-full border border-cream/70 px-4 py-1.5 font-sans text-[0.75rem] text-cream transition hover:bg-cream hover:text-ink"
-            >
-              <InstagramIcon />
-              {ig}
-            </a>
-          </Smooth>
+  // Foto mulai menajam saat masuk layar; teks baru muncul setelah foto benar-benar tajam.
+  useEffect(() => {
+    if (!inView) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const t = window.setTimeout(() => setSharp(true), reduce ? 0 : 2300);
+    return () => window.clearTimeout(t);
+  }, [inView]);
+
+  return (
+    <div ref={viewRef} className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink">
+      <div ref={scrollRef} className="absolute inset-0" style={{ "--p": 0 } as React.CSSProperties}>
+        {photo ? (
+          <img
+            src={photo}
+            alt={name}
+            loading="lazy"
+            className="person-photo absolute inset-0 h-full w-full object-cover object-[50%_22%] will-change-transform"
+            style={{
+              transform: "translateY(calc((var(--p) - 0.5) * -8svh)) scale(1.14)",
+              filter: inView ? "blur(0px)" : "blur(26px)",
+            }}
+          />
         ) : null}
       </div>
+
+      {/* Bayangan hanya muncul setelah foto tajam, agar foto asli terlihat utuh dulu */}
+      <div
+        className={`pointer-events-none absolute inset-0 transition-opacity duration-[1400ms] ease-out ${
+          sharp ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-transparent via-30% to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-[64%] bg-gradient-to-t from-ink via-ink/85 to-transparent" />
+      </div>
+
+      {sharp ? (
+        <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-6 pb-[max(5.5rem,calc(env(safe-area-inset-bottom)+5rem))] text-center">
+          <Smooth>
+            <p className="font-kicker text-[0.64rem] tracking-[0.5em] text-[#ecd48f]">{role}</p>
+          </Smooth>
+          <RevealText
+            as="h3"
+            text={name}
+            by="char"
+            stagger={90}
+            delay={250}
+            className="mt-3 block font-script text-[3.6rem] leading-[1.05] text-white [text-shadow:0_4px_24px_rgba(0,0,0,0.5)]"
+          />
+          <Smooth delay={700}>
+            <p className="mt-2 font-display text-[1.35rem] italic text-cream/90">{fullName}</p>
+          </Smooth>
+          {parents ? (
+            <Smooth delay={950}>
+              <p className="mx-auto mt-3 max-w-[18rem] font-sans text-[0.78rem] leading-relaxed text-cream/65">
+                {parents}
+              </p>
+            </Smooth>
+          ) : null}
+          {ig ? (
+            <Smooth delay={1200} variant="zoom">
+              <a
+                href={`https://instagram.com/${ig}`}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 inline-flex items-center gap-2 rounded-full border border-cream/70 px-4 py-1.5 font-sans text-[0.75rem] text-cream transition hover:bg-cream hover:text-ink"
+              >
+                <InstagramIcon />
+                {ig}
+              </a>
+            </Smooth>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -284,64 +311,67 @@ export function Couple() {
   );
 }
 
+/** Penanda hati di antara kartu (pengganti angka 1-2-3). */
+function HeartMark({ big = false }: { big?: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={`heart-beat relative z-10 flex items-center justify-center rounded-full border border-[#b8933f]/60 bg-cream shadow-sm ${
+        big ? "h-12 w-12" : "h-9 w-9"
+      }`}
+    >
+      <Heart
+        className={`${big ? "h-6 w-6" : "h-[1.1rem] w-[1.1rem]"} fill-[#b8933f] text-[#b8933f]`}
+        strokeWidth={1.5}
+      />
+    </span>
+  );
+}
+
+function DottedLine({ tall = false }: { tall?: boolean }) {
+  return (
+    <span
+      aria-hidden
+      className={`block w-0 border-l-[3px] border-dotted border-[#b8933f]/70 ${tall ? "h-12" : "h-9"}`}
+    />
+  );
+}
+
 export function LoveStory() {
   const d = useWeddingData();
-  const timelineRef = useScrollProgress<HTMLDivElement>("through");
   return (
     <section id="kisah" className="relative overflow-hidden bg-cream px-5 py-20 sm:px-8 sm:py-24">
       <SectionTitle kicker="OUR STORY" title="Kisah Cinta" />
-      <div
-        ref={timelineRef}
-        className="relative mx-auto mt-16 max-w-sm"
-        style={{ "--p": 0 } as React.CSSProperties}
-      >
-        <div className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[#b8933f]/20" aria-hidden />
-        <div
-          className="absolute inset-y-0 left-1/2 w-px origin-top bg-gradient-to-b from-[#b8933f] to-[#ecd48f]"
-          style={{ transform: "translateX(-50%) scaleY(min(1, calc(var(--p) * 1.6)))" }}
-          aria-hidden
-        />
-        <div className="space-y-24">
-          {d.story.map((s, i) => {
-            const left = i % 2 === 0;
-            return (
-              <div key={s.title + i} className="relative pt-4">
-                <div className="absolute left-1/2 top-0 z-20 flex h-9 w-9 -translate-x-1/2 items-center justify-center rounded-full border border-[#b8933f] bg-cream font-display text-[0.85rem] text-[#8a6a1f] shadow-sm">
-                  {String(i + 1).padStart(2, "0")}
-                </div>
+      <div className="relative mx-auto mt-12 flex max-w-sm flex-col items-center">
+        <Smooth variant="zoom">
+          <HeartMark big />
+        </Smooth>
+        {d.story.map((s, i) => (
+          <Fragment key={s.title + i}>
+            <DottedLine tall={i === 0} />
+            <Smooth variant="zoom" className="w-full">
+              <article className="rounded-[1.75rem] border border-[#b8933f]/45 bg-card/95 p-3 shadow-[0_26px_50px_-30px_rgba(0,0,0,0.5)]">
                 {s.photo ? (
-                  <Smooth variant={left ? "left" : "right"} className="pt-8">
-                    <div className={`relative w-[74%] ${left ? "" : "ml-auto"}`}>
-                      <div className="rounded-t-[999px] rounded-b-3xl border border-[#b8933f]/40 bg-card p-2 shadow-[0_30px_55px_-30px_rgba(0,0,0,0.5)]">
-                        <div className="aspect-[4/5] overflow-hidden rounded-t-[999px] rounded-b-2xl">
-                          <img
-                            src={s.photo}
-                            alt={s.title}
-                            loading="lazy"
-                            className="h-full w-full object-cover transition duration-[2200ms] ease-out hover:scale-105"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </Smooth>
-                ) : null}
-                <Smooth
-                  delay={400}
-                  variant={left ? "right" : "left"}
-                  className={`relative z-10 ${s.photo ? "-mt-10" : "pt-8"} ${
-                    s.photo ? (left ? "ml-auto w-[82%]" : "mr-auto w-[82%]") : "mx-auto w-[88%]"
-                  }`}
-                >
-                  <div className="rounded-2xl border border-border bg-card/95 px-6 py-6 text-center shadow-[0_20px_40px_-24px_rgba(0,0,0,0.4)] backdrop-blur">
-                    <p className="font-display text-[1.5rem] italic leading-tight text-ink">{s.title}</p>
-                    <Ornament className="my-3" />
-                    <p className="font-sans text-[0.82rem] leading-relaxed text-ink/65">{s.text}</p>
+                  <div className="aspect-[4/3] overflow-hidden rounded-[1.25rem]">
+                    <img
+                      src={s.photo}
+                      alt={s.title}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition duration-[2200ms] ease-out hover:scale-105"
+                    />
                   </div>
-                </Smooth>
-              </div>
-            );
-          })}
-        </div>
+                ) : null}
+                <div className="px-3 pb-3 pt-4 text-center">
+                  <h3 className="font-display text-[1.4rem] font-semibold leading-tight text-ink">{s.title}</h3>
+                  <Ornament className="my-3" />
+                  <p className="font-sans text-[0.82rem] leading-relaxed text-ink/70">{s.text}</p>
+                </div>
+              </article>
+            </Smooth>
+            {i < d.story.length - 1 ? <DottedLine /> : null}
+            {i < d.story.length - 1 ? <HeartMark /> : null}
+          </Fragment>
+        ))}
       </div>
     </section>
   );
