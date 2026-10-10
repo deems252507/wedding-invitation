@@ -1,8 +1,13 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type CSSProperties } from "react";
 import { useWeddingData } from "@/lib/WeddingContext";
 
+/**
+ * Footer sinematik: tetap diam di belakang konten (fixed, z-0) dan terungkap
+ * saat bagian terakhir halaman terangkat. Pasangkan dengan pembungkus konten
+ * `relative z-10 mb-[70dvh]` supaya tidak menutupi RSVP, ucapan, atau peta.
+ */
 export function CinematicFooter() {
   const d = useWeddingData();
   const footerRef = useRef<HTMLElement>(null);
@@ -10,91 +15,102 @@ export function CinematicFooter() {
   useEffect(() => {
     const footer = footerRef.current;
     if (!footer) return;
-
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reducedMotion) {
-      footer.classList.add("is-visible");
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      footer.style.setProperty("--r", "1");
       return;
     }
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) footer.classList.add("is-visible");
-    }, { threshold: 0.12 });
-    observer.observe(footer);
-    return () => observer.disconnect();
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const remaining =
+        document.documentElement.scrollHeight - (window.scrollY + window.innerHeight);
+      const r = 1 - remaining / Math.max(1, footer.offsetHeight);
+      footer.style.setProperty("--r", Math.min(1, Math.max(0, r)).toFixed(3));
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, []);
 
-  const names = `${d.brideName || "Bride"} & ${d.groomName || "Groom"}`;
+  const names = [d.brideName, d.groomName].filter(Boolean).join(" & ");
 
   return (
     <footer
       ref={footerRef}
-      className="relative z-10 flex min-h-[70vh] flex-col items-center justify-end overflow-hidden bg-ink pb-12 pt-24 text-cream opacity-0 translate-y-8 transition-[opacity,transform] duration-1000 ease-out motion-reduce:opacity-100 motion-reduce:translate-y-0 [&.is-visible]:translate-y-0 [&.is-visible]:opacity-100"
-      style={
-        {
-          ["--reveal" as string]: 0,
-        } as React.CSSProperties
-      }
+      className="fixed bottom-0 left-1/2 z-0 flex h-[70dvh] w-full max-w-[480px] -translate-x-1/2 flex-col items-center justify-end overflow-hidden bg-ink pb-10 pt-20 text-cream"
+      style={{ "--r": 0 } as CSSProperties}
     >
-      {/* Aurora glow */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-40"
+        className="pointer-events-none absolute inset-0"
         style={{
+          opacity: "calc(0.15 + var(--r) * 0.35)",
           background:
-            "radial-gradient(ellipse 80% 50% at 50% 100%, rgba(212,175,55,0.25) 0%, transparent 60%)",
-        }}
-      />
-      {/* Grid */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.07]"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
+            "radial-gradient(ellipse 80% 50% at 50% 100%, rgba(212,175,55,0.3) 0%, transparent 60%)",
         }}
       />
 
-      {/* Marquee */}
-      <div className="absolute top-10 w-full overflow-hidden opacity-30">
-        <div className="animate-marquee whitespace-nowrap font-display text-sm tracking-[0.4em] uppercase">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <span key={i} className="mx-8">
-              {names} · Save the Date · {d.weddingDateLabel || ""} ·
-            </span>
-          ))}
+      {names && (
+        <div className="absolute top-10 w-full overflow-hidden opacity-30" aria-hidden>
+          <div className="animate-marquee whitespace-nowrap font-display text-sm tracking-[0.4em] uppercase">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <span key={i} className="mx-8">
+                {names}
+                {d.weddingDateLabel ? ` · ${d.weddingDateLabel}` : ""} ·
+              </span>
+            ))}
+          </div>
         </div>
+      )}
+
+      <div
+        className="relative z-10 mb-8 px-4 text-center"
+        style={{
+          opacity: "var(--r)",
+          transform: "translateY(calc((1 - var(--r)) * 14%))",
+        }}
+      >
+        <p className="mb-4 font-sans text-xs tracking-[0.35em] text-cream/60 uppercase">Thank You</p>
+        {d.brideName && (
+          <h2 className="font-script text-5xl leading-none text-cream sm:text-6xl">{d.brideName}</h2>
+        )}
+        {d.brideName && d.groomName && (
+          <p className="my-2 font-display text-2xl italic text-cream/80">&amp;</p>
+        )}
+        {d.groomName && (
+          <h2 className="font-script text-5xl leading-none text-cream sm:text-6xl">{d.groomName}</h2>
+        )}
+        {d.weddingDateLabel && (
+          <p className="mt-6 font-sans text-xs tracking-[0.28em] text-cream/65 uppercase">
+            {d.weddingDateLabel}
+          </p>
+        )}
       </div>
 
-      {/* Giant masked typography */}
-      <div className="relative z-10 mb-8 px-4 text-center">
-        <p className="mb-3 font-sans text-xs tracking-[0.35em] text-cream/60 uppercase">
-          Thank You
-        </p>
-        <h2 className="font-script text-5xl leading-none text-cream sm:text-6xl md:text-7xl">
-          {d.brideName}
-        </h2>
-        <p className="my-2 font-display text-2xl italic text-cream/80">&</p>
-        <h2 className="font-script text-5xl leading-none text-cream sm:text-6xl md:text-7xl">
-          {d.groomName}
-        </h2>
-        <p className="mt-6 max-w-md mx-auto font-sans text-sm leading-relaxed text-cream/70">
-          Terima kasih atas doa dan kehadiran Anda. Semoga Tuhan memberkati kita
-          semua.
-        </p>
+      <div className="relative z-10 flex flex-col items-center gap-2" style={{ opacity: "var(--r)" }}>
+        {names && (
+          <p className="font-sans text-[10px] tracking-[0.25em] text-cream/40 uppercase">
+            © {new Date().getFullYear()} · {names}
+          </p>
+        )}
+        <a
+          href="/admin"
+          className="font-sans text-[0.5rem] tracking-widest text-cream/30 hover:text-cream/60"
+        >
+          Admin
+        </a>
       </div>
-
-      <p className="relative z-10 font-sans text-[10px] tracking-[0.25em] text-cream/40 uppercase">
-        © {new Date().getFullYear()} · Wedding Invitation
-      </p>
 
       <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .animate-marquee {
-          display: inline-block;
-          animation: marquee 28s linear infinite;
-        }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .animate-marquee { display: inline-block; animation: marquee 28s linear infinite; }
       `}</style>
     </footer>
   );

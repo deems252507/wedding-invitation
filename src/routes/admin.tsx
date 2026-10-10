@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import {
   ADMIN_PASSWORD,
-  DEFAULT_DATA,
+  EMPTY_WEDDING_DATA,
   fileToDataUrl,
   isAdminAuthenticated,
   loadWeddingData,
@@ -245,7 +245,7 @@ function AdminWishesPanel() {
 function AdminPage() {
   const [authed, setAuthed] = useState(false);
   const [password, setPassword] = useState("");
-  const [data, setData] = useState<WeddingData>(DEFAULT_DATA);
+  const [data, setData] = useState<WeddingData>(EMPTY_WEDDING_DATA);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState("");
@@ -311,9 +311,9 @@ function AdminPage() {
 
   const handleReset = () => {
     if (!confirm("Reset semua ke default?")) return;
-    setData(DEFAULT_DATA);
-    saveWeddingData(DEFAULT_DATA);
-    void updateSettingsFromWeddingData(DEFAULT_DATA);
+    setData(EMPTY_WEDDING_DATA);
+    saveWeddingData(EMPTY_WEDDING_DATA);
+    void updateSettingsFromWeddingData(EMPTY_WEDDING_DATA);
     setSaved(true);
   };
 

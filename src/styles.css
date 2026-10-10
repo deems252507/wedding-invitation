@@ -641,34 +641,96 @@ html.lenis body {
   }
 }
 
+/* ================= Animasi skrol: setiap bagian punya karakter sendiri ================= */
 
-/* Sembunyikan badge Lovable */
-a[href*="lovable.dev"],
-div[id*="lovable"],
-iframe[src*="lovable"],
-[class*="lovable-badge"],
-[data-lovable] {
-  display: none !important;
-  visibility: hidden !important;
-  pointer-events: none !important;
-  opacity: 0 !important;
-}
-
-
-/* Image/Text reveal on section headings: a soft mask lift, once per viewport entry. */
-.image-text-reveal {
+/* Image Text Reveal: teks naik dari balik topeng / muncul dari buram */
+.rt-mask {
   display: inline-block;
-  clip-path: inset(0 0 100% 0);
-  opacity: 0.55;
-  transform: translateY(0.24em);
-  transition: clip-path 900ms cubic-bezier(0.16, 1, 0.3, 1), opacity 700ms ease, transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  vertical-align: top;
+  padding: 0.08em 0.04em 0.18em;
+  margin: -0.08em -0.04em -0.18em;
 }
-.image-text-reveal.is-revealed {
-  clip-path: inset(0 0 0 0);
+.rt-inner {
+  display: inline-block;
+  opacity: 0;
+  transition:
+    transform 1s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.8s ease,
+    filter 1s ease;
+  will-change: transform;
+}
+.rt-rise .rt-inner {
+  transform: translate3d(0, 115%, 0);
+}
+.rt-blur .rt-mask {
+  overflow: visible;
+}
+.rt-blur .rt-inner {
+  transform: translate3d(0, 14px, 0);
+  filter: blur(10px);
+}
+.rt-in .rt-inner {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
+  filter: none;
 }
+
+/* Foto terbuka seperti tirai sambil zoom-out */
+.ri {
+  overflow: hidden;
+  transition: clip-path 1.4s cubic-bezier(0.77, 0, 0.18, 1);
+}
+.ri-left { clip-path: inset(0 100% 0 0); }
+.ri-right { clip-path: inset(0 0 0 100%); }
+.ri-bottom { clip-path: inset(100% 0 0 0); }
+.ri-center { clip-path: inset(24% 18% 24% 18%); }
+.ri.ri-in { clip-path: inset(0 0 0 0); }
+.ri .ri-img {
+  display: block;
+  transform: scale(1.3);
+  transition: transform 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ri.ri-in .ri-img {
+  transform: scale(1);
+}
+
+/* Angka hitung mundur muncul berurutan */
+.pop-tile {
+  opacity: 0;
+  transform: translateY(24px) scale(0.85);
+  transition:
+    opacity 0.7s ease,
+    transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.pop-in .pop-tile {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hormati pengguna yang mengurangi gerak: semua konten tampil langsung, tanpa animasi */
 @media (prefers-reduced-motion: reduce) {
-  .image-text-reveal { clip-path: none; opacity: 1; transform: none; transition: none; }
-  .animate-marquee { animation: none !important; }
+  .reveal,
+  .rt-inner,
+  .ri,
+  .ri .ri-img,
+  .pop-tile {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
+    transition: none !important;
+  }
+  .animate-kenburns,
+  .animate-float,
+  .animate-marquee,
+  .animate-rise,
+  .animate-rise-slow,
+  [class*="animate-text-"] {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+    clip-path: none !important;
+  }
 }

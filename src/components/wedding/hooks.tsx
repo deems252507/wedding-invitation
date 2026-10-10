@@ -127,7 +127,8 @@ export function useCountdown(target: Date) {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
-  const diff = Math.max(0, target.getTime() - now);
+  const raw = target.getTime() - now;
+  const diff = Number.isFinite(raw) ? Math.max(0, raw) : 0;
   return {
     days: Math.floor(diff / 86400000),
     hours: Math.floor((diff / 3600000) % 24),

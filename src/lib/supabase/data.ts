@@ -1,8 +1,8 @@
 import { createClient, isSupabaseConfigured } from "./client";
 import type { InvitationSettings, Wish } from "@/lib/types";
-import { DEFAULT_SETTINGS } from "@/lib/types";
+import { EMPTY_SETTINGS } from "@/lib/types";
 import type { WeddingData, EventItem, StoryItem, GalleryItem, BankAccount } from "@/lib/wedding-data";
-import { DEFAULT_DATA } from "@/lib/wedding-data";
+
 
 /** Map DB row → UI WeddingData */
 export function settingsToWeddingData(s: InvitationSettings): WeddingData {
@@ -41,15 +41,15 @@ export function settingsToWeddingData(s: InvitationSettings): WeddingData {
     ? s.wedding_date.includes("T")
       ? s.wedding_date
       : `${s.wedding_date}T10:00:00+07:00`
-    : DEFAULT_DATA.weddingDateISO;
+    : "";
 
   return {
-    groomName: s.groom_name || DEFAULT_DATA.groomName,
-    brideName: s.bride_name || DEFAULT_DATA.brideName,
-    groomFullName: s.groom_full_name || DEFAULT_DATA.groomFullName,
-    brideFullName: s.bride_full_name || DEFAULT_DATA.brideFullName,
-    groomParents: s.groom_parents || DEFAULT_DATA.groomParents,
-    brideParents: s.bride_parents || DEFAULT_DATA.brideParents,
+    groomName: s.groom_name || "",
+    brideName: s.bride_name || "",
+    groomFullName: s.groom_full_name || "",
+    brideFullName: s.bride_full_name || "",
+    groomParents: s.groom_parents || "",
+    brideParents: s.bride_parents || "",
     weddingDateLabel:
       (s as { wedding_date_label?: string }).wedding_date_label ||
       (s.wedding_date
@@ -59,44 +59,44 @@ export function settingsToWeddingData(s: InvitationSettings): WeddingData {
             month: "long",
             year: "numeric",
           })
-        : DEFAULT_DATA.weddingDateLabel),
+        : ""),
     weddingDateISO: dateISO,
-    coverTitle: s.cover_title || DEFAULT_DATA.coverTitle,
-    quote: s.opening_quote || DEFAULT_DATA.quote,
-    quoteSource: s.opening_quote_source || DEFAULT_DATA.quoteSource,
-    coupleIntro: s.greeting || DEFAULT_DATA.coupleIntro,
-    thankYouText: s.closing_text || DEFAULT_DATA.thankYouText,
-    giftIntro: s.gift_intro || DEFAULT_DATA.giftIntro,
+    coverTitle: s.cover_title || "",
+    quote: s.opening_quote || "",
+    quoteSource: s.opening_quote_source || "",
+    coupleIntro: s.greeting || "",
+    thankYouText: s.closing_text || "",
+    giftIntro: s.gift_intro || "",
     giftPhoto: s.gift_qr_url || "",
-    coverPhoto: s.cover_photo_url || DEFAULT_DATA.coverPhoto,
+    coverPhoto: s.cover_photo_url || "",
     coverPhotos: (() => {
       const raw = (s as { cover_photos?: unknown }).cover_photos;
       if (Array.isArray(raw) && raw.length) {
         return raw.map((x) => (typeof x === "string" ? x : "")).filter(Boolean);
       }
       const one = s.cover_photo_url;
-      return one ? [one] : DEFAULT_DATA.coverPhotos;
+      return one ? [one] : [];
     })(),
     heroPhoto:
       (s as { hero_photo_url?: string | null }).hero_photo_url ||
       s.cover_photo_url ||
-      DEFAULT_DATA.heroPhoto,
+      "",
     heroPhotos: (() => {
       const raw = (s as { hero_photos?: unknown }).hero_photos;
       if (Array.isArray(raw) && raw.length) {
         return raw.map((x) => (typeof x === "string" ? x : "")).filter(Boolean);
       }
       const one = (s as { hero_photo_url?: string | null }).hero_photo_url || s.cover_photo_url;
-      return one ? [one] : DEFAULT_DATA.heroPhotos;
+      return one ? [one] : [];
     })(),
-    bridePhoto: s.bride_photo_url || DEFAULT_DATA.bridePhoto,
-    groomPhoto: s.groom_photo_url || DEFAULT_DATA.groomPhoto,
+    bridePhoto: s.bride_photo_url || "",
+    groomPhoto: s.groom_photo_url || "",
     musicUrl: s.music_url || "",
     videoUrl: s.video_url || "",
-    story: story.length ? story : DEFAULT_DATA.story,
-    events: events.length ? events : DEFAULT_DATA.events,
-    accounts: accounts.length ? accounts : DEFAULT_DATA.accounts,
-    gallery: gallery.length ? gallery : DEFAULT_DATA.gallery,
+    story: story,
+    events: events,
+    accounts: accounts,
+    gallery: gallery,
   };
 }
 
@@ -157,7 +157,7 @@ export function weddingDataToPayload(d: WeddingData): Record<string, unknown> {
 
 export async function getSettings(): Promise<InvitationSettings> {
   if (!isSupabaseConfigured()) {
-    return { ...DEFAULT_SETTINGS, id: "default", updated_at: new Date().toISOString() };
+    return { ...EMPTY_SETTINGS, id: "default", updated_at: new Date().toISOString() };
   }
   try {
     const supabase = createClient();
@@ -168,11 +168,11 @@ export async function getSettings(): Promise<InvitationSettings> {
       .maybeSingle();
 
     if (error || !data) {
-      return { ...DEFAULT_SETTINGS, id: "default", updated_at: new Date().toISOString() };
+      return { ...EMPTY_SETTINGS, id: "default", updated_at: new Date().toISOString() };
     }
     return data as InvitationSettings;
   } catch {
-    return { ...DEFAULT_SETTINGS, id: "default", updated_at: new Date().toISOString() };
+    return { ...EMPTY_SETTINGS, id: "default", updated_at: new Date().toISOString() };
   }
 }
 

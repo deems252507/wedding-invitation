@@ -70,22 +70,21 @@ export interface WeddingData {
   gallery: GalleryItem[];
 }
 
-export const DEFAULT_DATA: WeddingData = {
-  // Identitas mempelai diketahui dari pemilik proyek; detail acara tetap kosong
-  // sampai diisi melalui admin agar data contoh tidak tampil sebagai informasi nyata.
-  groomName: "Rizky",
-  brideName: "Rizka",
-  groomFullName: "Rizky Dwi Maulana",
-  brideFullName: "Rizka Tri Oktavianti",
+/** Keadaan kosong: tidak ada data demo. Semua konten berasal dari database / admin. */
+export const EMPTY_WEDDING_DATA: WeddingData = {
+  groomName: "",
+  brideName: "",
+  groomFullName: "",
+  brideFullName: "",
   groomParents: "",
   brideParents: "",
   weddingDateLabel: "",
   weddingDateISO: "",
-  coverTitle: "The Wedding of",
+  coverTitle: "",
   quote: "",
   quoteSource: "",
-  coupleIntro: "Dengan penuh rasa syukur, kami mengundang Anda untuk berbagi kebahagiaan bersama kami.",
-  thankYouText: "Terima kasih atas doa dan perhatian yang diberikan kepada kami.",
+  coupleIntro: "",
+  thankYouText: "",
   giftIntro: "",
   giftPhoto: "",
   coverPhoto: "",
@@ -103,14 +102,14 @@ export const DEFAULT_DATA: WeddingData = {
 };
 
 export function loadWeddingData(): WeddingData {
-  if (typeof window === "undefined") return DEFAULT_DATA;
+  if (typeof window === "undefined") return EMPTY_WEDDING_DATA;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_DATA;
+    if (!raw) return EMPTY_WEDDING_DATA;
     const parsed = JSON.parse(raw) as Partial<WeddingData>;
-    return { ...DEFAULT_DATA, ...parsed };
+    return { ...EMPTY_WEDDING_DATA, ...parsed };
   } catch {
-    return DEFAULT_DATA;
+    return EMPTY_WEDDING_DATA;
   }
 }
 

@@ -1,155 +1,164 @@
 "use client";
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { Pause, Play } from "lucide-react";
+import { useScrollProgress } from "@/hooks/use-scroll-progress";
 
 interface ScrollExpandMediaProps {
   mediaType?: "video" | "image";
   mediaSrc: string;
+  /** Poster untuk video, juga dipakai sebagai cadangan jika video gagal dimuat. */
   posterSrc?: string;
-  bgImageSrc?: string;
   title?: string;
+  /** Kata kedua; jika diisi, kedua judul bergeser berlawanan arah saat digulir. */
+  titleEnd?: string;
   date?: string;
   scrollToExpand?: string;
-  textBlend?: boolean;
   children?: ReactNode;
 }
 
+/**
+ * Scroll Expansion Hero: media membesar dari kartu menjadi layar penuh saat digulir.
+ * Progres ditulis ke CSS variable --p (tanpa re-render React). Tidak mengunci scroll.
+ */
 export default function ScrollExpandMedia({
   mediaType = "image",
   mediaSrc,
-  posterSrc,
-  bgImageSrc,
+  posterSrc = "",
   title = "",
+  titleEnd = "",
   date = "",
-  scrollToExpand = "Scroll to Expand",
-  textBlend = false,
+  scrollToExpand = "Gulir untuk melihat",
   children,
 }: ScrollExpandMediaProps) {
-  const sectionRef = useRef<HTMLElement>(null);
-  const mediaRef = useRef<HTMLDivElement>(null);
-  const [progress, setProgress] = useState(0);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const sectionRef = useScrollProgress<HTMLElement>("sticky");
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
 
+  // Video: muted, hanya berputar saat terlihat, dan tidak autoplay bila gerak dikurangi.
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(mediaQuery.matches);
-    if (mediaQuery.matches) {
-      setProgress(1);
-      return;
-    }
-    let frame = 0;
-    const onScroll = () => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
-      const el = sectionRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const viewH = window.innerHeight;
-      // Progress 0 when section top hits viewport top, 1 when scrolled through ~1.2 viewports
-      const start = -rect.top;
-      const range = viewH * 1.2;
-      const p = Math.min(1, Math.max(0, start / range));
-      setProgress(p);
-      });
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, []);
+    const video = videoRef.current;
+    const section = sectionRef.current;
+    if (mediaType !== "video" || !video || !section) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          video.play().then(() => setPlaying(true)).catch(() => setPlaying(false));
+        } else {
+          video.pause();
+          setPlaying(false);
+        }
+      },
+      { threshold: 0.35 },
+    );
+    io.observe(section);
+    return () => io.disconnect();
+  }, [mediaType, sectionRef]);
 
-  // Scale from ~0.7 to 1, border-radius from large to 0
-  const scale = 0.7 + progress * 0.3;
-  const radius = Math.max(0, 32 - progress * 32);
-  const opacityText = 1 - progress * 1.2;
+  const toggle = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) v.play().then(() => setPlaying(true)).catch(() => {});
+    else {
+      v.pause();
+      setPlaying(false);
+    }
+  };
+
+  const useVideo = mediaType === "video" && !videoFailed;
+  const still = posterSrc || (mediaType === "image" ? mediaSrc : "");
 
   return (
     <section
       ref={sectionRef}
-      className="relative min-h-[140vh] w-full bg-ink motion-reduce:min-h-screen"
+      className="relative h-[240dvh] w-full bg-ink"
+      style={{ "--p": 0 } as CSSProperties}
     >
-      {bgImageSrc && (
+      <div className="sticky top-0 flex h-[100dvh] w-full items-center justify-center overflow-hidden">
+        {/* Media yang membesar */}
         <div
-          className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center transition-opacity duration-500"
+          className="relative overflow-hidden shadow-2xl will-change-[width,height]"
           style={{
-            backgroundImage: `url(${bgImageSrc})`,
-            opacity: 0.25 + progress * 0.15,
-          }}
-        />
-      )}
-
-      <div className="sticky top-0 flex h-screen w-full items-center justify-center overflow-hidden">
-        <div
-          ref={mediaRef}
-          className="relative overflow-hidden shadow-2xl transition-none"
-          style={{
-            width: `${Math.min(100, 72 + progress * 28)}vw`,
-            maxWidth: "100vw",
-            height: `${Math.min(100, 58 + progress * 42)}vh`,
-            borderRadius: `${radius}px`,
-            transform: `scale(${scale})`,
+            width: "calc(68% + var(--p) * 32%)",
+            height: "calc(54dvh + var(--p) * 46dvh)",
+            borderRadius: "calc((1 - var(--p)) * 28px)",
           }}
         >
-          {mediaType === "video" ? (
-            <video
-              src={mediaSrc}
-              poster={posterSrc}
-              autoPlay={!reducedMotion}
-              muted
-              loop
-              playsInline
-              controls
-              preload="metadata"
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <img
-              src={mediaSrc}
-              alt={title}
-              loading="eager"
-              fetchPriority="high"
-              className="h-full w-full object-cover"
-            />
-          )}
-
-          {/* Overlay text that blends / fades */}
           <div
-            className={`absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-black/60 via-transparent to-black/30 px-6 text-center transition-opacity ${
-              textBlend ? "mix-blend-difference" : ""
-            }`}
-            style={{ opacity: Math.max(0, opacityText) }}
+            className="absolute inset-0"
+            style={{ transform: "scale(calc(1.18 - var(--p) * 0.18))" }}
           >
-            {date && (
-              <p className="mb-2 font-sans text-xs tracking-[0.35em] text-white/80 uppercase">
-                {date}
-              </p>
-            )}
-            {title && (
-              <h2 className="font-script text-4xl text-white drop-shadow-lg sm:text-5xl md:text-6xl">
-                {title}
-              </h2>
-            )}
-            {scrollToExpand && progress < 0.4 && (
-              <p className="mt-6 animate-pulse font-sans text-xs tracking-[0.2em] text-white/70">
-                {scrollToExpand}
-              </p>
+            {useVideo ? (
+              <video
+                ref={videoRef}
+                src={mediaSrc}
+                poster={posterSrc || undefined}
+                muted
+                loop
+                playsInline
+                preload="metadata"
+                onError={() => setVideoFailed(true)}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <img src={still} alt={title} className="h-full w-full object-cover" />
             )}
           </div>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-black/35" />
+
+          {useVideo && (
+            <button
+              type="button"
+              onClick={toggle}
+              aria-label={playing ? "Jeda video" : "Putar video"}
+              className="absolute right-3 bottom-3 z-[3] flex h-11 w-11 items-center justify-center rounded-full bg-black/45 text-white backdrop-blur-sm"
+            >
+              {playing ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+            </button>
+          )}
         </div>
+
+        {/* Teks: kedua judul bergeser berlawanan arah lalu memudar */}
+        <div
+          className="pointer-events-none absolute inset-0 z-[2] flex flex-col items-center justify-center px-6 text-center text-white"
+          style={{ opacity: "calc(1 - var(--p) * 1.7)" }}
+        >
+          {date && (
+            <p className="mb-3 font-sans text-xs tracking-[0.35em] text-white/85 uppercase">{date}</p>
+          )}
+          {title && (
+            <h2
+              className="font-script text-5xl leading-none drop-shadow-lg sm:text-6xl"
+              style={{ transform: "translateX(calc(var(--p) * -55vw))" }}
+            >
+              {title}
+            </h2>
+          )}
+          {titleEnd && (
+            <h2
+              className="mt-1 font-script text-5xl leading-none drop-shadow-lg sm:text-6xl"
+              style={{ transform: "translateX(calc(var(--p) * 55vw))" }}
+            >
+              {titleEnd}
+            </h2>
+          )}
+        </div>
+
+        {scrollToExpand && (
+          <p
+            className="pointer-events-none absolute bottom-8 z-[2] animate-pulse font-sans text-[0.65rem] tracking-[0.3em] text-white/80 uppercase"
+            style={{ opacity: "calc(1 - var(--p) * 8)" }}
+          >
+            {scrollToExpand}
+          </p>
+        )}
       </div>
 
-      {/* Content that appears after expand */}
-      <div className="relative z-10 bg-cream px-5 py-16 text-ink sm:px-8">
-        {children}
-      </div>
+      {children ? (
+        <div className="relative z-10 bg-cream px-5 py-16 text-ink sm:px-8">{children}</div>
+      ) : null}
     </section>
   );
 }

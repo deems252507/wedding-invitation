@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Cover } from "@/components/wedding/Cover";
+import { Expand } from "@/components/wedding/Expand";
+import { CinematicFooter } from "@/components/ui/motion-footer";
+import { ScrollProgressBar } from "@/components/ui/scroll-progress";
 import {
   Couple,
   Countdown,
@@ -13,13 +16,11 @@ import {
   Quote,
   Rsvp,
   ThankYou,
-  CinematicFooter,
   VideoMoment,
   Wishes,
 } from "@/components/wedding/Sections";
 import { WeddingProvider } from "@/lib/WeddingContext";
 import { useWeddingData } from "@/lib/WeddingContext";
-import ScrollExpandMedia from "@/components/ui/scroll-expansion-hero";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -63,11 +64,12 @@ function Invitation() {
   }, [opened]);
 
   useEffect(() => {
-    document.title = `${d.brideName} & ${d.groomName} — Undangan Pernikahan`;
+    const names = [d.brideName, d.groomName].filter(Boolean).join(" & ");
+    document.title = names ? `${names} — Undangan Pernikahan` : "Undangan Pernikahan";
   }, [d.brideName, d.groomName]);
 
   return (
-    <main className="mx-auto max-w-[480px] bg-cream shadow-2xl">
+    <main className="relative mx-auto max-w-[480px]">
       {!opened ? (
         <Cover
           guest={guest}
@@ -78,43 +80,25 @@ function Invitation() {
         />
       ) : (
         <>
-          {d.heroPhoto || d.videoUrl ? (
-            <ScrollExpandMedia
-              mediaType={d.videoUrl ? "video" : "image"}
-              mediaSrc={d.videoUrl || d.heroPhoto}
-              posterSrc={d.heroPhoto || undefined}
-              title={`${d.brideName} & ${d.groomName}`}
-              date={d.weddingDateLabel}
-              scrollToExpand="GULIR UNTUK MELIHAT CERITA KAMI"
-            />
-          ) : (
+          <ScrollProgressBar />
+          {/* Konten berada di z-10 dan menutupi footer sinematik yang diam di belakang */}
+          <div className="relative z-10 mb-[70dvh] bg-cream shadow-2xl">
             <Hero />
-          )}
-          {(d.quote || d.quoteSource) && <Quote />}
-          <Couple />
-          {d.story.length > 0 && <LoveStory />}
-          {d.events.length > 0 && <Events />}
-          {d.weddingDateISO && <Countdown />}
-          {d.gallery.length > 0 && <Gallery />}
-          {d.videoUrl && <VideoMoment />}
-          <Rsvp />
-          <Wishes />
-          {d.accounts.length > 0 && <Gift />}
-          <ThankYou />
-          <CinematicFooter />
+            <Expand />
+            {d.quote && <Quote />}
+            {(d.brideName || d.groomName) && <Couple />}
+            {d.story.length > 0 && <LoveStory />}
+            {d.events.length > 0 && <Events />}
+            {d.weddingDateISO && <Countdown />}
+            {d.gallery.length > 0 && <Gallery />}
+            {d.videoUrl && <VideoMoment />}
+            <Rsvp />
+            <Wishes />
+            {(d.accounts.length > 0 || d.giftPhoto) && <Gift />}
+            {d.thankYouText && <ThankYou />}
+          </div>
           <MusicControl />
-          <footer className="relative z-10 bg-ink py-6 text-center">
-            <p className="font-sans text-[0.55rem] tracking-[0.3em] text-cream/50">
-              {d.brideName.toUpperCase()} &amp; {d.groomName.toUpperCase()} ·{" "}
-              {d.weddingDateLabel}
-            </p>
-            <a
-              href="/admin"
-              className="mt-2 inline-block font-sans text-[0.5rem] tracking-widest text-cream/30 hover:text-cream/60"
-            >
-              Admin
-            </a>
-          </footer>
+          <CinematicFooter />
         </>
       )}
     </main>

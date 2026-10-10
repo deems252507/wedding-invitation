@@ -9,17 +9,17 @@ import {
   type ReactNode,
 } from "react";
 import {
-  DEFAULT_DATA,
+  EMPTY_WEDDING_DATA,
   loadWeddingData,
   type WeddingData,
 } from "./wedding-data";
 import { getWeddingDataFromSupabase } from "./supabase/data";
 import { isSupabaseConfigured } from "./supabase/client";
 
-const WeddingCtx = createContext<WeddingData>(DEFAULT_DATA);
+const WeddingCtx = createContext<WeddingData>(EMPTY_WEDDING_DATA);
 
 export function WeddingProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<WeddingData>(DEFAULT_DATA);
+  const [data, setData] = useState<WeddingData>(EMPTY_WEDDING_DATA);
 
   const refresh = useCallback(async () => {
     if (isSupabaseConfigured()) {

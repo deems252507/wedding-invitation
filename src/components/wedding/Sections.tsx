@@ -1,26 +1,26 @@
 import { useEffect, useRef, useState } from "react";
 import { Reveal, Tilt, useCountdown, useParallax } from "./hooks";
-import { ImageTextReveal } from "@/components/ui/image-text-reveal";
 import { useWeddingData } from "@/lib/WeddingContext";
+import { RevealImage, RevealText, useInView } from "@/components/ui/image-text-reveal";
+import { FlowButton } from "@/components/ui/flow-button";
+import { useScrollProgress } from "@/hooks/use-scroll-progress";
 
-function SectionTitle({
-  kicker,
-  title,
-  from = "left",
-}: {
-  kicker?: string;
-  title: string;
-  from?: "left" | "right";
-}) {
+function SectionTitle({ kicker, title }: { kicker?: string; title: string; from?: "left" | "right" }) {
   return (
-    <Reveal variant={from} className="text-center">
+    <div className="text-center">
       {kicker ? (
-        <p className="eyebrow tracking-[0.42em]">{kicker}</p>
+        <Reveal variant="up">
+          <p className="eyebrow tracking-[0.42em]">{kicker}</p>
+        </Reveal>
       ) : null}
-      <h2 className="mt-3 font-display text-4xl italic tracking-tight text-ink">
-        <ImageTextReveal>{title}</ImageTextReveal>
-      </h2>
-    </Reveal>
+      <RevealText
+        as="h2"
+        text={title}
+        by="char"
+        stagger={38}
+        className="mt-3 block font-display text-4xl italic tracking-tight text-ink"
+      />
+    </div>
   );
 }
 
@@ -52,8 +52,11 @@ export function Hero() {
 
   const [idx, setIdx] = useState(0);
 
+  const heroRef = useScrollProgress<HTMLElement>("leave");
+
   useEffect(() => {
     if (slides.length < 2) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const id = window.setInterval(() => {
       setIdx((i) => (i + 1) % slides.length);
     }, 4500);
@@ -61,7 +64,15 @@ export function Hero() {
   }, [slides.length]);
 
   return (
-    <section className="relative h-[100dvh] w-full overflow-hidden">
+    <section
+      ref={heroRef}
+      className="relative h-[100dvh] w-full overflow-hidden"
+      style={{ "--p": 0 } as React.CSSProperties}
+    >
+      <div
+        className="absolute inset-0 will-change-transform"
+        style={{ transform: "scale(calc(1 + var(--p) * 0.14)) translateY(calc(var(--p) * 6vh))" }}
+      >
       {slides.map((src, i) => (
         <img
           key={`${src}-${i}`}
@@ -72,8 +83,15 @@ export function Hero() {
           }`}
         />
       ))}
+      </div>
       <div className="absolute inset-0 bg-gradient-to-b from-ink/45 via-ink/20 to-ink/70" />
-      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center">
+      <div
+        className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center"
+        style={{
+          transform: "translateY(calc(var(--p) * -14vh))",
+          opacity: "calc(1 - var(--p) * 1.5)",
+        }}
+      >
         <p className="animate-text-mask font-sans text-xs tracking-[0.42em] text-cream/90">
           THE WEDDING OF
         </p>
@@ -97,12 +115,16 @@ export function Hero() {
 export function Quote() {
   const d = useWeddingData();
   return (
-    <section className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
+    <section className="relative z-10 -mt-10 rounded-t-[2.5rem] bg-cream px-5 py-16 shadow-[0_-24px_40px_-24px_rgba(0,0,0,0.4)] sm:px-8 sm:py-20">
       <FadeUp className="mx-auto max-w-md text-center">
         <p className="font-display text-3xl leading-none text-ink/20">&ldquo;</p>
-        <p className="mt-2 font-display text-xl leading-relaxed italic text-ink sm:text-2xl">
-          {d.quote}
-        </p>
+        <RevealText
+          as="p"
+          text={d.quote}
+          variant="blur"
+          stagger={45}
+          className="mt-2 block font-display text-xl leading-relaxed italic text-ink sm:text-2xl"
+        />
         <p className="mt-6 eyebrow">{d.quoteSource}</p>
       </FadeUp>
     </section>
@@ -121,30 +143,34 @@ export function Couple() {
 
       {/* Mempelai Wanita */}
       <FadeUp delay={100} className="mx-auto mt-12 max-w-[280px] text-center">
-        {d.bridePhoto ? (
-          <div className="overflow-hidden rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.25)]">
-            <img src={d.bridePhoto} alt={d.brideName} className="aspect-[3/4] w-full object-cover" loading="lazy" />
-          </div>
-        ) : null}
-        <p className="mt-5 font-script text-4xl text-ink sm:text-5xl">{d.brideName}</p>
+        <div className="overflow-hidden rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.25)]">
+          {d.bridePhoto && (
+            <RevealImage src={d.bridePhoto} alt={d.brideName} from="left" imgClassName="aspect-[3/4] w-full object-cover" />
+          )}
+        </div>
+        <RevealText as="p" text={d.brideName} by="char" stagger={70} delay={250} className="mt-5 block font-script text-4xl text-ink sm:text-5xl" />
         <p className="mt-1.5 font-display text-lg italic text-ink/80">{d.brideFullName}</p>
-        {d.brideParents ? <p className="mt-2 font-sans text-sm leading-relaxed text-ink/60">{d.brideParents}</p> : null}
+        <p className="mt-2 font-sans text-sm leading-relaxed text-ink/60">
+          {d.brideParents}
+        </p>
       </FadeUp>
 
       <FadeUp delay={160} className="py-8 text-center">
-        <p className="font-script text-5xl text-ink/35">&amp;</p>
+        <RevealText as="p" text="&" variant="blur" className="block font-script text-5xl text-ink/35" />
       </FadeUp>
 
       {/* Mempelai Pria */}
       <FadeUp delay={200} className="mx-auto max-w-[280px] text-center">
-        {d.groomPhoto ? (
-          <div className="overflow-hidden rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.25)]">
-            <img src={d.groomPhoto} alt={d.groomName} className="aspect-[3/4] w-full object-cover" loading="lazy" />
-          </div>
-        ) : null}
-        <p className="mt-5 font-script text-4xl text-ink sm:text-5xl">{d.groomName}</p>
+        <div className="overflow-hidden rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.25)]">
+          {d.groomPhoto && (
+            <RevealImage src={d.groomPhoto} alt={d.groomName} from="right" imgClassName="aspect-[3/4] w-full object-cover" />
+          )}
+        </div>
+        <RevealText as="p" text={d.groomName} by="char" stagger={70} delay={250} className="mt-5 block font-script text-4xl text-ink sm:text-5xl" />
         <p className="mt-1.5 font-display text-lg italic text-ink/80">{d.groomFullName}</p>
-        {d.groomParents ? <p className="mt-2 font-sans text-sm leading-relaxed text-ink/60">{d.groomParents}</p> : null}
+        <p className="mt-2 font-sans text-sm leading-relaxed text-ink/60">
+          {d.groomParents}
+        </p>
       </FadeUp>
     </section>
   );
@@ -152,34 +178,37 @@ export function Couple() {
 
 export function LoveStory() {
   const d = useWeddingData();
+  const timelineRef = useScrollProgress<HTMLDivElement>("through");
   return (
     <section className="bg-cream px-5 py-16 sm:px-8 sm:py-20">
       <SectionTitle title="Kisah Cinta" />
-      <div className="relative mx-auto mt-12 max-w-sm">
-        <div className="absolute top-2 bottom-2 left-[11px] w-px bg-ink/15" aria-hidden />
+      <div ref={timelineRef} className="relative mx-auto mt-12 max-w-sm" style={{ "--p": 0 } as React.CSSProperties}>
+        <div className="absolute top-2 bottom-2 left-[11px] w-px bg-ink/10" aria-hidden />
+        <div
+          className="absolute top-2 bottom-2 left-[11px] w-px origin-top bg-ink/60"
+          style={{ transform: "scaleY(min(1, calc(var(--p) * 1.8)))" }}
+          aria-hidden
+        />
         <div className="space-y-10">
           {d.story.map((s, i) => (
-            <FadeUp key={s.title + i} delay={i * 90}>
+            <Reveal key={s.title + i} variant={i % 2 ? "right" : "left"} delay={i * 60}>
               <div className="relative flex gap-5 pl-1">
                 <div className="relative z-10 mt-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-cream">
                   <span className="text-ink/70">♥</span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="overflow-hidden rounded-2xl shadow-[0_12px_40px_-18px_rgba(0,0,0,0.2)]">
-                    <img
-                      src={s.photo}
-                      alt={s.title}
-                      loading="lazy"
-                      className="aspect-[16/10] w-full object-cover"
-                    />
-                  </div>
+                  {s.photo && (
+                    <div className="overflow-hidden rounded-2xl shadow-[0_12px_40px_-18px_rgba(0,0,0,0.2)]">
+                      <RevealImage src={s.photo} alt={s.title} from="center" imgClassName="aspect-[16/10] w-full object-cover" />
+                    </div>
+                  )}
                   <p className="mt-4 font-display text-xl italic text-ink">{s.title}</p>
                   <p className="mt-1.5 font-sans text-sm leading-relaxed text-ink/65">
                     {s.text}
                   </p>
                 </div>
               </div>
-            </FadeUp>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -197,9 +226,11 @@ export function Events() {
           <Reveal key={e.name + idx} variant={idx % 2 ? "tilt-right" : "tilt-left"} delay={idx * 120}>
             <Tilt className="border border-border bg-card px-7 py-10 text-center tilt-shadow" max={7}>
               <h3 className="font-display text-2xl italic text-ink">{e.name}</h3>
-              <p className="mt-4 font-sans text-[0.7rem] leading-relaxed tracking-wide text-muted-foreground">
-                {e.desc}
-              </p>
+              {e.desc && (
+                <p className="mt-4 font-sans text-[0.7rem] leading-relaxed tracking-wide text-muted-foreground">
+                  {e.desc}
+                </p>
+              )}
               <p className="mt-6 font-display text-lg text-ink">{e.date}</p>
               <p className="font-sans text-[0.68rem] tracking-[0.22em] text-stone">{e.time}</p>
               <div className="mx-auto my-6 h-px w-10 bg-border" />
@@ -207,14 +238,16 @@ export function Events() {
               <p className="mt-2 font-sans text-[0.68rem] leading-relaxed text-muted-foreground">
                 {e.address}
               </p>
-              <a
-                href={e.map}
-                target="_blank"
-                rel="noreferrer"
-                className="btn-ink sheen mt-7 inline-flex"
-              >
-                LIHAT PETA
-              </a>
+              {e.map && (
+                <a
+                  href={e.map}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-ink sheen mt-7 inline-flex"
+                >
+                  LIHAT PETA
+                </a>
+              )}
             </Tilt>
           </Reveal>
         ))}
@@ -225,9 +258,10 @@ export function Events() {
 
 export function Countdown() {
   const d = useWeddingData();
-  const target = new Date(d.weddingDateISO);
+  const target = new Date(d.weddingDateISO || Number.NaN);
   const t = useCountdown(target);
   const parallax = useParallax<HTMLImageElement>(0.16);
+  const [gridRef, shown] = useInView<HTMLDivElement>(0.3);
   const items = [
     { v: t.days, l: "Hari" },
     { v: t.hours, l: "Jam" },
@@ -236,20 +270,26 @@ export function Countdown() {
   ];
   return (
     <section className="relative overflow-hidden px-5 py-20 sm:px-8 sm:py-24">
-      <img
-        ref={parallax}
-        src={d.heroPhoto}
-        alt=""
-        aria-hidden
-        className="absolute inset-0 h-full w-full object-cover will-change-transform"
-      />
+      {d.heroPhoto && (
+        <img
+          ref={parallax}
+          src={d.heroPhoto}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 h-full w-full object-cover will-change-transform"
+        />
+      )}
       <div className="absolute inset-0 bg-ink/65" />
       <div className="relative mx-auto max-w-sm text-center">
         <p className="eyebrow tracking-[0.42em] text-cream/80">COUNTDOWN</p>
-        <h2 className="mt-3 font-display text-3xl italic text-cream">Menuju Hari Bahagia</h2>
-        <div className="mt-10 grid grid-cols-4 gap-3">
-          {items.map((it) => (
-            <div key={it.l} className="rounded-xl bg-cream/10 px-2 py-4 backdrop-blur-sm">
+        <RevealText as="h2" text="Menuju Hari Bahagia" variant="blur" stagger={90} className="mt-3 block font-display text-3xl italic text-cream" />
+        <div ref={gridRef} className={`mt-10 grid grid-cols-4 gap-3 ${shown ? "pop-in" : ""}`}>
+          {items.map((it, i) => (
+            <div
+              key={it.l}
+              className="pop-tile rounded-xl bg-cream/10 px-2 py-4 backdrop-blur-sm"
+              style={{ transitionDelay: `${i * 130}ms` }}
+            >
               <p className="font-display text-3xl text-cream tabular-nums">
                 {String(it.v).padStart(2, "0")}
               </p>
@@ -463,13 +503,9 @@ export function Gift() {
         <p className="font-sans text-sm leading-relaxed text-muted-foreground">
           {d.giftIntro}
         </p>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="btn-ink sheen inline-flex items-center gap-2 px-6 py-3"
-        >
-          <span aria-hidden>🎁</span> Kirim Kado
-        </button>
+        <div className="flex justify-center">
+          <FlowButton text="Kirim Kado" onClick={() => setOpen(true)} />
+        </div>
       </Reveal>
 
       {open && (
@@ -562,16 +598,20 @@ export function ThankYou() {
           Scroll down to reveal
         </p>
         <div className="mx-auto mb-8 h-24 w-px bg-gradient-to-b from-cream/50 to-transparent" />
-        <p className="font-script text-5xl text-cream">Thank You</p>
+        <RevealText as="p" text="Thank You" by="char" stagger={60} className="block font-script text-5xl text-cream" />
         <p className="mt-6 font-sans text-sm leading-relaxed tracking-wide text-cream/80">
           {d.thankYouText}
         </p>
         <p className="mt-8 font-sans text-[0.6rem] tracking-[0.32em] text-cream/60">
           KAMI YANG BERBAHAGIA
         </p>
-        <p className="mt-3 font-display text-3xl text-cream">
-          {d.brideName} &amp; {d.groomName}
-        </p>
+        <RevealText
+          as="p"
+          text={[d.brideName, d.groomName].filter(Boolean).join(" & ")}
+          variant="blur"
+          stagger={110}
+          className="mt-3 block font-display text-3xl text-cream"
+        />
         <p className="mt-2 font-sans text-[0.6rem] tracking-[0.28em] text-cream/60">
           BESERTA KELUARGA
         </p>
@@ -697,11 +737,11 @@ export function Gallery() {
 
       <div className="mx-auto mt-6 grid max-w-[480px] grid-cols-2 gap-2.5 sm:grid-cols-3">
         {images.map((item, i) => (
+          <Reveal key={`g-${i}`} variant={i % 2 ? "flip" : "depth"} delay={(i % 3) * 110}>
           <button
-            key={`g-${i}`}
             type="button"
             onClick={() => setLightbox(i)}
-            className="aspect-[3/4] overflow-hidden rounded-2xl border border-ink/10 bg-sand/30 focus:outline-none focus:ring-2 focus:ring-ink/30"
+            className="aspect-[3/4] w-full overflow-hidden rounded-2xl border border-ink/10 bg-sand/30 focus:outline-none focus:ring-2 focus:ring-ink/30"
           >
             <img
               src={item.image}
@@ -710,6 +750,7 @@ export function Gallery() {
               loading="lazy"
             />
           </button>
+          </Reveal>
         ))}
       </div>
 
@@ -795,20 +836,7 @@ export function Gallery() {
 export function VideoMoment() {
   const d = useWeddingData();
   const VIDEO_URL = d.videoUrl || "";
-  if (!VIDEO_URL) {
-    return (
-      <section className="bg-sand/40 px-5 py-14 sm:px-8">
-        <SectionTitle kicker="MEMORIES" title="Video" />
-        <FadeUp className="mx-auto mt-8 max-w-sm">
-          <div className="flex aspect-video items-center justify-center rounded-2xl border border-dashed border-ink/20 bg-cream/80">
-            <p className="px-6 text-center font-sans text-sm text-ink/50">
-              Video belum diatur. Buka <strong>/admin</strong> untuk menambahkan URL video.
-            </p>
-          </div>
-        </FadeUp>
-      </section>
-    );
-  }
+  if (!VIDEO_URL) return null;
   const isYt = VIDEO_URL.includes("youtube") || VIDEO_URL.includes("youtu.be");
   return (
     <section className="bg-sand/40 px-5 py-14 sm:px-8">
@@ -827,6 +855,8 @@ export function VideoMoment() {
         ) : (
           <video
             src={VIDEO_URL}
+            poster={d.heroPhoto || undefined}
+            preload="metadata"
             controls
             playsInline
             className="aspect-video w-full object-cover"
