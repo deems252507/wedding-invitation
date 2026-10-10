@@ -13,11 +13,13 @@ import {
   Quote,
   Rsvp,
   ThankYou,
+  CinematicFooter,
   VideoMoment,
   Wishes,
 } from "@/components/wedding/Sections";
 import { WeddingProvider } from "@/lib/WeddingContext";
 import { useWeddingData } from "@/lib/WeddingContext";
+import ScrollExpandMedia from "@/components/ui/scroll-expansion-hero";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -76,20 +78,32 @@ function Invitation() {
         />
       ) : (
         <>
-          <Hero />
-          <Quote />
+          {d.heroPhoto || d.videoUrl ? (
+            <ScrollExpandMedia
+              mediaType={d.videoUrl ? "video" : "image"}
+              mediaSrc={d.videoUrl || d.heroPhoto}
+              posterSrc={d.heroPhoto || undefined}
+              title={`${d.brideName} & ${d.groomName}`}
+              date={d.weddingDateLabel}
+              scrollToExpand="GULIR UNTUK MELIHAT CERITA KAMI"
+            />
+          ) : (
+            <Hero />
+          )}
+          {(d.quote || d.quoteSource) && <Quote />}
           <Couple />
-          <LoveStory />
-          <Events />
-          <Countdown />
-          <Gallery />
-          <VideoMoment />
+          {d.story.length > 0 && <LoveStory />}
+          {d.events.length > 0 && <Events />}
+          {d.weddingDateISO && <Countdown />}
+          {d.gallery.length > 0 && <Gallery />}
+          {d.videoUrl && <VideoMoment />}
           <Rsvp />
           <Wishes />
-          <Gift />
+          {d.accounts.length > 0 && <Gift />}
           <ThankYou />
+          <CinematicFooter />
           <MusicControl />
-          <footer className="bg-ink py-6 text-center">
+          <footer className="relative z-10 bg-ink py-6 text-center">
             <p className="font-sans text-[0.55rem] tracking-[0.3em] text-cream/50">
               {d.brideName.toUpperCase()} &amp; {d.groomName.toUpperCase()} ·{" "}
               {d.weddingDateLabel}

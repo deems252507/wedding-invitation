@@ -653,3 +653,22 @@ iframe[src*="lovable"],
   pointer-events: none !important;
   opacity: 0 !important;
 }
+
+
+/* Image/Text reveal on section headings: a soft mask lift, once per viewport entry. */
+.image-text-reveal {
+  display: inline-block;
+  clip-path: inset(0 0 100% 0);
+  opacity: 0.55;
+  transform: translateY(0.24em);
+  transition: clip-path 900ms cubic-bezier(0.16, 1, 0.3, 1), opacity 700ms ease, transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.image-text-reveal.is-revealed {
+  clip-path: inset(0 0 0 0);
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .image-text-reveal { clip-path: none; opacity: 1; transform: none; transition: none; }
+  .animate-marquee { animation: none !important; }
+}
