@@ -1,5 +1,5 @@
 import { createClient, isSupabaseConfigured } from "./client";
-import type { InvitationSettings, Wish } from "@/lib/types";
+import type { InvitationSettings, Rsvp, Wish } from "@/lib/types";
 import { EMPTY_SETTINGS } from "@/lib/types";
 import type { WeddingData, EventItem, StoryItem, GalleryItem, BankAccount } from "@/lib/wedding-data";
 
@@ -263,6 +263,87 @@ export async function getWishes(): Promise<Wish[]> {
     return (data as Wish[]) || [];
   } catch {
     return [];
+  }
+}
+
+/** Data lama: dulu konfirmasi kehadiran disimpan di tabel wishes dengan pesan "Konfirmasi kehadiran · N orang". */
+export function isLegacyRsvp(w: Pick<Wish, "message">): boolean {
+  return /^konfirmasi kehadiran/i.test((w.message || "").trim());
+}
+
+/** Hanya ucapan & doa asli (tanpa baris RSVP lama). */
+export async function getPrayerWishes(): Promise<Wish[]> {
+  const all = await getWishes();
+  return all.filter((w) => !isLegacyRsvp(w));
+}
+
+function legacyToRsvp(w: Wish): Rsvp {
+  const m = (w.message || "").match(/(\d+)\s*\+?\s*orang/i);
+  return {
+    id: `legacy-${w.id}`,
+    guest_name: w.guest_name,
+    attendance: String(w.attendance || "").toLowerCase().includes("tidak") ? "tidak" : "hadir",
+    guests: m ? Math.max(1, parseInt(m[1], 10)) : 1,
+    created_at: w.created_at,
+    legacy: true,
+  };
+}
+
+/** Semua konfirmasi kehadiran: tabel rsvps + data lama dari wishes. */
+export async function getRsvps(): Promise<{ rows: Rsvp[]; tableMissing: boolean }> {
+  if (!isSupabaseConfigured()) return { rows: [], tableMissing: false };
+  let rows: Rsvp[] = [];
+  let tableMissing = false;
+  try {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("rsvps")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) tableMissing = true;
+    else rows = ((data as Rsvp[]) || []).map((r) => ({ ...r, guests: Number(r.guests) || 1 }));
+  } catch {
+    tableMissing = true;
+  }
+  const legacy = (await getWishes()).filter(isLegacyRsvp).map(legacyToRsvp);
+  return {
+    rows: [...rows, ...legacy].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    ),
+    tableMissing,
+  };
+}
+
+export async function createRsvp(r: {
+  guest_name: string;
+  attendance: "hadir" | "tidak";
+  guests: number;
+}): Promise<{ success: boolean; error?: string }> {
+  if (!isSupabaseConfigured()) return { success: false, error: "Supabase belum dikonfigurasi" };
+  try {
+    const supabase = createClient();
+    const { error } = await supabase.from("rsvps").insert({
+      guest_name: r.guest_name,
+      attendance: r.attendance,
+      guests: r.attendance === "hadir" ? Math.max(1, r.guests) : 0,
+    });
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: String(e) };
+  }
+}
+
+export async function deleteRsvp(id: string): Promise<{ success: boolean; error?: string }> {
+  if (id.startsWith("legacy-")) return deleteWish(id.slice(7));
+  if (!isSupabaseConfigured()) return { success: false, error: "Supabase belum dikonfigurasi" };
+  try {
+    const supabase = createClient();
+    const { error } = await supabase.from("rsvps").delete().eq("id", id);
+    if (error) return { success: false, error: error.message };
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: String(e) };
   }
 }
 

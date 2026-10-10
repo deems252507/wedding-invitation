@@ -103,3 +103,14 @@ export const EMPTY_SETTINGS: Omit<InvitationSettings, "id" | "updated_at"> = {
   music_url: null,
   video_url: null,
 };
+
+/** Konfirmasi kehadiran (tabel `rsvps`) — terpisah dari ucapan & doa. */
+export interface Rsvp {
+  id: string;
+  guest_name: string;
+  attendance: "hadir" | "tidak" | string;
+  guests: number;
+  created_at: string;
+  /** true bila berasal dari data lama (tabel wishes) */
+  legacy?: boolean;
+}

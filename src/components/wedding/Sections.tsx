@@ -4,22 +4,45 @@ import { useWeddingData } from "@/lib/WeddingContext";
 import { RevealImage, RevealText, useInView } from "@/components/ui/image-text-reveal";
 import { FlowButton } from "@/components/ui/flow-button";
 import { useScrollProgress } from "@/hooks/use-scroll-progress";
+import { GoldDust, Ornament } from "./Ornament";
 
 function SectionTitle({ kicker, title }: { kicker?: string; title: string; from?: "left" | "right" }) {
   return (
     <div className="text-center">
       {kicker ? (
         <Reveal variant="up">
-          <p className="eyebrow tracking-[0.42em]">{kicker}</p>
+          <p className="eyebrow">{kicker}</p>
         </Reveal>
       ) : null}
       <RevealText
         as="h2"
         text={title}
         by="char"
-        stagger={38}
-        className="mt-3 block font-display text-4xl italic tracking-tight text-ink"
+        stagger={42}
+        className="mt-3 block font-display text-[2.5rem] font-medium italic leading-tight tracking-tight text-gold-grad"
       />
+      <Ornament className="mt-4" />
+    </div>
+  );
+}
+
+/** Foto mempelai dengan tirai pembuka + bingkai emas tipis yang menyala setelahnya. */
+function FramedPhoto({
+  src,
+  alt,
+  from,
+}: {
+  src: string;
+  alt: string;
+  from: "left" | "right" | "bottom" | "center";
+}) {
+  const [ref, inView] = useInView<HTMLDivElement>(0.25);
+  return (
+    <div
+      ref={ref}
+      className={`gold-frame ${inView ? "gold-frame-in" : ""} overflow-hidden rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.25)]`}
+    >
+      <RevealImage src={src} alt={alt} from={from} imgClassName="aspect-[3/4] w-full object-cover" />
     </div>
   );
 }
@@ -28,13 +51,15 @@ function FadeUp({
   children,
   className = "",
   delay = 0,
+  variant = "up",
 }: {
   children: React.ReactNode;
   className?: string;
   delay?: number;
+  variant?: "up" | "zoom" | "mask";
 }) {
   return (
-    <Reveal variant="up" className={className} delay={delay}>
+    <Reveal variant={variant} className={className} delay={delay}>
       {children}
     </Reveal>
   );
@@ -66,47 +91,52 @@ export function Hero() {
   return (
     <section
       ref={heroRef}
-      className="relative h-[100dvh] w-full overflow-hidden"
+      className="relative h-[100svh] min-h-[520px] w-full overflow-hidden bg-ink"
       style={{ "--p": 0 } as React.CSSProperties}
     >
       <div
         className="absolute inset-0 will-change-transform"
         style={{ transform: "scale(calc(1 + var(--p) * 0.14)) translateY(calc(var(--p) * 6vh))" }}
       >
-      {slides.map((src, i) => (
-        <img
-          key={`${src}-${i}`}
-          src={src}
-          alt={i === 0 ? `${d.brideName} dan ${d.groomName}` : ""}
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-[1200ms] ease-in-out ${
-            i === idx ? "opacity-100" : "opacity-0"
-          }`}
-        />
-      ))}
+        {slides.map((src, i) => (
+          <img
+            key={`${src}-${i}`}
+            src={src}
+            alt={i === 0 ? `${d.brideName} dan ${d.groomName}` : ""}
+            className={`absolute inset-0 h-full w-full object-cover object-[50%_20%] transition-opacity duration-[1200ms] ease-in-out ${
+              i === idx ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        ))}
       </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-ink/45 via-ink/20 to-ink/70" />
+      {/* Scrim bawah yang kuat: nama & tanggal selalu terbaca dan tidak menimpa wajah */}
+      <div className="absolute inset-0 bg-gradient-to-b from-ink/35 via-transparent via-35% to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-t from-ink via-ink/75 to-transparent" />
+      <GoldDust />
       <div
-        className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-6 text-center"
+        className="absolute inset-0 flex flex-col items-center justify-end px-6 pb-[max(4.5rem,calc(env(safe-area-inset-bottom)+3rem))] text-center"
         style={{
           transform: "translateY(calc(var(--p) * -14vh))",
           opacity: "calc(1 - var(--p) * 1.5)",
         }}
       >
-        <p className="animate-text-mask font-sans text-xs tracking-[0.42em] text-cream/90">
+        <p className="animate-text-mask font-kicker text-[0.72rem] tracking-[0.5em] text-cream/90">
           THE WEDDING OF
         </p>
-        <h2 className="animate-text-left font-script text-5xl leading-none text-cream drop-shadow-md sm:text-6xl">
-          {d.brideName}
+        <h2
+          className="animate-text-scale stagger-2 mt-3 w-full font-script leading-[1.1]"
+          style={{ fontSize: "clamp(2.6rem, 14vw, 4.3rem)" }}
+        >
+          <span className="block text-gold-light">{d.brideName}</span>
+          {d.brideName && d.groomName ? (
+            <span className="my-0.5 block font-display text-[0.42em] italic text-cream/80">&amp;</span>
+          ) : null}
+          <span className="block text-gold-light">{d.groomName}</span>
         </h2>
-        <p className="animate-text-mask stagger-2 font-display text-2xl italic text-cream/85">
-          &amp;
-        </p>
-        <h2 className="animate-text-right stagger-2 font-script text-5xl leading-none text-cream drop-shadow-md sm:text-6xl">
-          {d.groomName}
-        </h2>
-        <p className="animate-text-mask stagger-3 mt-6 font-sans text-sm tracking-[0.28em] text-cream/90">
-          SAVE THE DATE · {d.weddingDateLabel}
-        </p>
+        <div className="animate-text-mask stagger-3 mt-5 flex flex-col items-center gap-1.5">
+          <p className="font-kicker text-[0.66rem] tracking-[0.45em] text-cream/70">SAVE THE DATE</p>
+          <p className="font-display text-[1.3rem] italic text-cream">{d.weddingDateLabel}</p>
+        </div>
       </div>
     </section>
   );
@@ -117,7 +147,7 @@ export function Quote() {
   return (
     <section className="relative z-10 -mt-10 rounded-t-[2.5rem] bg-cream px-5 py-16 shadow-[0_-24px_40px_-24px_rgba(0,0,0,0.4)] sm:px-8 sm:py-20">
       <FadeUp className="mx-auto max-w-md text-center">
-        <p className="font-display text-3xl leading-none text-ink/20">&ldquo;</p>
+        <p className="font-display text-5xl leading-none text-gold/50">&ldquo;</p>
         <RevealText
           as="p"
           text={d.quote}
@@ -136,39 +166,36 @@ export function Couple() {
   return (
     <section className="relative overflow-hidden bg-cream px-5 py-16 sm:px-8 sm:py-20">
       <FadeUp className="mx-auto max-w-md text-center">
-        <p className="font-sans text-sm leading-relaxed text-ink/70 sm:text-base">
-          {d.coupleIntro}
-        </p>
+        <Ornament className="mb-6" />
+        <RevealText
+          as="p"
+          text={d.coupleIntro}
+          variant="blur"
+          stagger={28}
+          className="block font-display text-[1.15rem] leading-[1.75] text-ink/75"
+        />
       </FadeUp>
 
       {/* Mempelai Wanita */}
       <FadeUp delay={100} className="mx-auto mt-12 max-w-[280px] text-center">
-        <div className="overflow-hidden rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.25)]">
-          {d.bridePhoto && (
-            <RevealImage src={d.bridePhoto} alt={d.brideName} from="left" imgClassName="aspect-[3/4] w-full object-cover" />
-          )}
-        </div>
-        <RevealText as="p" text={d.brideName} by="char" stagger={70} delay={250} className="mt-5 block font-script text-4xl text-ink sm:text-5xl" />
-        <p className="mt-1.5 font-display text-lg italic text-ink/80">{d.brideFullName}</p>
-        <p className="mt-2 font-sans text-sm leading-relaxed text-ink/60">
+        {d.bridePhoto && <FramedPhoto src={d.bridePhoto} alt={d.brideName} from="left" />}
+        <RevealText as="p" text={d.brideName} by="char" stagger={70} delay={250} className="mt-6 block font-script text-[2.6rem] leading-tight text-gold-grad" />
+        <p className="mt-1.5 font-display text-xl italic text-ink/85">{d.brideFullName}</p>
+        <p className="mt-2 font-display text-base leading-relaxed text-ink/60">
           {d.brideParents}
         </p>
       </FadeUp>
 
-      <FadeUp delay={160} className="py-8 text-center">
-        <RevealText as="p" text="&" variant="blur" className="block font-script text-5xl text-ink/35" />
+      <FadeUp variant="zoom" delay={160} className="py-8 text-center">
+        <RevealText as="p" text="&" variant="blur" className="block font-script text-6xl text-gold-grad" />
       </FadeUp>
 
       {/* Mempelai Pria */}
       <FadeUp delay={200} className="mx-auto max-w-[280px] text-center">
-        <div className="overflow-hidden rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.25)]">
-          {d.groomPhoto && (
-            <RevealImage src={d.groomPhoto} alt={d.groomName} from="right" imgClassName="aspect-[3/4] w-full object-cover" />
-          )}
-        </div>
-        <RevealText as="p" text={d.groomName} by="char" stagger={70} delay={250} className="mt-5 block font-script text-4xl text-ink sm:text-5xl" />
-        <p className="mt-1.5 font-display text-lg italic text-ink/80">{d.groomFullName}</p>
-        <p className="mt-2 font-sans text-sm leading-relaxed text-ink/60">
+        {d.groomPhoto && <FramedPhoto src={d.groomPhoto} alt={d.groomName} from="right" />}
+        <RevealText as="p" text={d.groomName} by="char" stagger={70} delay={250} className="mt-6 block font-script text-[2.6rem] leading-tight text-gold-grad" />
+        <p className="mt-1.5 font-display text-xl italic text-ink/85">{d.groomFullName}</p>
+        <p className="mt-2 font-display text-base leading-relaxed text-ink/60">
           {d.groomParents}
         </p>
       </FadeUp>
@@ -224,17 +251,17 @@ export function Events() {
       <div className="mx-auto mt-14 max-w-md space-y-10">
         {d.events.map((e, idx) => (
           <Reveal key={e.name + idx} variant={idx % 2 ? "tilt-right" : "tilt-left"} delay={idx * 120}>
-            <Tilt className="border border-border bg-card px-7 py-10 text-center tilt-shadow" max={7}>
-              <h3 className="font-display text-2xl italic text-ink">{e.name}</h3>
+            <Tilt className="relative border border-border bg-card px-7 py-10 text-center tilt-shadow outline outline-1 -outline-offset-8 outline-gold/30" max={7}>
+              <RevealText as="h3" text={e.name} variant="blur" stagger={70} className="block font-display text-[1.7rem] font-medium italic leading-tight text-gold-grad" />
               {e.desc && (
                 <p className="mt-4 font-sans text-[0.7rem] leading-relaxed tracking-wide text-muted-foreground">
                   {e.desc}
                 </p>
               )}
-              <p className="mt-6 font-display text-lg text-ink">{e.date}</p>
-              <p className="font-sans text-[0.68rem] tracking-[0.22em] text-stone">{e.time}</p>
-              <div className="mx-auto my-6 h-px w-10 bg-border" />
-              <p className="font-display text-lg text-ink">{e.place}</p>
+              <p className="mt-6 font-display text-xl text-ink">{e.date}</p>
+              <p className="font-kicker text-[0.74rem] tracking-[0.24em] text-gold">{e.time}</p>
+              <Ornament className="my-6" />
+              <p className="font-display text-xl text-ink">{e.place}</p>
               <p className="mt-2 font-sans text-[0.68rem] leading-relaxed text-muted-foreground">
                 {e.address}
               </p>
@@ -290,7 +317,7 @@ export function Countdown() {
               className="pop-tile rounded-xl bg-cream/10 px-2 py-4 backdrop-blur-sm"
               style={{ transitionDelay: `${i * 130}ms` }}
             >
-              <p className="font-display text-3xl text-cream tabular-nums">
+              <p className="font-display text-[2rem] font-medium text-gold-light tabular-nums">
                 {String(it.v).padStart(2, "0")}
               </p>
               <p className="mt-1 font-sans text-[0.55rem] tracking-[0.2em] text-cream/70">
@@ -304,81 +331,7 @@ export function Countdown() {
   );
 }
 
-export function Rsvp() {
-  const [sent, setSent] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  return (
-    <section className="bg-cream px-5 py-20 sm:px-8 sm:py-24">
-      <SectionTitle kicker="RSVP" title="Konfirmasi Kehadiran" />
-      <Reveal className="mx-auto mt-10 max-w-sm">
-        {sent ? (
-          <p className="text-center font-display text-lg italic text-ink">
-            Terima kasih sudah mengisi informasi kehadiran.
-          </p>
-        ) : (
-          <form
-            className="space-y-6"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setError("");
-              setLoading(true);
-              const form = e.currentTarget;
-              const fd = new FormData(form);
-              const name = String(fd.get("name") ?? "").trim();
-              const attendance = String(fd.get("attendance") ?? "hadir");
-              const guests = String(fd.get("guests") ?? "1");
-              try {
-                const { createWish } = await import("@/lib/supabase/data");
-                const res = await createWish({
-                  guest_name: name,
-                  message: `Konfirmasi kehadiran · ${guests} orang`,
-                  attendance,
-                });
-                if (!res.success) {
-                  setError(res.error || "Gagal menyimpan. Coba lagi.");
-                  return;
-                }
-                setSent(true);
-              } catch {
-                setError("Gagal menyimpan. Periksa koneksi / Supabase.");
-              } finally {
-                setLoading(false);
-              }
-            }}
-          >
-            <p className="text-center font-sans text-[0.7rem] leading-relaxed text-muted-foreground">
-              Kehadiran Bapak/Ibu/Saudara/i akan menjadi kehormatan besar bagi kami dan keluarga.
-            </p>
-            <input name="name" required className="field" placeholder="Nama Tamu" />
-            <select name="attendance" required className="field" defaultValue="">
-              <option value="" disabled>
-                Konfirmasi Kehadiran
-              </option>
-              <option value="hadir">Saya akan hadir</option>
-              <option value="tidak">Maaf, saya belum bisa hadir</option>
-            </select>
-            <select name="guests" className="field" defaultValue="1">
-              <option value="1">1 Orang</option>
-              <option value="2">2 Orang</option>
-              <option value="3">3 Orang</option>
-              <option value="4">4+ Orang</option>
-            </select>
-            {error ? (
-              <p className="text-center font-sans text-xs text-red-600">{error}</p>
-            ) : null}
-            <button type="submit" className="btn-ink w-full" disabled={loading}>
-              {loading ? "Menyimpan…" : "KONFIRMASI KEHADIRAN"}
-            </button>
-          </form>
-        )}
-      </Reveal>
-    </section>
-  );
-}
-
-type WishRow = { id?: string; name: string; text: string; time: string; attendance?: string };
+type WishRow = { id?: string; name: string; text: string; time: string; fresh?: boolean };
 
 function formatWishTime(iso?: string) {
   if (!iso) return "Baru saja";
@@ -393,19 +346,23 @@ function formatWishTime(iso?: string) {
 export function Wishes() {
   const [wishes, setWishes] = useState<WishRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [attendance, setAttendance] = useState<"" | "hadir" | "tidak">("");
+  const [guests, setGuests] = useState(1);
+  const [error, setError] = useState("");
+  const [thanks, setThanks] = useState(false);
 
   useEffect(() => {
     void (async () => {
       try {
-        const { getWishes } = await import("@/lib/supabase/data");
-        const rows = await getWishes();
+        // Hanya ucapan & doa asli; konfirmasi kehadiran lama tidak ditampilkan.
+        const { getPrayerWishes } = await import("@/lib/supabase/data");
+        const rows = await getPrayerWishes();
         setWishes(
           rows.map((w) => ({
             id: w.id,
             name: w.guest_name,
             text: w.message,
             time: formatWishTime(w.created_at),
-            attendance: w.attendance,
           })),
         );
       } catch {
@@ -419,7 +376,7 @@ export function Wishes() {
       <SectionTitle kicker="UCAPAN & DOA" title="Prayers & Wishes" />
       <Reveal className="mx-auto mt-10 max-w-sm">
         <form
-          className="space-y-5"
+          className="space-y-6"
           onSubmit={async (e) => {
             e.preventDefault();
             const form = e.currentTarget;
@@ -427,61 +384,122 @@ export function Wishes() {
             const name = String(data.get("name") ?? "").trim();
             const text = String(data.get("text") ?? "").trim();
             if (!name || !text) return;
+            if (!attendance) {
+              setError("Mohon pilih konfirmasi kehadiran Anda.");
+              return;
+            }
+            setError("");
             setLoading(true);
             try {
-              const { createWish } = await import("@/lib/supabase/data");
+              const { createWish, createRsvp } = await import("@/lib/supabase/data");
               const res = await createWish({
                 guest_name: name,
                 message: text,
-                attendance: "hadir",
+                attendance,
               });
-              if (res.success && res.data) {
-                setWishes((w) => [
-                  {
-                    id: res.data!.id,
-                    name: res.data!.guest_name,
-                    text: res.data!.message,
-                    time: "Baru saja",
-                    attendance: res.data!.attendance,
-                  },
-                  ...w,
-                ]);
-              } else {
-                setWishes((w) => [{ name, text, time: "Baru saja" }, ...w]);
-              }
+              // Kehadiran disimpan terpisah (tabel rsvps) agar tidak tercampur dengan ucapan.
+              const rsvp = await createRsvp({ guest_name: name, attendance, guests });
+              if (!rsvp.success) console.warn("RSVP belum tersimpan:", rsvp.error);
+
+              setWishes((w) => [
+                {
+                  id: res.success && res.data ? res.data.id : undefined,
+                  name,
+                  text,
+                  time: "Baru saja",
+                  fresh: true,
+                },
+                ...w,
+              ]);
               form.reset();
+              setAttendance("");
+              setGuests(1);
+              setThanks(true);
+              window.setTimeout(() => setThanks(false), 6000);
             } catch {
-              setWishes((w) => [{ name, text, time: "Baru saja" }, ...w]);
-              form.reset();
+              setError("Gagal mengirim. Periksa koneksi lalu coba lagi.");
             } finally {
               setLoading(false);
             }
           }}
         >
-          <input name="name" required className="field" placeholder="Nama Tamu" />
+          <input name="name" required className="field" placeholder="Nama Tamu" autoComplete="name" />
           <textarea name="text" required rows={3} className="field" placeholder="Ucapan & Doa" />
+
+          <div className="space-y-3">
+            <p className="text-center font-display text-base italic text-ink/70">
+              Apakah Anda dapat hadir?
+            </p>
+            <div className="seg" role="radiogroup" aria-label="Konfirmasi kehadiran">
+              <label>
+                <input
+                  type="radio"
+                  name="attendance"
+                  value="hadir"
+                  checked={attendance === "hadir"}
+                  onChange={() => setAttendance("hadir")}
+                />
+                <span>Ya, saya hadir</span>
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="attendance"
+                  value="tidak"
+                  checked={attendance === "tidak"}
+                  onChange={() => setAttendance("tidak")}
+                />
+                <span>Maaf, berhalangan</span>
+              </label>
+            </div>
+            {attendance === "hadir" ? (
+              <div className="wish-new">
+                <select
+                  name="guests"
+                  className="field"
+                  value={guests}
+                  onChange={(e) => setGuests(Number(e.target.value))}
+                  aria-label="Jumlah tamu yang hadir"
+                >
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                    <option key={n} value={n}>
+                      {n} orang
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
+          </div>
+
+          {error ? <p className="text-center font-sans text-xs text-red-600">{error}</p> : null}
+          {thanks ? (
+            <p className="wish-new text-center font-display text-base italic text-gold">
+              Terima kasih, ucapan Anda telah kami terima.
+            </p>
+          ) : null}
           <button type="submit" className="btn-ink w-full" disabled={loading}>
-            {loading ? "Mengirim…" : "BERI UCAPAN"}
+            {loading ? "Mengirim…" : "KIRIM UCAPAN"}
           </button>
         </form>
 
-        <div className="mt-10 max-h-72 space-y-5 overflow-y-auto pr-2">
+        <div className="mt-10 max-h-80 space-y-5 overflow-y-auto pr-2">
           {wishes.length === 0 ? (
-            <p className="text-center font-sans text-sm text-ink/40">
+            <p className="text-center font-display text-base italic text-ink/45">
               Belum ada ucapan. Jadilah yang pertama!
             </p>
           ) : (
             wishes.map((w, i) => (
-              <div key={w.id || i} className="border-b border-border pb-4">
-                <div className="flex items-baseline justify-between">
-                  <p className="font-display text-lg text-ink">{w.name}</p>
-                  <span className="font-sans text-[0.55rem] tracking-[0.2em] text-stone">
+              <div
+                key={w.id || i}
+                className={`border-b border-border pb-4 ${w.fresh ? "wish-new" : ""}`}
+              >
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="font-display text-xl font-medium text-ink">{w.name}</p>
+                  <span className="shrink-0 font-kicker text-[0.55rem] tracking-[0.18em] text-gold">
                     {w.time.toUpperCase()}
                   </span>
                 </div>
-                <p className="mt-1 font-sans text-xs leading-relaxed text-muted-foreground">
-                  {w.text}
-                </p>
+                <p className="mt-1 font-display text-base leading-relaxed text-ink/70">{w.text}</p>
               </div>
             ))
           )}
@@ -500,9 +518,13 @@ export function Gift() {
     <section className="bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
       <SectionTitle kicker="TANDA KASIH" title="Wedding Gift" />
       <Reveal className="mx-auto mt-8 max-w-sm space-y-5 text-center">
-        <p className="font-sans text-sm leading-relaxed text-muted-foreground">
-          {d.giftIntro}
-        </p>
+        <RevealText
+          as="p"
+          text={d.giftIntro}
+          variant="blur"
+          stagger={28}
+          className="block font-display text-[1.1rem] leading-[1.75] text-ink/70"
+        />
         <div className="flex justify-center">
           <FlowButton text="Kirim Kado" onClick={() => setOpen(true)} />
         </div>
@@ -598,10 +620,14 @@ export function ThankYou() {
           Scroll down to reveal
         </p>
         <div className="mx-auto mb-8 h-24 w-px bg-gradient-to-b from-cream/50 to-transparent" />
-        <RevealText as="p" text="Thank You" by="char" stagger={60} className="block font-script text-5xl text-cream" />
-        <p className="mt-6 font-sans text-sm leading-relaxed tracking-wide text-cream/80">
-          {d.thankYouText}
-        </p>
+        <RevealText as="p" text="Thank You" by="char" stagger={60} className="block font-script text-6xl text-gold-light" />
+        <RevealText
+          as="p"
+          text={d.thankYouText}
+          variant="blur"
+          stagger={26}
+          className="mt-6 block font-display text-[1.1rem] leading-[1.75] text-cream/85"
+        />
         <p className="mt-8 font-sans text-[0.6rem] tracking-[0.32em] text-cream/60">
           KAMI YANG BERBAHAGIA
         </p>
@@ -610,7 +636,7 @@ export function ThankYou() {
           text={[d.brideName, d.groomName].filter(Boolean).join(" & ")}
           variant="blur"
           stagger={110}
-          className="mt-3 block font-display text-3xl text-cream"
+          className="mt-3 block font-display text-[2rem] font-medium text-gold-light"
         />
         <p className="mt-2 font-sans text-[0.6rem] tracking-[0.28em] text-cream/60">
           BESERTA KELUARGA

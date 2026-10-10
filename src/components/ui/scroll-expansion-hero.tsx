@@ -73,16 +73,16 @@ export default function ScrollExpandMedia({
   return (
     <section
       ref={sectionRef}
-      className="relative h-[240dvh] w-full bg-ink"
+      className="relative h-[240svh] w-full bg-ink"
       style={{ "--p": 0 } as CSSProperties}
     >
-      <div className="sticky top-0 flex h-[100dvh] w-full items-center justify-center overflow-hidden">
+      <div className="sticky top-0 flex h-[100svh] w-full items-center justify-center overflow-hidden">
         {/* Media yang membesar */}
         <div
           className="relative overflow-hidden shadow-2xl will-change-[width,height]"
           style={{
             width: "calc(68% + var(--p) * 32%)",
-            height: "calc(54dvh + var(--p) * 46dvh)",
+            height: "calc(54svh + var(--p) * 46svh)",
             borderRadius: "calc((1 - var(--p)) * 28px)",
           }}
         >
@@ -122,24 +122,24 @@ export default function ScrollExpandMedia({
 
         {/* Teks: kedua judul bergeser berlawanan arah lalu memudar */}
         <div
-          className="pointer-events-none absolute inset-0 z-[2] flex flex-col items-center justify-center px-6 text-center text-white"
+          className="pointer-events-none absolute inset-0 z-[2] flex flex-col items-center justify-end px-6 pb-[24svh] text-center text-white"
           style={{ opacity: "calc(1 - var(--p) * 1.7)" }}
         >
           {date && (
-            <p className="mb-3 font-sans text-xs tracking-[0.35em] text-white/85 uppercase">{date}</p>
+            <p className="mb-3 font-kicker text-[0.7rem] tracking-[0.35em] text-white/90 uppercase [text-shadow:0_2px_12px_rgba(0,0,0,0.6)]">{date}</p>
           )}
           {title && (
             <h2
-              className="font-script text-5xl leading-none drop-shadow-lg sm:text-6xl"
-              style={{ transform: "translateX(calc(var(--p) * -55vw))" }}
+              className="font-script text-gold-light leading-[1.1]"
+              style={{ fontSize: "clamp(2.4rem, 12vw, 3.8rem)", transform: "translateX(calc(var(--p) * -55vw))" }}
             >
               {title}
             </h2>
           )}
           {titleEnd && (
             <h2
-              className="mt-1 font-script text-5xl leading-none drop-shadow-lg sm:text-6xl"
-              style={{ transform: "translateX(calc(var(--p) * 55vw))" }}
+              className="mt-1 font-script text-gold-light leading-[1.1]"
+              style={{ fontSize: "clamp(2.4rem, 12vw, 3.8rem)", transform: "translateX(calc(var(--p) * 55vw))" }}
             >
               {titleEnd}
             </h2>

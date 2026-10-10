@@ -14,7 +14,6 @@ import {
   LoveStory,
   MusicControl,
   Quote,
-  Rsvp,
   ThankYou,
   VideoMoment,
   Wishes,
@@ -28,7 +27,7 @@ export const Route = createFileRoute("/")({
       { title: "Undangan Pernikahan" },
       {
         name: "description",
-        content: "Undangan pernikahan digital. Konfirmasi kehadiran dan kirim doa restu di sini.",
+        content: "Undangan pernikahan digital. Kirim ucapan dan doa restu di sini.",
       },
       { property: "og:title", content: "Undangan Pernikahan" },
       { property: "og:type", content: "website" },
@@ -69,7 +68,7 @@ function Invitation() {
   }, [d.brideName, d.groomName]);
 
   return (
-    <main className="relative mx-auto max-w-[480px]">
+    <main className="relative mx-auto max-w-[480px] overflow-x-clip">
       {!opened ? (
         <Cover
           guest={guest}
@@ -92,7 +91,6 @@ function Invitation() {
             {d.weddingDateISO && <Countdown />}
             {d.gallery.length > 0 && <Gallery />}
             {d.videoUrl && <VideoMoment />}
-            <Rsvp />
             <Wishes />
             {(d.accounts.length > 0 || d.giftPhoto) && <Gift />}
             {d.thankYouText && <ThankYou />}

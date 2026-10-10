@@ -20,6 +20,7 @@ import {
   uploadWeddingPhoto,
 } from "@/lib/supabase/data";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
+import RsvpReport from "@/components/admin/RsvpReport";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({
@@ -155,8 +156,8 @@ function AdminWishesPanel() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const { getWishes } = await import("@/lib/supabase/data");
-      const data = await getWishes();
+      const { getPrayerWishes } = await import("@/lib/supabase/data");
+      const data = await getPrayerWishes();
       setRows(
         data.map((w) => ({
           id: w.id,
@@ -176,7 +177,7 @@ function AdminWishesPanel() {
   }, [load]);
 
   const onDelete = async (id: string) => {
-    if (!confirm("Hapus ucapan/RSVP ini?")) return;
+    if (!confirm("Hapus ucapan ini?")) return;
     setBusy(id);
     try {
       const { deleteWish } = await import("@/lib/supabase/data");
@@ -188,13 +189,10 @@ function AdminWishesPanel() {
     }
   };
 
-  const labelAtt = (a: string) =>
-    a === "hadir" ? "Hadir" : a === "tidak" ? "Tidak hadir" : a === "ragu" ? "Ragu" : a;
-
   return (
-    <SectionCard title="Ucapan & Konfirmasi Kehadiran">
+    <SectionCard title="Ucapan & Doa">
       <p className="font-sans text-xs text-ink/55">
-        Data dari tabel Supabase <code>wishes</code>. Admin bisa lihat dan hapus.
+        Hanya ucapan & doa dari tamu. Konfirmasi kehadiran ada di tab "Kehadiran".
       </p>
       <button
         type="button"
@@ -218,7 +216,6 @@ function AdminWishesPanel() {
                 <div>
                   <p className="font-display text-base text-ink">{r.guest_name}</p>
                   <p className="mt-0.5 font-sans text-[0.6rem] text-ink/45">
-                    {labelAtt(r.attendance)} ·{" "}
                     {new Date(r.created_at).toLocaleString("id-ID")}
                   </p>
                   <p className="mt-2 font-sans text-xs leading-relaxed text-ink/70">
@@ -250,7 +247,7 @@ function AdminPage() {
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState("");
   const [tab, setTab] = useState<
-    "umum" | "acara" | "cerita" | "galeri" | "rekening" | "media" | "ucapan"
+    "umum" | "acara" | "cerita" | "galeri" | "rekening" | "media" | "kehadiran" | "ucapan"
   >("umum");
   const supabaseOn = isSupabaseConfigured();
 
@@ -365,7 +362,8 @@ function AdminPage() {
     { id: "galeri" as const, label: "Galeri" },
     { id: "rekening" as const, label: "Rekening" },
     { id: "media" as const, label: "Media" },
-    { id: "ucapan" as const, label: "Ucapan/RSVP" },
+    { id: "kehadiran" as const, label: "Kehadiran" },
+    { id: "ucapan" as const, label: "Ucapan & Doa" },
   ];
 
   return (
@@ -775,6 +773,7 @@ function AdminPage() {
           </SectionCard>
         )}
 
+        {tab === "kehadiran" && <RsvpReport />}
         {tab === "ucapan" && <AdminWishesPanel />}
       </div>
 

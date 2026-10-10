@@ -1,28 +1,30 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { Wish } from "@/lib/types";
-import { deleteWish, getWishes } from "@/lib/supabase/data";
+import type { Rsvp } from "@/lib/types";
+import { deleteRsvp, getRsvps } from "@/lib/supabase/data";
 
 /**
- * Panel khusus Konfirmasi Kehadiran di admin.
- * - Ringkasan: total, hadir, tidak hadir
- * - Daftar nama jelas
- * - Export / cetak PDF via print dialog browser
+ * Panel khusus Konfirmasi Kehadiran (terpisah dari Ucapan & Doa).
+ * - Total tamu yang akan datang (jumlah orang, bukan hanya jumlah konfirmasi)
+ * - Daftar yang hadir & yang berhalangan
+ * - Cetak / simpan PDF
  */
 export default function RsvpReport() {
-  const [wishes, setWishes] = useState<Wish[]>([]);
+  const [rows, setRows] = useState<Rsvp[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [tableMissing, setTableMissing] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const data = await getWishes();
-      setWishes(data || []);
+      const res = await getRsvps();
+      setRows(res.rows);
+      setTableMissing(res.tableMissing);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Gagal memuat data RSVP");
+      setError(e instanceof Error ? e.message : "Gagal memuat data kehadiran");
     } finally {
       setLoading(false);
     }
@@ -32,29 +34,19 @@ export default function RsvpReport() {
     void load();
   }, [load]);
 
-  const { hadir, tidak, lain, total } = useMemo(() => {
-    const hadirList = wishes.filter((w) =>
-      String(w.attendance || "").toLowerCase().includes("hadir") &&
-      !String(w.attendance || "").toLowerCase().includes("tidak"),
-    );
-    const tidakList = wishes.filter((w) =>
-      String(w.attendance || "").toLowerCase().includes("tidak"),
-    );
-    const lainList = wishes.filter(
-      (w) =>
-        !hadirList.includes(w) && !tidakList.includes(w),
-    );
+  const { hadir, tidak, totalTamu } = useMemo(() => {
+    const hadirList = rows.filter((r) => r.attendance !== "tidak");
+    const tidakList = rows.filter((r) => r.attendance === "tidak");
     return {
       hadir: hadirList,
       tidak: tidakList,
-      lain: lainList,
-      total: wishes.length,
+      totalTamu: hadirList.reduce((sum, r) => sum + (Number(r.guests) || 1), 0),
     };
-  }, [wishes]);
+  }, [rows]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Hapus konfirmasi ini?")) return;
-    const res = await deleteWish(id);
+    const res = await deleteRsvp(id);
     if (res.success) void load();
     else alert(res.error || "Gagal menghapus");
   };
@@ -68,13 +60,13 @@ export default function RsvpReport() {
     const rowsHadir = hadir
       .map(
         (w, i) =>
-          `<tr><td>${i + 1}</td><td>${escapeHtml(w.guest_name)}</td><td>${escapeHtml(w.message || "-")}</td><td>${formatDate(w.created_at)}</td></tr>`,
+          `<tr><td>${i + 1}</td><td>${escapeHtml(w.guest_name)}</td><td>${w.guests} orang</td><td>${formatDate(w.created_at)}</td></tr>`,
       )
       .join("");
     const rowsTidak = tidak
       .map(
         (w, i) =>
-          `<tr><td>${i + 1}</td><td>${escapeHtml(w.guest_name)}</td><td>${escapeHtml(w.message || "-")}</td><td>${formatDate(w.created_at)}</td></tr>`,
+          `<tr><td>${i + 1}</td><td>${escapeHtml(w.guest_name)}</td><td>${formatDate(w.created_at)}</td></tr>`,
       )
       .join("");
 
@@ -101,23 +93,23 @@ export default function RsvpReport() {
   <h1>Laporan Konfirmasi Kehadiran</h1>
   <p class="meta">Dicetak: ${new Date().toLocaleString("id-ID")}</p>
   <div class="summary">
-    <div class="card"><span>Total</span><strong>${total}</strong></div>
-    <div class="card"><span>Hadir</span><strong style="color:#0a7">${hadir.length}</strong></div>
-    <div class="card"><span>Tidak Hadir</span><strong style="color:#c33">${tidak.length}</strong></div>
+    <div class="card"><span>Total tamu yang datang</span><strong style="color:#0a7">${totalTamu}</strong></div>
+    <div class="card"><span>Konfirmasi hadir</span><strong>${hadir.length}</strong></div>
+    <div class="card"><span>Berhalangan</span><strong style="color:#c33">${tidak.length}</strong></div>
   </div>
 
-  <h2>Daftar Hadir (${hadir.length})</h2>
+  <h2>Akan Hadir (${hadir.length} konfirmasi · ${totalTamu} orang)</h2>
   ${
     hadir.length
-      ? `<table><thead><tr><th>#</th><th>Nama Tamu</th><th>Pesan / Keterangan</th><th>Waktu</th></tr></thead><tbody>${rowsHadir}</tbody></table>`
+      ? `<table><thead><tr><th>#</th><th>Nama Tamu</th><th>Jumlah</th><th>Waktu</th></tr></thead><tbody>${rowsHadir}</tbody></table>`
       : "<p>Belum ada yang konfirmasi hadir.</p>"
   }
 
-  <h2>Daftar Tidak Hadir (${tidak.length})</h2>
+  <h2>Berhalangan Hadir (${tidak.length})</h2>
   ${
     tidak.length
-      ? `<table><thead><tr><th>#</th><th>Nama Tamu</th><th>Pesan / Keterangan</th><th>Waktu</th></tr></thead><tbody>${rowsTidak}</tbody></table>`
-      : "<p>Tidak ada konfirmasi tidak hadir.</p>"
+      ? `<table><thead><tr><th>#</th><th>Nama Tamu</th><th>Waktu</th></tr></thead><tbody>${rowsTidak}</tbody></table>`
+      : "<p>Tidak ada konfirmasi berhalangan hadir.</p>"
   }
 
   <p class="no-print" style="margin-top:24px">
@@ -149,13 +141,18 @@ export default function RsvpReport() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {tableMissing ? (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+          Tabel <code>rsvps</code> belum ada di Supabase. Buka SQL Editor lalu jalankan isi file{" "}
+          <code>supabase/ADD-RSVPS.sql</code>, kemudian klik Refresh.
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold text-ink">Konfirmasi Kehadiran</h2>
-          <p className="text-sm text-black/55">
-            Ringkasan & daftar nama tamu yang sudah konfirmasi
-          </p>
+          <h2 className="font-display text-xl italic text-ink">Konfirmasi Kehadiran</h2>
+          <p className="text-sm text-black/55">Terpisah dari ucapan & doa</p>
         </div>
         <div className="flex gap-2">
           <button
@@ -170,120 +167,99 @@ export default function RsvpReport() {
             onClick={handlePrintPdf}
             className="rounded-lg bg-ink px-4 py-2 text-sm font-medium text-cream hover:opacity-90"
           >
-            Unduh / Cetak PDF
+            Cetak PDF
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-black/10 bg-white p-4">
-          <p className="text-xs uppercase tracking-wider text-black/45">Total</p>
-          <p className="mt-1 text-2xl font-semibold">{total}</p>
+      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5 text-center">
+        <p className="text-xs uppercase tracking-wider text-emerald-700/70">
+          Total tamu yang akan datang
+        </p>
+        <p className="mt-1 text-5xl font-semibold text-emerald-800">{totalTamu}</p>
+        <p className="mt-1 text-sm text-emerald-800/70">orang</p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-xl border border-black/10 bg-white p-3 text-center">
+          <p className="text-[0.65rem] uppercase tracking-wider text-black/45">Respons</p>
+          <p className="mt-1 text-2xl font-semibold">{rows.length}</p>
         </div>
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-          <p className="text-xs uppercase tracking-wider text-emerald-700/70">Hadir</p>
-          <p className="mt-1 text-2xl font-semibold text-emerald-800">{hadir.length}</p>
+        <div className="rounded-xl border border-black/10 bg-white p-3 text-center">
+          <p className="text-[0.65rem] uppercase tracking-wider text-black/45">Hadir</p>
+          <p className="mt-1 text-2xl font-semibold text-emerald-700">{hadir.length}</p>
         </div>
-        <div className="rounded-xl border border-red-200 bg-red-50 p-4">
-          <p className="text-xs uppercase tracking-wider text-red-700/70">Tidak Hadir</p>
-          <p className="mt-1 text-2xl font-semibold text-red-800">{tidak.length}</p>
+        <div className="rounded-xl border border-black/10 bg-white p-3 text-center">
+          <p className="text-[0.65rem] uppercase tracking-wider text-black/45">Berhalangan</p>
+          <p className="mt-1 text-2xl font-semibold text-red-700">{tidak.length}</p>
         </div>
       </div>
 
-      <section className="rounded-xl border border-black/10 bg-white overflow-hidden">
-        <div className="border-b border-black/10 bg-emerald-50 px-4 py-3">
-          <h3 className="font-medium text-emerald-900">
-            Hadir — {hadir.length} orang
-          </h3>
-        </div>
-        {hadir.length === 0 ? (
-          <p className="px-4 py-6 text-sm text-black/45">Belum ada yang konfirmasi hadir.</p>
-        ) : (
-          <ul className="divide-y divide-black/5">
-            {hadir.map((w) => (
-              <li key={w.id} className="flex items-start justify-between gap-3 px-4 py-3">
-                <div>
-                  <p className="font-medium text-ink">{w.guest_name}</p>
-                  {w.message ? (
-                    <p className="mt-0.5 text-sm text-black/55">{w.message}</p>
-                  ) : null}
-                  <p className="mt-1 text-[11px] text-black/35">{formatDate(w.created_at)}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void handleDelete(w.id)}
-                  className="shrink-0 text-xs text-red-600 hover:underline"
-                >
-                  Hapus
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      <section className="rounded-xl border border-black/10 bg-white overflow-hidden">
-        <div className="border-b border-black/10 bg-red-50 px-4 py-3">
-          <h3 className="font-medium text-red-900">
-            Tidak Hadir — {tidak.length} orang
-          </h3>
-        </div>
-        {tidak.length === 0 ? (
-          <p className="px-4 py-6 text-sm text-black/45">Tidak ada konfirmasi tidak hadir.</p>
-        ) : (
-          <ul className="divide-y divide-black/5">
-            {tidak.map((w) => (
-              <li key={w.id} className="flex items-start justify-between gap-3 px-4 py-3">
-                <div>
-                  <p className="font-medium text-ink">{w.guest_name}</p>
-                  {w.message ? (
-                    <p className="mt-0.5 text-sm text-black/55">{w.message}</p>
-                  ) : null}
-                  <p className="mt-1 text-[11px] text-black/35">{formatDate(w.created_at)}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void handleDelete(w.id)}
-                  className="shrink-0 text-xs text-red-600 hover:underline"
-                >
-                  Hapus
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
-
-      {lain.length > 0 && (
-        <section className="rounded-xl border border-black/10 bg-white overflow-hidden">
-          <div className="border-b border-black/10 bg-amber-50 px-4 py-3">
-            <h3 className="font-medium text-amber-900">
-              Lainnya / lama — {lain.length}
-            </h3>
-          </div>
-          <ul className="divide-y divide-black/5">
-            {lain.map((w) => (
-              <li key={w.id} className="flex items-start justify-between gap-3 px-4 py-3">
-                <div>
-                  <p className="font-medium text-ink">{w.guest_name}</p>
-                  <p className="text-xs text-black/45">Status: {w.attendance || "-"}</p>
-                  {w.message ? (
-                    <p className="mt-0.5 text-sm text-black/55">{w.message}</p>
-                  ) : null}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void handleDelete(w.id)}
-                  className="shrink-0 text-xs text-red-600 hover:underline"
-                >
-                  Hapus
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <RsvpList
+        title={`Akan hadir — ${hadir.length} konfirmasi · ${totalTamu} orang`}
+        tone="emerald"
+        empty="Belum ada yang konfirmasi hadir."
+        items={hadir}
+        showGuests
+        onDelete={handleDelete}
+      />
+      <RsvpList
+        title={`Berhalangan hadir — ${tidak.length}`}
+        tone="red"
+        empty="Tidak ada konfirmasi berhalangan hadir."
+        items={tidak}
+        onDelete={handleDelete}
+      />
     </div>
+  );
+}
+
+function RsvpList({
+  title,
+  tone,
+  empty,
+  items,
+  showGuests,
+  onDelete,
+}: {
+  title: string;
+  tone: "emerald" | "red";
+  empty: string;
+  items: Rsvp[];
+  showGuests?: boolean;
+  onDelete: (id: string) => void;
+}) {
+  const head = tone === "emerald" ? "bg-emerald-50 text-emerald-900" : "bg-red-50 text-red-900";
+  return (
+    <section className="overflow-hidden rounded-xl border border-black/10 bg-white">
+      <div className={`border-b border-black/10 px-4 py-3 ${head}`}>
+        <h3 className="font-medium">{title}</h3>
+      </div>
+      {items.length === 0 ? (
+        <p className="px-4 py-6 text-sm text-black/45">{empty}</p>
+      ) : (
+        <ul className="max-h-[50vh] divide-y divide-black/5 overflow-y-auto">
+          {items.map((w) => (
+            <li key={w.id} className="flex items-start justify-between gap-3 px-4 py-3">
+              <div className="min-w-0">
+                <p className="font-medium text-ink">{w.guest_name}</p>
+                <p className="mt-0.5 text-xs text-black/40">
+                  {showGuests ? `${w.guests} orang · ` : ""}
+                  {formatDate(w.created_at)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => onDelete(w.id)}
+                className="shrink-0 text-xs text-red-600 hover:underline"
+              >
+                Hapus
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
 
