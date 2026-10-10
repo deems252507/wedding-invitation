@@ -71,23 +71,22 @@ export interface WeddingData {
 }
 
 export const DEFAULT_DATA: WeddingData = {
-  groomName: "Nathan",
-  brideName: "Shopia",
-  groomFullName: "Nathan Hermawan Wijaya",
-  brideFullName: "Sophia Putri Rahayu",
-  groomParents: "Putra kedua dari Bapak Hanung Wijaya dan Ibu Wayan Sari",
-  brideParents: "Putri pertama dari Bapak Budi Prasetyo dan Ibu Tri Utami",
-  weddingDateLabel: "Sabtu, 30 Januari 2027",
-  weddingDateISO: "2027-01-30T10:00:00+07:00",
+  // Identitas mempelai diketahui dari pemilik proyek; detail acara tetap kosong
+  // sampai diisi melalui admin agar data contoh tidak tampil sebagai informasi nyata.
+  groomName: "Rizky",
+  brideName: "Rizka",
+  groomFullName: "Rizky Dwi Maulana",
+  brideFullName: "Rizka Tri Oktavianti",
+  groomParents: "",
+  brideParents: "",
+  weddingDateLabel: "",
+  weddingDateISO: "",
   coverTitle: "The Wedding of",
-  quote:
-    "Dan mereka keduanya akan menjadi satu daging, jadi mereka tidak lagi menjadi dua orang, melainkan satu. Oleh karena itu apa yang telah dipersatukan Tuhan, janganlah manusia memisahkan.",
-  quoteSource: "MARKUS 10 : 8-9",
-  coupleIntro: "Kami memohon doa & restunya atas pernikahan kami",
-  thankYouText:
-    "Menjadi sebuah kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dalam hari bahagia kami. Terima kasih atas segala ucapan, doa, dan perhatian yang diberikan.",
-  giftIntro:
-    "Kehadiran Bapak/Ibu/Saudara/i merupakan hadiah terindah. Namun apabila hendak memberikan tanda kasih, dapat melalui rekening berikut:",
+  quote: "",
+  quoteSource: "",
+  coupleIntro: "Dengan penuh rasa syukur, kami mengundang Anda untuk berbagi kebahagiaan bersama kami.",
+  thankYouText: "Terima kasih atas doa dan perhatian yang diberikan kepada kami.",
+  giftIntro: "",
   giftPhoto: "",
   coverPhoto: "",
   coverPhotos: [],
@@ -97,47 +96,9 @@ export const DEFAULT_DATA: WeddingData = {
   groomPhoto: "",
   musicUrl: "",
   videoUrl: "",
-  story: [
-    {
-      title: "Pertemuan Pertama",
-      photo: "",
-      text: "Kisah ini berawal ketika jumpa pandangan pertama di kampus Merayakan.",
-    },
-    {
-      title: "Lamaran",
-      photo: "",
-      text: "Tak disangka, cerita ini semakin erat untuk mengikat janji suci. Sehingga proses lamaran ini pun berlangsung hangat.",
-    },
-    {
-      title: "Menuju Hari Bahagia",
-      photo: "",
-      text: "Dengan restu orang tua dan doa keluarga, kami melangkah bersama menuju hari pernikahan.",
-    },
-  ],
-  events: [
-    {
-      name: "Akad Nikah",
-      desc: "Dengan memohon rahmat Allah SWT, kami mengundang Bapak/Ibu/Saudara/i untuk hadir.",
-      date: "Sabtu, 30 Januari 2027",
-      time: "09.00 WIB",
-      place: "Masjid Gedhe Kauman",
-      address: "Jl. Kauman, Yogyakarta",
-      map: "https://maps.google.com",
-    },
-    {
-      name: "Resepsi",
-      desc: "Mari berbagi kebahagiaan dalam resepsi pernikahan kami.",
-      date: "Sabtu, 30 Januari 2027",
-      time: "11.00 – 14.00 WIB",
-      place: "Gedung Societet Militair",
-      address: "Jl. Pangurakan No.1, Yogyakarta",
-      map: "https://maps.google.com",
-    },
-  ],
-  accounts: [
-    { bank: "BCA", number: "1234567890", owner: "Sophia Putri Rahayu" },
-    { bank: "MANDIRI", number: "5124125213", owner: "Nathan Hermawan Wijaya" },
-  ],
+  story: [],
+  events: [],
+  accounts: [],
   gallery: [],
 };
 

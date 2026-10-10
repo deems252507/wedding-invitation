@@ -11,15 +11,16 @@ export function CinematicFooter() {
     const footer = footerRef.current;
     if (!footer) return;
 
-    const onScroll = () => {
-      const scrollY = window.scrollY;
-      const docH = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = docH > 0 ? Math.min(1, Math.max(0, (scrollY - docH + 400) / 400)) : 0;
-      footer.style.setProperty("--reveal", String(progress));
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) {
+      footer.classList.add("is-visible");
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) footer.classList.add("is-visible");
+    }, { threshold: 0.12 });
+    observer.observe(footer);
+    return () => observer.disconnect();
   }, []);
 
   const names = `${d.brideName || "Bride"} & ${d.groomName || "Groom"}`;
@@ -27,7 +28,7 @@ export function CinematicFooter() {
   return (
     <footer
       ref={footerRef}
-      className="fixed inset-x-0 bottom-0 z-0 flex min-h-[70vh] flex-col items-center justify-end overflow-hidden bg-ink pb-12 pt-24 text-cream"
+      className="relative z-10 flex min-h-[70vh] flex-col items-center justify-end overflow-hidden bg-ink pb-12 pt-24 text-cream opacity-0 translate-y-8 transition-[opacity,transform] duration-1000 ease-out motion-reduce:opacity-100 motion-reduce:translate-y-0 [&.is-visible]:translate-y-0 [&.is-visible]:opacity-100"
       style={
         {
           ["--reveal" as string]: 0,

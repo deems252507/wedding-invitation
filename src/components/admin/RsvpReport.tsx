@@ -14,6 +14,9 @@ export default function RsvpReport() {
   const [wishes, setWishes] = useState<Wish[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "hadir" | "tidak" | "lain">("all");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -33,24 +36,26 @@ export default function RsvpReport() {
   }, [load]);
 
   const { hadir, tidak, lain, total } = useMemo(() => {
-    const hadirList = wishes.filter((w) =>
-      String(w.attendance || "").toLowerCase().includes("hadir") &&
-      !String(w.attendance || "").toLowerCase().includes("tidak"),
-    );
-    const tidakList = wishes.filter((w) =>
-      String(w.attendance || "").toLowerCase().includes("tidak"),
-    );
-    const lainList = wishes.filter(
-      (w) =>
-        !hadirList.includes(w) && !tidakList.includes(w),
-    );
+    const isHadir = (w: Wish) => String(w.attendance || "").toLowerCase().includes("hadir") && !String(w.attendance || "").toLowerCase().includes("tidak");
+    const isTidak = (w: Wish) => String(w.attendance || "").toLowerCase().includes("tidak");
+    const hadirList = wishes.filter(isHadir);
+    const tidakList = wishes.filter(isTidak);
+    const lainList = wishes.filter((w) => !isHadir(w) && !isTidak(w));
+    const byDate = wishes.filter((w) => {
+      if (!w.created_at) return !startDate && !endDate;
+      const parsed = new Date(w.created_at);
+      if (Number.isNaN(parsed.getTime())) return false;
+      const day = `${parsed.getFullYear()}-${String(parsed.getMonth() + 1).padStart(2, "0")}-${String(parsed.getDate()).padStart(2, "0")}`;
+      return (!startDate || day >= startDate) && (!endDate || day <= endDate);
+    });
+    const byStatus = byDate.filter((w) => statusFilter === "all" || (statusFilter === "hadir" && isHadir(w)) || (statusFilter === "tidak" && isTidak(w)) || (statusFilter === "lain" && !isHadir(w) && !isTidak(w)));
     return {
-      hadir: hadirList,
-      tidak: tidakList,
-      lain: lainList,
-      total: wishes.length,
+      hadir: byStatus.filter(isHadir),
+      tidak: byStatus.filter(isTidak),
+      lain: byStatus.filter((w) => !isHadir(w) && !isTidak(w)),
+      total: byStatus.length,
     };
-  }, [wishes]);
+  }, [wishes, statusFilter, startDate, endDate]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Hapus konfirmasi ini?")) return;
@@ -77,6 +82,9 @@ export default function RsvpReport() {
           `<tr><td>${i + 1}</td><td>${escapeHtml(w.guest_name)}</td><td>${escapeHtml(w.message || "-")}</td><td>${formatDate(w.created_at)}</td></tr>`,
       )
       .join("");
+    const rowsLain = lain
+      .map((w, i) => `<tr><td>${i + 1}</td><td>${escapeHtml(w.guest_name)}</td><td>${escapeHtml(w.attendance || "Status tidak tersedia")}</td><td>${escapeHtml(w.message || "-")}</td><td>${formatDate(w.created_at)}</td></tr>`)
+      .join("");
 
     win.document.write(`<!DOCTYPE html>
 <html lang="id">
@@ -94,12 +102,14 @@ export default function RsvpReport() {
     table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
     th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
     th { background: #f3f3f3; }
+    tr, td, th { break-inside: avoid; page-break-inside: avoid; }
+    thead { display: table-header-group; }
     @media print { body { padding: 0; } .no-print { display: none; } }
   </style>
 </head>
 <body>
   <h1>Laporan Konfirmasi Kehadiran</h1>
-  <p class="meta">Dicetak: ${new Date().toLocaleString("id-ID")}</p>
+  <p class="meta">Periode: ${startDate || "Semua tanggal"}${endDate ? ` s.d. ${endDate}` : ""} · Filter status: ${statusFilter === "all" ? "Semua status" : statusFilter === "hadir" ? "Hadir" : statusFilter === "tidak" ? "Tidak hadir" : "Status lainnya"}<br/>Dicetak: ${new Date().toLocaleString("id-ID")}</p>
   <div class="summary">
     <div class="card"><span>Total</span><strong>${total}</strong></div>
     <div class="card"><span>Hadir</span><strong style="color:#0a7">${hadir.length}</strong></div>
@@ -119,6 +129,9 @@ export default function RsvpReport() {
       ? `<table><thead><tr><th>#</th><th>Nama Tamu</th><th>Pesan / Keterangan</th><th>Waktu</th></tr></thead><tbody>${rowsTidak}</tbody></table>`
       : "<p>Tidak ada konfirmasi tidak hadir.</p>"
   }
+
+  <h2>Status lainnya (${lain.length})</h2>
+  ${lain.length ? `<table><thead><tr><th>#</th><th>Nama Tamu</th><th>Status</th><th>Pesan / Keterangan</th><th>Waktu</th></tr></thead><tbody>${rowsLain}</tbody></table>` : "<p>Tidak ada data status lainnya.</p>"}
 
   <p class="no-print" style="margin-top:24px">
     <button onclick="window.print()">Cetak / Simpan PDF</button>
@@ -157,7 +170,7 @@ export default function RsvpReport() {
             Ringkasan & daftar nama tamu yang sudah konfirmasi
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
             onClick={() => void load()}
@@ -174,6 +187,27 @@ export default function RsvpReport() {
           </button>
         </div>
       </div>
+
+      <section className="grid grid-cols-1 gap-3 rounded-xl border border-black/10 bg-white p-4 sm:grid-cols-3">
+        <label className="text-sm text-black/65">Status RSVP
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)} className="mt-1 block min-h-11 w-full rounded-lg border border-black/15 bg-white px-3 text-sm text-ink">
+            <option value="all">Semua status</option>
+            <option value="hadir">Hadir</option>
+            <option value="tidak">Tidak hadir</option>
+            <option value="lain">Status lainnya / tidak dikenali</option>
+          </select>
+        </label>
+        <label className="text-sm text-black/65">Tanggal awal
+          <input type="date" value={startDate} max={endDate || undefined} onChange={(e) => setStartDate(e.target.value)} className="mt-1 block min-h-11 w-full rounded-lg border border-black/15 bg-white px-3 text-sm text-ink" />
+        </label>
+        <label className="text-sm text-black/65">Tanggal akhir
+          <input type="date" value={endDate} min={startDate || undefined} onChange={(e) => setEndDate(e.target.value)} className="mt-1 block min-h-11 w-full rounded-lg border border-black/15 bg-white px-3 text-sm text-ink" />
+        </label>
+        <div className="sm:col-span-3 flex flex-wrap items-center justify-between gap-2 text-xs text-black/50">
+          <span>Filter tanggal memakai waktu pengiriman RSVP yang tersimpan.</span>
+          <button type="button" onClick={() => { setStatusFilter("all"); setStartDate(""); setEndDate(""); }} className="rounded-lg border border-black/15 px-3 py-2 text-sm text-ink hover:bg-black/5">Reset filter</button>
+        </div>
+      </section>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-black/10 bg-white p-4">

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Reveal, Tilt, useCountdown, useParallax } from "./hooks";
+import { ImageTextReveal } from "@/components/ui/image-text-reveal";
 import { useWeddingData } from "@/lib/WeddingContext";
 
 function SectionTitle({
@@ -17,7 +18,7 @@ function SectionTitle({
         <p className="eyebrow tracking-[0.42em]">{kicker}</p>
       ) : null}
       <h2 className="mt-3 font-display text-4xl italic tracking-tight text-ink">
-        {title}
+        <ImageTextReveal>{title}</ImageTextReveal>
       </h2>
     </Reveal>
   );
@@ -120,19 +121,14 @@ export function Couple() {
 
       {/* Mempelai Wanita */}
       <FadeUp delay={100} className="mx-auto mt-12 max-w-[280px] text-center">
-        <div className="overflow-hidden rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.25)]">
-          <img
-            src={d.bridePhoto}
-            alt={d.brideName}
-            className="aspect-[3/4] w-full object-cover"
-            loading="lazy"
-          />
-        </div>
+        {d.bridePhoto ? (
+          <div className="overflow-hidden rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.25)]">
+            <img src={d.bridePhoto} alt={d.brideName} className="aspect-[3/4] w-full object-cover" loading="lazy" />
+          </div>
+        ) : null}
         <p className="mt-5 font-script text-4xl text-ink sm:text-5xl">{d.brideName}</p>
         <p className="mt-1.5 font-display text-lg italic text-ink/80">{d.brideFullName}</p>
-        <p className="mt-2 font-sans text-sm leading-relaxed text-ink/60">
-          {d.brideParents}
-        </p>
+        {d.brideParents ? <p className="mt-2 font-sans text-sm leading-relaxed text-ink/60">{d.brideParents}</p> : null}
       </FadeUp>
 
       <FadeUp delay={160} className="py-8 text-center">
@@ -141,19 +137,14 @@ export function Couple() {
 
       {/* Mempelai Pria */}
       <FadeUp delay={200} className="mx-auto max-w-[280px] text-center">
-        <div className="overflow-hidden rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.25)]">
-          <img
-            src={d.groomPhoto}
-            alt={d.groomName}
-            className="aspect-[3/4] w-full object-cover"
-            loading="lazy"
-          />
-        </div>
+        {d.groomPhoto ? (
+          <div className="overflow-hidden rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.25)]">
+            <img src={d.groomPhoto} alt={d.groomName} className="aspect-[3/4] w-full object-cover" loading="lazy" />
+          </div>
+        ) : null}
         <p className="mt-5 font-script text-4xl text-ink sm:text-5xl">{d.groomName}</p>
         <p className="mt-1.5 font-display text-lg italic text-ink/80">{d.groomFullName}</p>
-        <p className="mt-2 font-sans text-sm leading-relaxed text-ink/60">
-          {d.groomParents}
-        </p>
+        {d.groomParents ? <p className="mt-2 font-sans text-sm leading-relaxed text-ink/60">{d.groomParents}</p> : null}
       </FadeUp>
     </section>
   );

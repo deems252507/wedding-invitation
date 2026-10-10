@@ -33,9 +33,20 @@ export default function ScrollExpandMedia({
   const sectionRef = useRef<HTMLElement>(null);
   const mediaRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(mediaQuery.matches);
+    if (mediaQuery.matches) {
+      setProgress(1);
+      return;
+    }
+    let frame = 0;
     const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(() => {
+        frame = 0;
       const el = sectionRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
@@ -45,10 +56,14 @@ export default function ScrollExpandMedia({
       const range = viewH * 1.2;
       const p = Math.min(1, Math.max(0, start / range));
       setProgress(p);
+      });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   // Scale from ~0.7 to 1, border-radius from large to 0
@@ -59,11 +74,11 @@ export default function ScrollExpandMedia({
   return (
     <section
       ref={sectionRef}
-      className="relative min-h-[220vh] w-full bg-ink"
+      className="relative min-h-[140vh] w-full bg-ink motion-reduce:min-h-screen"
     >
       {bgImageSrc && (
         <div
-          className="fixed inset-0 z-0 bg-cover bg-center transition-opacity duration-500"
+          className="pointer-events-none absolute inset-0 z-0 bg-cover bg-center transition-opacity duration-500"
           style={{
             backgroundImage: `url(${bgImageSrc})`,
             opacity: 0.25 + progress * 0.15,
@@ -76,9 +91,9 @@ export default function ScrollExpandMedia({
           ref={mediaRef}
           className="relative overflow-hidden shadow-2xl transition-none"
           style={{
-            width: `${70 + progress * 30}vw`,
+            width: `${Math.min(100, 72 + progress * 28)}vw`,
             maxWidth: "100vw",
-            height: `${50 + progress * 50}vh`,
+            height: `${Math.min(100, 58 + progress * 42)}vh`,
             borderRadius: `${radius}px`,
             transform: `scale(${scale})`,
           }}
@@ -87,16 +102,20 @@ export default function ScrollExpandMedia({
             <video
               src={mediaSrc}
               poster={posterSrc}
-              autoPlay
+              autoPlay={!reducedMotion}
               muted
               loop
               playsInline
+              controls
+              preload="metadata"
               className="h-full w-full object-cover"
             />
           ) : (
             <img
               src={mediaSrc}
               alt={title}
+              loading="eager"
+              fetchPriority="high"
               className="h-full w-full object-cover"
             />
           )}
