@@ -166,3 +166,12 @@ Ini menambah kolom foto zoom + momen. (Sebelum dijalankan, data lain tetap tersi
 | Penutup | Tulisan "Thank You", "Scroll down to reveal", teks "Admin", dan teks berjalan dihapus. Footer hanya: Putri / & / Putra, tanggal, © tahun · nama. Admin tetap bisa dibuka lewat `/admin`. |
 
 Catatan video Momen: gunakan MP4 (H.264) ≤ 20 MB; paket gratis Supabase membatasi 50 MB per file.
+
+## 9. Update tampilan (kado, mempelai, acara)
+
+Tidak ada SQL baru. Kolom Instagram sudah ada di tabel.
+
+- **Kado:** tombol "Lihat Daftar Kado" membuka popup "Kado" berisi daftar bank (logo/nama). Klik satu bank untuk membuka nomor rekening, a/n, dan tombol Salin. QR kado muncul sebagai item "QR Code".
+- **Mempelai:** tiap mempelai satu layar penuh (foto bergeser halus saat digulir; label, nama huruf demi huruf, nama lengkap, orang tua, lalu tombol Instagram masuk perlahan). Isi akun Instagram di admin → Umum → Nama pasangan (kosong = tombol tidak tampil).
+- **Akad / Resepsi:** judul acara, kotak tanggal (bulan | hari + tanggal | tahun), jam, tempat, alamat, tombol **Simpan Tanggal** (Google Calendar) dan **Navigasi Peta**. Tulis tanggal di admin seperti "Senin, 4 Mei 2026"; zona WITA/WIT/WIB dibaca dari kolom Waktu (mis. "10.00 WITA - Selesai").
+- Semua animasi masuk dibuat lebih lambat dan halus. Butiran emas dihapus.
