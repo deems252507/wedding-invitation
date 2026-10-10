@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MailOpen } from "lucide-react";
+import { LockUnlockIcon } from "@/components/ui/animated-state-icons";
 import { useWeddingData } from "@/lib/WeddingContext";
 
 /**
@@ -19,6 +19,7 @@ export function Cover({ guest, onOpen }: { guest: string; onOpen: () => void }) 
 
   const [idx, setIdx] = useState(0);
   const [reduce, setReduce] = useState(false);
+  const [unlocked, setUnlocked] = useState(false);
 
   useEffect(() => {
     setReduce(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -84,8 +85,17 @@ export function Cover({ guest, onOpen }: { guest: string; onOpen: () => void }) 
           </div>
 
           <div className="animate-text-mask stagger-5 mt-7">
-            <button type="button" onClick={onOpen} className="cover-btn" aria-label="Buka Undangan">
-              <MailOpen className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} aria-hidden />
+            <button
+              type="button"
+              onClick={() => {
+                if (unlocked) return;
+                setUnlocked(true); // gembok terbuka dulu, lalu undangan dibuka
+                window.setTimeout(onOpen, reduce ? 0 : 450);
+              }}
+              className="cover-btn"
+              aria-label="Buka Undangan"
+            >
+              <LockUnlockIcon size={22} state={unlocked} className="shrink-0" />
               <span>Buka Undangan</span>
             </button>
           </div>

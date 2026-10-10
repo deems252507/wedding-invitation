@@ -814,7 +814,7 @@ html.lenis body {
 
 /* Foto mempelai: dari buram menjadi tajam */
 .person-photo {
-  transition: filter 2.2s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: filter 1.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Ikon hati penanda kisah cinta */
@@ -1133,4 +1133,9 @@ html { scroll-behavior: auto; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sm { opacity: 1 !important; filter: none !important; transform: none !important; transition: none !important; }
+}
+
+/* Teks Arab (ayat / doa): rata tengah, tinggi baris lega agar harakat tidak bertabrakan */
+.font-arab {
+  font-family: "Amiri", "Scheherazade New", "Noto Naskh Arabic", "Traditional Arabic", serif;
 }

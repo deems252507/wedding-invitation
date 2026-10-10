@@ -51,11 +51,34 @@ function Invitation() {
   const d = useWeddingData();
   const [opened, setOpened] = useState(false);
   const [guest, setGuest] = useState("Tamu Undangan");
+  // Cover tetap menutupi layar sampai isi undangan siap, lalu memudar (tidak ada layar kosong).
+  const [coverFading, setCoverFading] = useState(false);
+  const [coverGone, setCoverGone] = useState(false);
 
   useEffect(() => {
     const to = new URLSearchParams(window.location.search).get("to");
     if (to) setGuest(to);
   }, []);
+
+  // Muat foto pembuka lebih awal selagi tamu masih di cover.
+  useEffect(() => {
+    [d.heroPhotos?.[0] || d.heroPhoto, d.expandPhoto, d.heroPhotos?.[1]]
+      .filter(Boolean)
+      .forEach((src) => {
+        const img = new Image();
+        img.src = src as string;
+      });
+  }, [d.heroPhotos, d.heroPhoto, d.expandPhoto]);
+
+  useEffect(() => {
+    if (!opened) return;
+    const t1 = window.setTimeout(() => setCoverFading(true), 650);
+    const t2 = window.setTimeout(() => setCoverGone(true), 1500);
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [opened]);
 
   useEffect(() => {
     document.body.style.overflow = opened ? "" : "hidden";
@@ -71,15 +94,22 @@ function Invitation() {
 
   return (
     <main className="relative mx-auto max-w-[480px] overflow-x-clip">
-      {!opened ? (
-        <Cover
-          guest={guest}
-          onOpen={() => {
-            setOpened(true);
-            window.scrollTo({ top: 0 });
-          }}
-        />
-      ) : (
+      {!coverGone ? (
+        <div
+          className={`fixed inset-0 z-[200] mx-auto max-w-[480px] bg-ink transition-opacity duration-[800ms] ease-out ${
+            coverFading ? "pointer-events-none opacity-0" : "opacity-100"
+          }`}
+        >
+          <Cover
+            guest={guest}
+            onOpen={() => {
+              setOpened(true);
+              window.scrollTo({ top: 0 });
+            }}
+          />
+        </div>
+      ) : null}
+      {opened ? (
         <>
           <ScrollProgressBar />
           {/* Konten berada di z-10 dan menutupi footer sinematik yang diam di belakang */}
@@ -102,7 +132,7 @@ function Invitation() {
           <Navbar />
           <CinematicFooter />
         </>
-      )}
+      ) : null}
     </main>
   );
 }

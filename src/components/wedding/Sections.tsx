@@ -5,13 +5,18 @@ import {
   CalendarCheck,
   CalendarPlus,
   CalendarX,
-  ChevronDown,
   Gift as GiftIcon,
   Heart,
   MessageCircle,
   Navigation,
-  Send,
 } from "lucide-react";
+import {
+  CopiedIcon,
+  HeartIcon,
+  PlayPauseIcon,
+  SendIcon,
+  SuccessIcon,
+} from "@/components/ui/animated-state-icons";
 import { useWeddingData } from "@/lib/WeddingContext";
 import { RevealImage, RevealText, useInView } from "@/components/ui/image-text-reveal";
 import { useScrollProgress } from "@/hooks/use-scroll-progress";
@@ -132,21 +137,64 @@ export function Hero() {
   );
 }
 
+const ARABIC_RE = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+const LATIN_RE = /[A-Za-z]/;
+
+/**
+ * Memecah teks kutipan menjadi blok terpisah: tiap baris baru = blok baru, dan di dalam satu
+ * baris, teks Arab dan teks Latin otomatis dipisah (walau tersambung tanpa baris baru).
+ */
+function splitQuote(raw: string) {
+  const blocks: { arabic: boolean; text: string }[] = [];
+  for (const line of raw.split(/\r?\n+/)) {
+    let cur: { arabic: boolean; words: string[] } | null = null;
+    for (const w of line.split(/\s+/).filter(Boolean)) {
+      const kind = ARABIC_RE.test(w) ? "ar" : LATIN_RE.test(w) ? "la" : null;
+      const arabic = kind === "ar";
+      if (!cur || (kind !== null && arabic !== cur.arabic)) {
+        if (cur) blocks.push({ arabic: cur.arabic, text: cur.words.join(" ") });
+        cur = { arabic: kind === "ar", words: [] };
+      }
+      cur.words.push(w);
+    }
+    if (cur) blocks.push({ arabic: cur.arabic, text: cur.words.join(" ") });
+  }
+  return blocks;
+}
+
 export function Quote() {
   const d = useWeddingData();
+  const blocks = splitQuote(d.quote || "");
   return (
     <section className="relative z-10 -mt-10 rounded-t-[2.5rem] bg-cream px-5 py-16 shadow-[0_-24px_40px_-24px_rgba(0,0,0,0.4)] sm:px-8 sm:py-20">
-      <FadeUp className="mx-auto max-w-md text-center">
-        <p className="font-display text-5xl leading-none text-gold/50">&ldquo;</p>
-        <RevealText
-          as="p"
-          text={d.quote}
-          variant="blur"
-          stagger={45}
-          className="mt-2 block font-display text-xl leading-relaxed italic text-ink sm:text-2xl"
-        />
-        <p className="mt-6 eyebrow">{d.quoteSource}</p>
-      </FadeUp>
+      <div className="mx-auto max-w-md text-center">
+        <FadeUp>
+          <p className="font-display text-5xl leading-none text-gold/50">&ldquo;</p>
+        </FadeUp>
+        <div className="mt-3 space-y-6">
+          {blocks.map((b, i) => (
+            <FadeUp key={i} delay={Math.min(i, 3) * 120}>
+              {b.arabic ? (
+                <p
+                  dir="rtl"
+                  lang="ar"
+                  className="font-arab text-[1.65rem] leading-[2.4] text-ink sm:text-[1.8rem]"
+                >
+                  {b.text}
+                </p>
+              ) : (
+                <p className="font-display text-[1.1rem] italic leading-[1.85] text-ink/80 sm:text-[1.2rem]">
+                  {b.text}
+                </p>
+              )}
+            </FadeUp>
+          ))}
+        </div>
+        <FadeUp delay={200}>
+          <Ornament className="mt-8" />
+          <p className="mt-5 eyebrow">{d.quoteSource}</p>
+        </FadeUp>
+      </div>
     </section>
   );
 }
@@ -198,7 +246,7 @@ function PersonPanel({
   useEffect(() => {
     if (!inView) return;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const t = window.setTimeout(() => setSharp(true), reduce ? 0 : 2300);
+    const t = window.setTimeout(() => setSharp(true), reduce ? 0 : 1400);
     return () => window.clearTimeout(t);
   }, [inView]);
 
@@ -221,7 +269,7 @@ function PersonPanel({
 
       {/* Bayangan hanya muncul setelah foto tajam, agar foto asli terlihat utuh dulu */}
       <div
-        className={`pointer-events-none absolute inset-0 transition-opacity duration-[1400ms] ease-out ${
+        className={`pointer-events-none absolute inset-0 transition-opacity duration-[900ms] ease-out ${
           sharp ? "opacity-100" : "opacity-0"
         }`}
       >
@@ -238,22 +286,22 @@ function PersonPanel({
             as="h3"
             text={name}
             by="char"
-            stagger={90}
-            delay={250}
+            stagger={55}
+            delay={80}
             className="mt-3 block font-script text-[3.6rem] leading-[1.05] text-white [text-shadow:0_4px_24px_rgba(0,0,0,0.5)]"
           />
-          <Smooth delay={700}>
+          <Smooth delay={250}>
             <p className="mt-2 font-display text-[1.35rem] italic text-cream/90">{fullName}</p>
           </Smooth>
           {parents ? (
-            <Smooth delay={950}>
+            <Smooth delay={400}>
               <p className="mx-auto mt-3 max-w-[18rem] font-sans text-[0.78rem] leading-relaxed text-cream/65">
                 {parents}
               </p>
             </Smooth>
           ) : null}
           {ig ? (
-            <Smooth delay={1200} variant="zoom">
+            <Smooth delay={550} variant="zoom">
               <a
                 href={`https://instagram.com/${ig}`}
                 target="_blank"
@@ -278,13 +326,9 @@ export function Couple() {
       <div className="px-5 py-20 sm:px-8 sm:py-24">
         <Smooth className="mx-auto max-w-md text-center">
           <Ornament className="mb-6" />
-          <RevealText
-            as="p"
-            text={d.coupleIntro}
-            variant="blur"
-            stagger={34}
-            className="block font-display text-[1.15rem] leading-[1.75] text-ink/75"
-          />
+          <p className="block whitespace-pre-line font-display text-[1.15rem] leading-[1.75] text-ink/75">
+            {d.coupleIntro}
+          </p>
         </Smooth>
       </div>
       {d.brideName ? (
@@ -311,19 +355,18 @@ export function Couple() {
   );
 }
 
-/** Penanda hati di antara kartu (pengganti angka 1-2-3). */
+/** Penanda hati di antara kartu: terisi & memantul saat muncul di layar. */
 function HeartMark({ big = false }: { big?: boolean }) {
+  const [ref, inView] = useInView<HTMLSpanElement>(0.6);
   return (
     <span
+      ref={ref}
       aria-hidden
-      className={`heart-beat relative z-10 flex items-center justify-center rounded-full border border-[#b8933f]/60 bg-cream shadow-sm ${
+      className={`relative z-10 flex items-center justify-center rounded-full border border-[#b8933f]/60 bg-cream shadow-sm ${
         big ? "h-12 w-12" : "h-9 w-9"
       }`}
     >
-      <Heart
-        className={`${big ? "h-6 w-6" : "h-[1.1rem] w-[1.1rem]"} fill-[#b8933f] text-[#b8933f]`}
-        strokeWidth={1.5}
-      />
+      <HeartIcon size={big ? 30 : 22} color="#b8933f" filledColor="#b8933f" state={inView} />
     </span>
   );
 }
@@ -348,28 +391,37 @@ export function LoveStory() {
         </Smooth>
         {d.story.map((s, i) => (
           <Fragment key={s.title + i}>
-            <DottedLine tall={i === 0} />
-            <Smooth variant="zoom" className="w-full">
+            {/* Setiap bagian punya pengamat scroll sendiri: muncul satu per satu saat digulir */}
+            <Smooth>
+              <DottedLine tall={i === 0} />
+            </Smooth>
+            {i > 0 ? (
+              <>
+                <Smooth variant="zoom">
+                  <HeartMark />
+                </Smooth>
+                <Smooth>
+                  <DottedLine />
+                </Smooth>
+              </>
+            ) : null}
+            <Smooth variant="zoom" delay={150} className="w-full">
               <article className="rounded-[1.75rem] border border-[#b8933f]/45 bg-card/95 p-3 shadow-[0_26px_50px_-30px_rgba(0,0,0,0.5)]">
                 {s.photo ? (
-                  <div className="aspect-[4/3] overflow-hidden rounded-[1.25rem]">
-                    <img
-                      src={s.photo}
-                      alt={s.title}
-                      loading="lazy"
-                      className="h-full w-full object-cover transition duration-[2200ms] ease-out hover:scale-105"
-                    />
-                  </div>
+                  <img
+                    src={s.photo}
+                    alt={s.title}
+                    loading="lazy"
+                    className="block h-auto w-full rounded-[1.25rem]"
+                  />
                 ) : null}
                 <div className="px-3 pb-3 pt-4 text-center">
                   <h3 className="font-display text-[1.4rem] font-semibold leading-tight text-ink">{s.title}</h3>
                   <Ornament className="my-3" />
-                  <p className="font-sans text-[0.82rem] leading-relaxed text-ink/70">{s.text}</p>
+                  <p className="whitespace-pre-line font-sans text-[0.82rem] leading-relaxed text-ink/70">{s.text}</p>
                 </div>
               </article>
             </Smooth>
-            {i < d.story.length - 1 ? <DottedLine /> : null}
-            {i < d.story.length - 1 ? <HeartMark /> : null}
           </Fragment>
         ))}
       </div>
@@ -575,6 +627,16 @@ export function Countdown() {
   );
 }
 
+/** Centang sukses: mulai sebagai lingkaran berputar, lalu berubah jadi centang. */
+function ThanksCheck() {
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    const t = window.setTimeout(() => setDone(true), 350);
+    return () => window.clearTimeout(t);
+  }, []);
+  return <SuccessIcon size={40} color="#b8933f" state={done} />;
+}
+
 type WishRow = { id?: string; name: string; text: string; time: string; fresh?: boolean };
 
 function formatWishTime(iso?: string) {
@@ -763,7 +825,7 @@ export function Wishes() {
               disabled={loading}
               className="group flex w-full items-center justify-center gap-2.5 rounded-full bg-ink px-6 py-4 font-sans text-[0.68rem] tracking-[0.3em] text-cream transition duration-500 hover:bg-[#8a6a1f] disabled:opacity-60"
             >
-              <Send className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" strokeWidth={1.6} aria-hidden />
+              <SendIcon size={20} state={loading} />
               {loading ? "MENGIRIM…" : "KIRIM UCAPAN"}
             </button>
           </form>
@@ -825,10 +887,8 @@ export function Wishes() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-[#b8933f] via-[#ecd48f] to-[#b8933f]" />
-              <div className="thanks-check mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#b8933f]/50 bg-[#b8933f]/10">
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#b8933f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                  <path d="M5 12.5l4.5 4.5L19 7.5" className="thanks-check-path" />
-                </svg>
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-[#b8933f]/50 bg-[#b8933f]/10">
+                <ThanksCheck />
               </div>
               <h3 id="thanks-title" className="mt-5 font-display text-[1.7rem] italic leading-tight text-ink">
                 Terima kasih, {thanks.name}!
@@ -852,164 +912,143 @@ export function Wishes() {
   );
 }
 
+/** "1234567890" -> "1234 5678 90" (hanya untuk tampilan; yang disalin tetap angka asli). */
+function groupNumber(n: string) {
+  const raw = n.replace(/\s+/g, "");
+  return /^\d{6,}$/.test(raw) ? raw.replace(/(\d{4})(?=\d)/g, "$1 ") : n;
+}
+
+function CardChip() {
+  return (
+    <svg width="38" height="28" viewBox="0 0 38 28" fill="none" aria-hidden>
+      <rect x="1" y="1" width="36" height="26" rx="5" fill="url(#chipg)" stroke="#8a6a1f" strokeOpacity="0.6" />
+      <path d="M1 10h12M1 18h12M25 10h12M25 18h12M13 1v26M25 1v26" stroke="#8a6a1f" strokeOpacity="0.45" />
+      <defs>
+        <linearGradient id="chipg" x1="0" y1="0" x2="38" y2="28">
+          <stop stopColor="#f3dd9c" />
+          <stop offset="1" stopColor="#c9a24a" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
 export function Gift() {
   const d = useWeddingData();
-  const [open, setOpen] = useState(false);
-  const [expanded, setExpanded] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
-    window.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
-    };
-  }, [open]);
+  const accounts = d.accounts.filter((a) => a.bank || a.number);
 
-  const rows = [
-    ...d.accounts
-      .filter((a) => a.bank || a.number)
-      .map((a, i) => ({ key: `acc-${i}`, account: a })),
-    ...(d.giftPhoto ? [{ key: "qr", account: null }] : []),
-  ];
+  const copy = async (key: string, value: string) => {
+    try {
+      await navigator.clipboard?.writeText(value);
+    } catch {
+      /* clipboard tidak diizinkan: abaikan, tetap tampilkan status */
+    }
+    setCopied(key);
+    window.setTimeout(() => setCopied((c) => (c === key ? null : c)), 2200);
+  };
 
   return (
     <section id="kado" className="relative overflow-hidden bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
       <SectionTitle kicker="TANDA KASIH" title="Wedding Gift" />
-      <Smooth variant="zoom" delay={150} className="mx-auto mt-10 max-w-sm">
-        <div className="rounded-[2rem] border border-[#b8933f]/30 bg-card p-2 shadow-[0_28px_60px_-34px_rgba(0,0,0,0.45)]">
-          <div className="rounded-[1.5rem] border border-[#b8933f]/25 px-7 py-10 text-center">
-            <span className="animate-float mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-ink text-[#ecd48f] shadow-lg">
-              <GiftIcon className="h-7 w-7" strokeWidth={1.4} aria-hidden />
-            </span>
-            <p className="mt-6 font-display text-[1.15rem] leading-[1.75] text-ink/75">
-              {d.giftIntro ||
-                "Doa restu Anda adalah hadiah terindah bagi kami. Namun jika Anda ingin memberi tanda kasih, dengan senang hati kami menerimanya."}
-            </p>
-            <Ornament className="my-6" />
-            <button
-              type="button"
-              onClick={() => {
-                setExpanded(rows[0]?.key ?? null);
-                setOpen(true);
-              }}
-              className="group inline-flex items-center gap-2.5 rounded-full bg-ink px-7 py-3.5 font-sans text-[0.68rem] tracking-[0.28em] text-cream transition duration-500 hover:bg-[#8a6a1f]"
-            >
-              <GiftIcon className="h-4 w-4" strokeWidth={1.6} aria-hidden />
-              LIHAT DAFTAR KADO
-            </button>
-          </div>
-        </div>
+
+      <Smooth delay={100} className="mx-auto mt-6 max-w-sm text-center">
+        <p className="whitespace-pre-line font-display text-[1.12rem] leading-[1.8] text-ink/70">
+          {d.giftIntro ||
+            "Doa restu Anda adalah hadiah terindah bagi kami. Namun jika Anda ingin memberi tanda kasih, dengan senang hati kami menerimanya."}
+        </p>
       </Smooth>
 
-      {open &&
-        createPortal(
-          <div
-            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/55 p-4 backdrop-blur-[2px] animate-in fade-in duration-500"
-            onClick={() => setOpen(false)}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Kado"
-          >
-            <div
-              className="w-full max-w-sm overflow-hidden rounded-xl bg-cream shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-6 duration-500"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between border-b border-border px-5 py-4">
-                <h3 className="font-display text-xl font-medium text-ink">Kado</h3>
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  aria-label="Tutup"
-                  className="text-red-500/80 transition hover:text-red-600"
-                >
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
-                    <circle cx="12" cy="12" r="9.5" />
-                    <path d="M9 9l6 6M15 9l-6 6" />
-                  </svg>
-                </button>
-              </div>
+      <div className="mx-auto mt-10 flex max-w-sm flex-col gap-6">
+        {accounts.map((a, i) => {
+          const key = `acc-${i}`;
+          const isCopied = copied === key;
+          return (
+            <Smooth key={key} variant="zoom" delay={120}>
+              <article className="relative overflow-hidden rounded-[1.4rem] bg-gradient-to-br from-[#1d1912] via-[#2a2417] to-[#15120c] p-6 text-cream shadow-[0_30px_60px_-28px_rgba(0,0,0,0.75)] ring-1 ring-[#b8933f]/40">
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-[#b8933f]/15 blur-2xl"
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -bottom-24 -left-10 h-48 w-48 rounded-full border border-[#ecd48f]/10"
+                />
+                <div className="relative flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    {a.logo ? (
+                      <span className="inline-flex rounded-md bg-white/95 px-2.5 py-1.5">
+                        <img src={a.logo} alt={a.bank || "Bank"} className="h-6 max-w-[6.5rem] object-contain" />
+                      </span>
+                    ) : (
+                      <p className="truncate font-kicker text-[0.95rem] tracking-[0.18em] text-[#ecd48f]">
+                        {a.bank || "Rekening"}
+                      </p>
+                    )}
+                  </div>
+                  <CardChip />
+                </div>
 
-              <div className="max-h-[62vh] overflow-y-auto px-5 py-5" data-lenis-prevent>
-                <h4 className="font-display text-lg font-semibold text-ink">Kado Cashless</h4>
-                <p className="mt-1 font-sans text-[0.72rem] leading-relaxed text-ink/60">
-                  Anda dapat memberikan kado cashless. Pilih metode pembayaran di bawah.
+                <p className="relative mt-7 font-kicker text-[0.55rem] tracking-[0.35em] text-cream/55">
+                  NOMOR REKENING
+                </p>
+                <p className="relative mt-1.5 break-all font-display text-[1.6rem] font-medium leading-tight tracking-[0.06em] text-white tabular-nums">
+                  {groupNumber(a.number)}
                 </p>
 
-                <ul className="mt-4 divide-y divide-border rounded-md border border-border bg-card">
-                  {rows.map(({ key, account: a }) => {
-                    const on = expanded === key;
-                    return (
-                      <li key={key}>
-                        <button
-                          type="button"
-                          onClick={() => setExpanded(on ? null : key)}
-                          aria-expanded={on}
-                          className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left"
-                        >
-                          <span className="flex min-w-0 items-center gap-3">
-                            {a?.logo ? (
-                              <img src={a.logo} alt="" className="h-7 max-w-[5.5rem] shrink-0 object-contain" />
-                            ) : null}
-                            <span className="truncate font-display text-[1.05rem] font-medium text-ink">
-                              {a ? a.bank || "Rekening" : "QR Code"}
-                            </span>
-                          </span>
-                          <ChevronDown
-                            className={`h-4 w-4 shrink-0 text-ink/50 transition-transform duration-500 ${on ? "rotate-180" : ""}`}
-                            aria-hidden
-                          />
-                        </button>
-                        <div
-                          className={`grid transition-[grid-template-rows,opacity] duration-500 ease-out ${
-                            on ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-                          }`}
-                        >
-                          <div className="overflow-hidden">
-                            <div className="px-4 pb-5 pt-1 text-center">
-                              {a ? (
-                                <>
-                                  <p className="mt-1 font-display text-[1.4rem] tracking-wide text-ink">{a.number}</p>
-                                  <p className="font-sans text-[0.8rem] text-ink/60">a/n {a.owner}</p>
-                                  <button
-                                    type="button"
-                                    className="btn-ink mt-3"
-                                    onClick={() => {
-                                      navigator.clipboard?.writeText(a.number);
-                                      setCopied(key);
-                                      setTimeout(() => setCopied(null), 2000);
-                                    }}
-                                  >
-                                    {copied === key ? "TERSALIN ✓" : "SALIN"}
-                                  </button>
-                                </>
-                              ) : (
-                                <div className="mx-auto w-44 overflow-hidden rounded-xl border border-border bg-white p-3">
-                                  <img src={d.giftPhoto} alt="QR Code" className="w-full object-contain" />
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
+                <div className="relative mt-6 flex items-end justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-kicker text-[0.55rem] tracking-[0.35em] text-cream/55">ATAS NAMA</p>
+                    <p className="mt-1 truncate font-display text-[1.1rem] text-cream">{a.owner}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => copy(key, a.number.replace(/\s+/g, ""))}
+                    aria-label={`Salin nomor rekening ${a.bank}`}
+                    className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border py-1.5 pl-2.5 pr-4 font-sans text-[0.68rem] tracking-[0.18em] transition duration-300 ${
+                      isCopied
+                        ? "border-[#ecd48f] bg-[#ecd48f] text-ink"
+                        : "border-[#ecd48f]/60 text-[#ecd48f] hover:bg-[#ecd48f]/10"
+                    }`}
+                  >
+                    <CopiedIcon size={22} state={isCopied} />
+                    {isCopied ? "TERSALIN" : "SALIN"}
+                  </button>
+                </div>
+              </article>
+            </Smooth>
+          );
+        })}
 
-              <div className="flex justify-end border-t border-border px-5 py-3">
-                <button type="button" className="btn-ink !px-5 !py-2" onClick={() => setOpen(false)}>
-                  TUTUP
-                </button>
+        {d.giftPhoto ? (
+          <Smooth variant="zoom" delay={120}>
+            <article className="rounded-[1.4rem] border border-[#b8933f]/35 bg-card p-6 text-center shadow-[0_26px_50px_-30px_rgba(0,0,0,0.45)]">
+              <p className="font-kicker text-[0.6rem] tracking-[0.35em] text-[#8a6a1f]">KADO DIGITAL</p>
+              <p className="mt-2 font-display text-[1.3rem] italic text-ink">Scan QR Code</p>
+              <div className="mx-auto mt-4 w-52 rounded-2xl border border-border bg-white p-3 shadow-inner">
+                <img src={d.giftPhoto} alt="QR Code kado" className="w-full object-contain" />
               </div>
-            </div>
-          </div>,
-          document.body,
-        )}
+              <a
+                href={d.giftPhoto}
+                target="_blank"
+                rel="noreferrer"
+                className="mt-5 inline-flex items-center gap-2 rounded-full border border-[#b8933f]/60 px-5 py-2 font-sans text-[0.68rem] tracking-[0.2em] text-[#8a6a1f] transition hover:bg-[#b8933f]/10"
+              >
+                <GiftIcon className="h-3.5 w-3.5" strokeWidth={1.6} aria-hidden />
+                BUKA GAMBAR QR
+              </a>
+            </article>
+          </Smooth>
+        ) : null}
+      </div>
+
+      <Smooth delay={150} className="mx-auto mt-10 max-w-xs text-center">
+        <Ornament className="mb-4" />
+        <p className="font-display text-[1rem] italic leading-relaxed text-ink/55">
+          Terima kasih atas doa dan kebaikan hati Anda.
+        </p>
+      </Smooth>
     </section>
   );
 }
@@ -1066,19 +1105,37 @@ export { CinematicFooter } from "@/components/ui/motion-footer";
 export { Gallery } from "./Gallery";
 export { Moments } from "./Moments";
 
+/** Mengubah link YouTube biasa (watch, youtu.be, shorts, live) menjadi link embed. */
+function youtubeEmbed(url: string) {
+  const m = url.match(
+    /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/|shorts\/|live\/|v\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/,
+  );
+  return m ? `https://www.youtube-nocookie.com/embed/${m[1]}?rel=0&playsinline=1&modestbranding=1` : "";
+}
+
 export function VideoMoment() {
   const d = useWeddingData();
-  const VIDEO_URL = d.videoUrl || "";
+  const VIDEO_URL = (d.videoUrl || "").trim();
   if (!VIDEO_URL) return null;
-  const isYt = VIDEO_URL.includes("youtube") || VIDEO_URL.includes("youtu.be");
+  const isYt = /youtube\.com|youtu\.be/.test(VIDEO_URL);
+  const embed = isYt ? youtubeEmbed(VIDEO_URL) : "";
   return (
     <section className="bg-sand/40 px-5 py-14 sm:px-8">
       <SectionTitle kicker="MEMORIES" title="Video" />
       <FadeUp className="mx-auto mt-8 max-w-sm overflow-hidden rounded-2xl shadow-lg">
-        {isYt ? (
+        {isYt && !embed ? (
+          <a
+            href={VIDEO_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="flex aspect-video w-full items-center justify-center bg-ink font-sans text-sm text-cream"
+          >
+            Tonton video di YouTube
+          </a>
+        ) : isYt ? (
           <div className="aspect-video w-full">
             <iframe
-              src={VIDEO_URL}
+              src={embed}
               title="Video prewedding"
               className="h-full w-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -1133,16 +1190,7 @@ export function MusicControl() {
         className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-ink/80 text-cream shadow-lg backdrop-blur-md transition hover:scale-105"
         aria-label={playing ? "Jeda musik" : "Putar musik"}
       >
-        {playing ? (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <rect x="6" y="5" width="4" height="14" rx="1" />
-            <rect x="14" y="5" width="4" height="14" rx="1" />
-          </svg>
-        ) : (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M8 5v14l11-7z" />
-          </svg>
-        )}
+        <PlayPauseIcon size={26} state={playing} />
       </button>
       </div>
     </>
