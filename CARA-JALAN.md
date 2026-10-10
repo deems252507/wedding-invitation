@@ -175,3 +175,13 @@ Tidak ada SQL baru. Kolom Instagram sudah ada di tabel.
 - **Mempelai:** tiap mempelai satu layar penuh (foto bergeser halus saat digulir; label, nama huruf demi huruf, nama lengkap, orang tua, lalu tombol Instagram masuk perlahan). Isi akun Instagram di admin → Umum → Nama pasangan (kosong = tombol tidak tampil).
 - **Akad / Resepsi:** judul acara, kotak tanggal (bulan | hari + tanggal | tahun), jam, tempat, alamat, tombol **Simpan Tanggal** (Google Calendar) dan **Navigasi Peta**. Tulis tanggal di admin seperti "Senin, 4 Mei 2026"; zona WITA/WIT/WIB dibaca dari kolom Waktu (mis. "10.00 WITA - Selesai").
 - Semua animasi masuk dibuat lebih lambat dan halus. Butiran emas dihapus.
+
+## 10. Perbaikan teks & tampilan
+
+- **Spasi antar kata hilang** ("Merupakansuatukebahagiaan…", "Prayers&Wishes") sudah diperbaiki di komponen RevealText, jadi berlaku di semua bagian.
+- **Judul emas** (Wedding Gift, Prayers & Wishes, Kisah Cinta) diberi warna emas lebih tua agar terbaca di latar krem.
+- **Penutup**: nama pasangan tampil jelas; teks masuk bergantian dari kiri dan kanan secara perlahan.
+- **Kisah Cinta**: foto berbingkai lengkung dengan kartu teks yang saling menumpuk, bergantian kiri/kanan, garis waktu emas yang tergambar saat digulir.
+- **Mempelai**: teks diturunkan lebih ke bawah.
+- **Kado**: tampilan awal berupa kartu berbingkai ganda dengan ikon hadiah. Di popup, baris rekening kosong disembunyikan, setiap baris menampilkan logo + nama bank, dan rekening pertama langsung terbuka.
+- **Ucapan & Doa**: kolom isian berkotak halus, pilihan kehadiran berupa kartu berikon, tombol kirim berikon.
