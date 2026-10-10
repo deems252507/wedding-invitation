@@ -566,6 +566,10 @@ function AdminPage() {
                 <Field label="Nama lengkap wanita" value={data.brideFullName} onChange={(v) => patch("brideFullName", v)} />
                 <Field label="Nama lengkap pria" value={data.groomFullName} onChange={(v) => patch("groomFullName", v)} />
               </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Instagram wanita (tanpa @, opsional)" value={data.brideInstagram} onChange={(v) => patch("brideInstagram", v)} placeholder="namaakun" />
+                <Field label="Instagram pria (tanpa @, opsional)" value={data.groomInstagram} onChange={(v) => patch("groomInstagram", v)} placeholder="namaakun" />
+              </div>
               <Field label="Orang tua wanita" value={data.brideParents} onChange={(v) => patch("brideParents", v)} multiline />
               <Field label="Orang tua pria" value={data.groomParents} onChange={(v) => patch("groomParents", v)} multiline />
             </SectionCard>

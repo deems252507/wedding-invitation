@@ -145,3 +145,27 @@ export function useCountdown(target: Date) {
     seconds: Math.floor((diff / 1000) % 60),
   };
 }
+
+/** Masuk pelan: muncul dari buram sambil bergeser halus saat terlihat. Gunakan delay untuk berurutan. */
+export function Smooth({
+  children,
+  className = "",
+  delay = 0,
+  variant = "up",
+}: {
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+  variant?: "up" | "left" | "right" | "zoom";
+}) {
+  const ref = useReveal<HTMLDivElement>();
+  return (
+    <div
+      ref={ref}
+      className={`sm ${variant === "up" ? "" : `sm-${variant}`} ${className}`}
+      style={{ "--d": `${delay}ms` } as React.CSSProperties}
+    >
+      {children}
+    </div>
+  );
+}

@@ -52,6 +52,8 @@ export interface WeddingData {
   brideFullName: string;
   groomParents: string;
   brideParents: string;
+  groomInstagram: string;
+  brideInstagram: string;
   weddingDateLabel: string; // e.g. "Sabtu, 30 Januari 2027"
   weddingDateISO: string; // for countdown
   coverTitle: string;
@@ -89,6 +91,8 @@ export const EMPTY_WEDDING_DATA: WeddingData = {
   brideFullName: "",
   groomParents: "",
   brideParents: "",
+  groomInstagram: "",
+  brideInstagram: "",
   weddingDateLabel: "",
   weddingDateISO: "",
   coverTitle: "",

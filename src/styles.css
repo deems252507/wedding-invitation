@@ -351,9 +351,9 @@
   will-change: transform, opacity, filter;
   filter: blur(6px);
   transition:
-    opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.95s cubic-bezier(0.16, 1, 0.3, 1),
-    filter 0.85s ease-out;
+    opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.6s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 1.4s ease-out;
 }
 .reveal-up {
   transform: translate3d(0, 36px, 0);
@@ -1085,3 +1085,27 @@ html.lenis body {
 
 /* Tautan anchor tidak tertutup navbar saat discroll programatis */
 html { scroll-behavior: auto; }
+
+/* ---------- Masuk pelan & halus (Smooth) ---------- */
+.sm {
+  opacity: 0;
+  filter: blur(8px);
+  transform: translate3d(0, 38px, 0);
+  transition:
+    opacity 1.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1.8s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 1.5s ease-out;
+  transition-delay: var(--d, 0ms);
+  will-change: opacity, transform;
+}
+.sm-left { transform: translate3d(-44px, 0, 0); }
+.sm-right { transform: translate3d(44px, 0, 0); }
+.sm-zoom { transform: scale(0.92); }
+.sm.is-visible {
+  opacity: 1;
+  filter: blur(0);
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sm { opacity: 1 !important; filter: none !important; transform: none !important; transition: none !important; }
+}

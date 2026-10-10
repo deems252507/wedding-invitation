@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { MailOpen } from "lucide-react";
 import { useWeddingData } from "@/lib/WeddingContext";
-import { GoldDust } from "./Ornament";
 
 /**
  * Cover undangan.
@@ -51,7 +50,6 @@ export function Cover({ guest, onOpen }: { guest: string; onOpen: () => void }) 
       {/* Scrim: gelap di atas (judul) dan kuat di bawah (nama, tombol) — wajah tetap bersih */}
       <div className="absolute inset-0 bg-gradient-to-b from-ink/60 via-transparent via-35% to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-ink via-ink/80 to-transparent" />
-      <GoldDust />
 
       <div className="cover-stack absolute inset-0 z-[2] flex flex-col items-center justify-between px-6 pt-[max(2.5rem,env(safe-area-inset-top))] text-center text-cream">
         <p className="animate-text-mask font-kicker text-[0.72rem] tracking-[0.5em] text-cream/90 [text-shadow:0_2px_12px_rgba(0,0,0,0.5)]">

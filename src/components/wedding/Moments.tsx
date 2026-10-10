@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { useWeddingData } from "@/lib/WeddingContext";
-import { GoldDust } from "./Ornament";
 
 /**
  * Momen: layar penuh yang "menempel" saat digulir. Foto/video (diunggah dari admin)
@@ -107,7 +106,6 @@ export function Moments() {
 
         <div className="absolute inset-0 bg-gradient-to-b from-ink/55 via-transparent via-30% to-transparent" />
         <div className="absolute inset-x-0 bottom-0 h-[55%] bg-gradient-to-t from-ink via-ink/70 to-transparent" />
-        <GoldDust />
 
         <div className="absolute inset-x-0 top-0 z-[2] flex items-center justify-between px-6 pt-[max(2.25rem,env(safe-area-inset-top))]">
           <p className="eyebrow tracking-[0.42em] !text-[#ecd48f]">OUR JOURNEY</p>

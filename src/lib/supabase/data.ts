@@ -82,6 +82,8 @@ export function settingsToWeddingData(s: InvitationSettings): WeddingData {
     brideFullName: s.bride_full_name || "",
     groomParents: s.groom_parents || "",
     brideParents: s.bride_parents || "",
+    groomInstagram: s.groom_instagram || "",
+    brideInstagram: s.bride_instagram || "",
     weddingDateLabel:
       (s as { wedding_date_label?: string }).wedding_date_label ||
       (s.wedding_date
@@ -143,6 +145,8 @@ export function weddingDataToPayload(d: WeddingData): Record<string, unknown> {
     bride_full_name: d.brideFullName,
     groom_parents: d.groomParents,
     bride_parents: d.brideParents,
+    groom_instagram: d.groomInstagram || null,
+    bride_instagram: d.brideInstagram || null,
     cover_title: d.coverTitle,
     wedding_date: normalizeDate(d.weddingDateISO),
     wedding_date_label: d.weddingDateLabel,

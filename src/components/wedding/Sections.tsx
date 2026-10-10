@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Reveal, Tilt, useCountdown, useParallax } from "./hooks";
+import { Reveal, Smooth, useCountdown, useParallax } from "./hooks";
+import { CalendarPlus, ChevronDown, Navigation } from "lucide-react";
 import { useWeddingData } from "@/lib/WeddingContext";
 import { RevealImage, RevealText, useInView } from "@/components/ui/image-text-reveal";
 import { FlowButton } from "@/components/ui/flow-button";
 import { useScrollProgress } from "@/hooks/use-scroll-progress";
-import { GoldDust, Ornament } from "./Ornament";
+import { Ornament } from "./Ornament";
 
 function SectionTitle({ kicker, title }: { kicker?: string; title: string; from?: "left" | "right" }) {
   return (
@@ -23,27 +24,6 @@ function SectionTitle({ kicker, title }: { kicker?: string; title: string; from?
         className="mt-3 block font-display text-[2.5rem] font-medium italic leading-tight tracking-tight text-gold-grad"
       />
       <Ornament className="mt-4" />
-    </div>
-  );
-}
-
-/** Foto mempelai dengan tirai pembuka + bingkai emas tipis yang menyala setelahnya. */
-function FramedPhoto({
-  src,
-  alt,
-  from,
-}: {
-  src: string;
-  alt: string;
-  from: "left" | "right" | "bottom" | "center";
-}) {
-  const [ref, inView] = useInView<HTMLDivElement>(0.25);
-  return (
-    <div
-      ref={ref}
-      className={`gold-frame ${inView ? "gold-frame-in" : ""} overflow-hidden rounded-2xl shadow-[0_16px_40px_-16px_rgba(0,0,0,0.25)]`}
-    >
-      <RevealImage src={src} alt={alt} from={from} imgClassName="aspect-[3/4] w-full object-cover" />
     </div>
   );
 }
@@ -114,7 +94,6 @@ export function Hero() {
       {/* Scrim bawah yang kuat: nama & tanggal selalu terbaca dan tidak menimpa wajah */}
       <div className="absolute inset-0 bg-gradient-to-b from-ink/35 via-transparent via-35% to-transparent" />
       <div className="absolute inset-x-0 bottom-0 h-[58%] bg-gradient-to-t from-ink via-ink/75 to-transparent" />
-      <GoldDust />
       <div
         className="absolute inset-0 flex flex-col items-center justify-end px-6 pb-[max(4.5rem,calc(env(safe-area-inset-bottom)+3rem))] text-center"
         style={{
@@ -163,44 +142,136 @@ export function Quote() {
   );
 }
 
+function igHandle(raw?: string) {
+  return (raw || "")
+    .trim()
+    .replace(/^https?:\/\/(www\.)?instagram\.com\//i, "")
+    .replace(/^@/, "")
+    .replace(/[/?].*$/, "");
+}
+
+function InstagramIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <rect x="3" y="3" width="18" height="18" rx="5" />
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="17.2" cy="6.8" r="0.8" fill="currentColor" />
+    </svg>
+  );
+}
+
+/** Satu mempelai = satu layar penuh: foto bergeser halus saat digulir, teks masuk perlahan satu per satu. */
+function PersonPanel({
+  photo,
+  role,
+  name,
+  fullName,
+  parents,
+  instagram,
+}: {
+  photo: string;
+  role: string;
+  name: string;
+  fullName: string;
+  parents: string;
+  instagram: string;
+}) {
+  const ref = useScrollProgress<HTMLDivElement>("through");
+  const ig = igHandle(instagram);
+  return (
+    <div
+      ref={ref}
+      className="relative h-[100svh] min-h-[560px] w-full overflow-hidden bg-ink"
+      style={{ "--p": 0 } as React.CSSProperties}
+    >
+      {photo ? (
+        <img
+          src={photo}
+          alt={name}
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover object-[50%_22%] will-change-transform"
+          style={{ transform: "translateY(calc((var(--p) - 0.5) * -8svh)) scale(1.14)" }}
+        />
+      ) : null}
+      <div className="absolute inset-0 bg-gradient-to-b from-ink/70 via-transparent via-30% to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 h-[64%] bg-gradient-to-t from-ink via-ink/85 to-transparent" />
+
+      <div className="absolute inset-x-0 bottom-0 flex flex-col items-center px-6 pb-[max(7.5rem,calc(env(safe-area-inset-bottom)+6.5rem))] text-center">
+        <Smooth>
+          <p className="font-kicker text-[0.64rem] tracking-[0.5em] text-[#ecd48f]">{role}</p>
+        </Smooth>
+        <RevealText
+          as="h3"
+          text={name}
+          by="char"
+          stagger={90}
+          delay={250}
+          className="mt-3 block font-script text-[3.6rem] leading-[1.05] text-white [text-shadow:0_4px_24px_rgba(0,0,0,0.5)]"
+        />
+        <Smooth delay={700}>
+          <p className="mt-2 font-display text-[1.35rem] italic text-cream/90">{fullName}</p>
+        </Smooth>
+        {parents ? (
+          <Smooth delay={950}>
+            <p className="mx-auto mt-3 max-w-[18rem] font-sans text-[0.78rem] leading-relaxed text-cream/65">
+              {parents}
+            </p>
+          </Smooth>
+        ) : null}
+        {ig ? (
+          <Smooth delay={1200} variant="zoom">
+            <a
+              href={`https://instagram.com/${ig}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-5 inline-flex items-center gap-2 rounded-full border border-cream/70 px-4 py-1.5 font-sans text-[0.75rem] text-cream transition hover:bg-cream hover:text-ink"
+            >
+              <InstagramIcon />
+              {ig}
+            </a>
+          </Smooth>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export function Couple() {
   const d = useWeddingData();
   return (
-    <section id="mempelai" className="relative overflow-hidden bg-cream px-5 py-16 sm:px-8 sm:py-20">
-      <FadeUp className="mx-auto max-w-md text-center">
-        <Ornament className="mb-6" />
-        <RevealText
-          as="p"
-          text={d.coupleIntro}
-          variant="blur"
-          stagger={28}
-          className="block font-display text-[1.15rem] leading-[1.75] text-ink/75"
+    <section id="mempelai" className="relative bg-cream">
+      <div className="px-5 py-20 sm:px-8 sm:py-24">
+        <Smooth className="mx-auto max-w-md text-center">
+          <Ornament className="mb-6" />
+          <RevealText
+            as="p"
+            text={d.coupleIntro}
+            variant="blur"
+            stagger={34}
+            className="block font-display text-[1.15rem] leading-[1.75] text-ink/75"
+          />
+        </Smooth>
+      </div>
+      {d.brideName ? (
+        <PersonPanel
+          photo={d.bridePhoto}
+          role="MEMPELAI WANITA"
+          name={d.brideName}
+          fullName={d.brideFullName}
+          parents={d.brideParents}
+          instagram={d.brideInstagram}
         />
-      </FadeUp>
-
-      {/* Mempelai Wanita */}
-      <FadeUp delay={100} className="mx-auto mt-12 max-w-[280px] text-center">
-        {d.bridePhoto && <FramedPhoto src={d.bridePhoto} alt={d.brideName} from="left" />}
-        <RevealText as="p" text={d.brideName} by="char" stagger={70} delay={250} className="mt-6 block font-script text-[2.6rem] leading-tight text-gold-grad" />
-        <p className="mt-1.5 font-display text-xl italic text-ink/85">{d.brideFullName}</p>
-        <p className="mt-2 font-display text-base leading-relaxed text-ink/60">
-          {d.brideParents}
-        </p>
-      </FadeUp>
-
-      <FadeUp variant="zoom" delay={160} className="py-8 text-center">
-        <RevealText as="p" text="&" variant="blur" className="block font-script text-6xl text-gold-grad" />
-      </FadeUp>
-
-      {/* Mempelai Pria */}
-      <FadeUp delay={200} className="mx-auto max-w-[280px] text-center">
-        {d.groomPhoto && <FramedPhoto src={d.groomPhoto} alt={d.groomName} from="right" />}
-        <RevealText as="p" text={d.groomName} by="char" stagger={70} delay={250} className="mt-6 block font-script text-[2.6rem] leading-tight text-gold-grad" />
-        <p className="mt-1.5 font-display text-xl italic text-ink/85">{d.groomFullName}</p>
-        <p className="mt-2 font-display text-base leading-relaxed text-ink/60">
-          {d.groomParents}
-        </p>
-      </FadeUp>
+      ) : null}
+      {d.groomName ? (
+        <PersonPanel
+          photo={d.groomPhoto}
+          role="MEMPELAI PRIA"
+          name={d.groomName}
+          fullName={d.groomFullName}
+          parents={d.groomParents}
+          instagram={d.groomInstagram}
+        />
+      ) : null}
     </section>
   );
 }
@@ -245,41 +316,151 @@ export function LoveStory() {
   );
 }
 
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+const MONTH_KEYS: Record<string, number> = {
+  jan: 0, januari: 0, january: 0, feb: 1, februari: 1, february: 1, mar: 2, maret: 2, march: 2,
+  apr: 3, april: 3, mei: 4, may: 4, jun: 5, juni: 5, june: 5, jul: 6, juli: 6, july: 6,
+  agu: 7, ags: 7, agustus: 7, aug: 7, august: 7, sep: 8, sept: 8, september: 8,
+  okt: 9, oktober: 9, oct: 9, october: 9, nov: 10, november: 10, des: 11, desember: 11, dec: 11, december: 11,
+};
+const DAYS = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+
+/** Membaca tanggal bebas ("Senin, 4 Mei 2026" atau "2026-05-04"); null jika tidak terbaca. */
+function parseEventDate(raw: string) {
+  let y: number, m: number, day: number;
+  const iso = raw.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  const txt = raw.match(/(\d{1,2})\s+([A-Za-z]+)\.?,?\s+(\d{4})/);
+  if (iso) {
+    y = +iso[1];
+    m = +iso[2] - 1;
+    day = +iso[3];
+  } else if (txt && MONTH_KEYS[txt[2].toLowerCase()] !== undefined) {
+    day = +txt[1];
+    m = MONTH_KEYS[txt[2].toLowerCase()];
+    y = +txt[3];
+  } else return null;
+  const dt = new Date(Date.UTC(y, m, day));
+  if (dt.getUTCMonth() !== m || dt.getUTCDate() !== day) return null;
+  return { y, m, day, month: MONTHS[m], weekday: DAYS[dt.getUTCDay()] };
+}
+
+/** Link "Simpan Tanggal" ke Google Calendar (zona WITA/WIT/WIB dibaca dari teks waktu). */
+function calendarLink(e: { name: string; date: string; time: string; place: string; address: string }) {
+  const p = parseEventDate(e.date);
+  if (!p) return "";
+  const times = [...e.time.matchAll(/(\d{1,2})[.:](\d{2})/g)];
+  const sh = times[0] ? +times[0][1] : 10;
+  const sm = times[0] ? +times[0][2] : 0;
+  const tz = /WITA/i.test(e.time) ? 8 : /\bWIT\b/i.test(e.time) ? 9 : 7;
+  const start = Date.UTC(p.y, p.m, p.day, sh - tz, sm);
+  const end = times[1] ? Date.UTC(p.y, p.m, p.day, +times[1][1] - tz, +times[1][2]) : start + 2 * 3600_000;
+  const f = (t: number) => new Date(t).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const q = new URLSearchParams({
+    action: "TEMPLATE",
+    text: e.name,
+    dates: `${f(start)}/${f(Math.max(end, start + 1800_000))}`,
+    location: [e.place, e.address].filter(Boolean).join(", "),
+    details: "Undangan pernikahan",
+  });
+  return `https://calendar.google.com/calendar/render?${q.toString()}`;
+}
+
 export function Events() {
   const d = useWeddingData();
+  const bg = d.heroPhotos[1] || d.heroPhoto || d.coverPhoto || "";
+  const parallax = useParallax<HTMLImageElement>(0.12);
+  const pill =
+    "inline-flex items-center gap-2 rounded-full bg-cream px-4 py-2 font-sans text-[0.72rem] text-ink transition hover:bg-white hover:shadow-lg";
   return (
-    <section id="acara" className="bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
-      <SectionTitle kicker="WEDDING" title="Event" />
-      <div className="mx-auto mt-14 max-w-md space-y-10">
-        {d.events.map((e, idx) => (
-          <Reveal key={e.name + idx} variant={idx % 2 ? "tilt-right" : "tilt-left"} delay={idx * 120}>
-            <Tilt className="relative border border-border bg-card px-7 py-10 text-center tilt-shadow outline outline-1 -outline-offset-8 outline-gold/30" max={7}>
-              <RevealText as="h3" text={e.name} variant="blur" stagger={70} className="block font-display text-[1.7rem] font-medium italic leading-tight text-gold-grad" />
-              {e.desc && (
-                <p className="mt-4 font-sans text-[0.7rem] leading-relaxed tracking-wide text-muted-foreground">
-                  {e.desc}
+    <section id="acara" className="relative overflow-hidden bg-ink px-6 py-24 text-cream sm:py-28">
+      {bg && (
+        <img
+          ref={parallax}
+          src={bg}
+          alt=""
+          aria-hidden
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover opacity-45 will-change-transform"
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-b from-ink via-ink/70 to-ink" />
+
+      <div className="relative mx-auto max-w-sm text-center">
+        <Smooth>
+          <h2 className="font-display text-[2.5rem] font-medium italic leading-tight">Event</h2>
+        </Smooth>
+        <Smooth delay={250}>
+          <p className="mt-3 font-sans text-[0.82rem] leading-relaxed text-cream/75">
+            Dengan penuh sukacita, kami mengundang Anda pada hari bahagia kami:
+          </p>
+        </Smooth>
+
+        {d.events.map((e, idx) => {
+          const p = parseEventDate(e.date);
+          const cal = calendarLink(e);
+          return (
+            <div
+              key={e.name + idx}
+              className={idx === 0 ? "mt-14" : "mt-14 border-t border-dotted border-cream/30 pt-14"}
+            >
+              <Smooth>
+                <h3 className="font-display text-[2.2rem] font-medium leading-tight">{e.name}</h3>
+              </Smooth>
+              {e.desc ? (
+                <Smooth delay={150}>
+                  <p className="mx-auto mt-3 max-w-xs font-sans text-[0.75rem] leading-relaxed text-cream/65">
+                    {e.desc}
+                  </p>
+                </Smooth>
+              ) : null}
+
+              <Smooth delay={300} variant="zoom">
+                {p ? (
+                  <div className="mt-7 flex items-center justify-center gap-5">
+                    <span className="w-14 text-right font-sans text-[0.85rem] text-cream/85">{p.month}</span>
+                    <div className="border-x border-cream/70 px-7 py-1">
+                      <p className="font-sans text-[0.78rem] text-cream/85">{p.weekday}</p>
+                      <p className="font-display text-[2.8rem] font-semibold leading-none">{p.day}</p>
+                    </div>
+                    <span className="w-14 text-left font-sans text-[0.85rem] text-cream/85">{p.y}</span>
+                  </div>
+                ) : (
+                  <p className="mt-7 font-display text-2xl">{e.date}</p>
+                )}
+              </Smooth>
+
+              {e.time ? (
+                <Smooth delay={500}>
+                  <p className="mt-4 font-kicker text-[0.74rem] tracking-[0.24em] text-[#ecd48f]">{e.time}</p>
+                </Smooth>
+              ) : null}
+
+              <Smooth delay={650}>
+                <p className="mt-6 font-display text-[1.35rem] font-medium">{e.place}</p>
+                <p className="mx-auto mt-1.5 max-w-[17rem] font-sans text-[0.74rem] leading-relaxed text-cream/70">
+                  {e.address}
                 </p>
-              )}
-              <p className="mt-6 font-display text-xl text-ink">{e.date}</p>
-              <p className="font-kicker text-[0.74rem] tracking-[0.24em] text-gold">{e.time}</p>
-              <Ornament className="my-6" />
-              <p className="font-display text-xl text-ink">{e.place}</p>
-              <p className="mt-2 font-sans text-[0.68rem] leading-relaxed text-muted-foreground">
-                {e.address}
-              </p>
-              {e.map && (
-                <a
-                  href={e.map}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="btn-ink sheen mt-7 inline-flex"
-                >
-                  LIHAT PETA
-                </a>
-              )}
-            </Tilt>
-          </Reveal>
-        ))}
+              </Smooth>
+
+              <Smooth delay={850}>
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-2.5">
+                  {cal ? (
+                    <a href={cal} target="_blank" rel="noreferrer" className={pill}>
+                      <CalendarPlus className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
+                      Simpan Tanggal
+                    </a>
+                  ) : null}
+                  {e.map ? (
+                    <a href={e.map} target="_blank" rel="noreferrer" className={pill}>
+                      <Navigation className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden />
+                      Navigasi Peta
+                    </a>
+                  ) : null}
+                </div>
+              </Smooth>
+            </div>
+          );
+        })}
       </div>
     </section>
   );
@@ -587,12 +768,30 @@ export function Wishes() {
 export function Gift() {
   const d = useWeddingData();
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
+
+  const rows = [
+    ...d.accounts.map((a, i) => ({ key: `acc-${i}`, account: a })),
+    ...(d.giftPhoto ? [{ key: "qr", account: null }] : []),
+  ];
 
   return (
     <section id="kado" className="bg-sand/50 px-5 py-20 sm:px-8 sm:py-24">
       <SectionTitle kicker="TANDA KASIH" title="Wedding Gift" />
-      <Reveal className="mx-auto mt-8 max-w-sm space-y-5 text-center">
+      <Smooth className="mx-auto mt-8 max-w-sm space-y-6 text-center">
         <RevealText
           as="p"
           text={d.giftIntro}
@@ -601,78 +800,116 @@ export function Gift() {
           className="block font-display text-[1.1rem] leading-[1.75] text-ink/70"
         />
         <div className="flex justify-center">
-          <FlowButton text="Kirim Kado" onClick={() => setOpen(true)} />
+          <FlowButton text="Lihat Daftar Kado" onClick={() => setOpen(true)} />
         </div>
-      </Reveal>
+      </Smooth>
 
-      {open && createPortal(
-        <div
-          className="fixed inset-0 z-[90] flex items-end justify-center bg-ink/50 p-4 backdrop-blur-sm sm:items-center"
-          onClick={() => setOpen(false)}
-          role="dialog"
-          aria-modal="true"
-        >
+      {open &&
+        createPortal(
           <div
-            className="max-h-[85vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-cream p-6 shadow-xl animate-in fade-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[90] flex items-center justify-center bg-black/55 p-4 backdrop-blur-[2px] animate-in fade-in duration-500"
+            onClick={() => setOpen(false)}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Kado"
           >
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-display text-xl italic text-ink">Kado Cashless</h3>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="rounded-full px-2 py-1 text-ink/50 hover:bg-ink/5 hover:text-ink"
-                aria-label="Tutup"
-              >
-                ✕
-              </button>
-            </div>
-            <p className="mb-5 font-sans text-sm text-ink/60">
-              Anda dapat memberikan kado cashless. Pilih metode pembayaran di bawah.
-            </p>
-            {d.giftPhoto ? (
-              <div className="mb-5 flex justify-center">
-                <div className="overflow-hidden rounded-2xl border border-border bg-white p-3">
-                  <img
-                    src={d.giftPhoto}
-                    alt="QR / Gift"
-                    className="h-36 w-36 object-contain"
-                  />
-                </div>
-              </div>
-            ) : null}
-            <div className="space-y-3">
-              {d.accounts.map((a) => (
-                <div
-                  key={a.bank + a.number}
-                  className="rounded-xl border border-border bg-card px-4 py-4 text-center"
+            <div
+              className="w-full max-w-sm overflow-hidden rounded-xl bg-cream shadow-2xl animate-in zoom-in-95 slide-in-from-bottom-6 duration-500"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                <h3 className="font-display text-xl font-medium text-ink">Kado</h3>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  aria-label="Tutup"
+                  className="text-red-500/80 transition hover:text-red-600"
                 >
-                  {a.logo ? (
-                    <div className="mb-2 flex justify-center">
-                      <img src={a.logo} alt={a.bank} className="h-8 object-contain" />
-                    </div>
-                  ) : null}
-                  <p className="eyebrow">{a.bank}</p>
-                  <p className="mt-1 font-display text-lg tracking-wide text-ink">{a.number}</p>
-                  <p className="font-sans text-sm text-muted-foreground">a/n {a.owner}</p>
-                  <button
-                    type="button"
-                    className="btn-ink mt-3"
-                    onClick={() => {
-                      navigator.clipboard?.writeText(a.number);
-                      setCopied(a.bank);
-                      setTimeout(() => setCopied(null), 2000);
-                    }}
-                  >
-                    {copied === a.bank ? "TERSALIN ✓" : "SALIN"}
-                  </button>
-                </div>
-              ))}
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" aria-hidden>
+                    <circle cx="12" cy="12" r="9.5" />
+                    <path d="M9 9l6 6M15 9l-6 6" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="max-h-[62vh] overflow-y-auto px-5 py-5" data-lenis-prevent>
+                <h4 className="font-display text-lg font-semibold text-ink">Kado Cashless</h4>
+                <p className="mt-1 font-sans text-[0.72rem] leading-relaxed text-ink/60">
+                  Anda dapat memberikan kado cashless. Pilih metode pembayaran di bawah.
+                </p>
+
+                <ul className="mt-4 divide-y divide-border rounded-md border border-border bg-card">
+                  {rows.map(({ key, account: a }) => {
+                    const on = expanded === key;
+                    return (
+                      <li key={key}>
+                        <button
+                          type="button"
+                          onClick={() => setExpanded(on ? null : key)}
+                          aria-expanded={on}
+                          className="flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left"
+                        >
+                          <span className="flex min-w-0 items-center gap-3">
+                            {a?.logo ? (
+                              <img src={a.logo} alt={a.bank} className="h-6 max-w-[7rem] object-contain" />
+                            ) : (
+                              <span className="truncate font-display text-[1.05rem] font-medium text-ink">
+                                {a ? a.bank || "Rekening" : "QR Code"}
+                              </span>
+                            )}
+                          </span>
+                          <ChevronDown
+                            className={`h-4 w-4 shrink-0 text-ink/50 transition-transform duration-500 ${on ? "rotate-180" : ""}`}
+                            aria-hidden
+                          />
+                        </button>
+                        <div
+                          className={`grid transition-[grid-template-rows,opacity] duration-500 ease-out ${
+                            on ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                          }`}
+                        >
+                          <div className="overflow-hidden">
+                            <div className="px-4 pb-5 pt-1 text-center">
+                              {a ? (
+                                <>
+                                  {a.logo ? <p className="eyebrow">{a.bank}</p> : null}
+                                  <p className="mt-1 font-display text-[1.4rem] tracking-wide text-ink">{a.number}</p>
+                                  <p className="font-sans text-[0.8rem] text-ink/60">a/n {a.owner}</p>
+                                  <button
+                                    type="button"
+                                    className="btn-ink mt-3"
+                                    onClick={() => {
+                                      navigator.clipboard?.writeText(a.number);
+                                      setCopied(key);
+                                      setTimeout(() => setCopied(null), 2000);
+                                    }}
+                                  >
+                                    {copied === key ? "TERSALIN ✓" : "SALIN"}
+                                  </button>
+                                </>
+                              ) : (
+                                <div className="mx-auto w-44 overflow-hidden rounded-xl border border-border bg-white p-3">
+                                  <img src={d.giftPhoto} alt="QR Code" className="w-full object-contain" />
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+
+              <div className="flex justify-end border-t border-border px-5 py-3">
+                <button type="button" className="btn-ink !px-5 !py-2" onClick={() => setOpen(false)}>
+                  TUTUP
+                </button>
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body,
-      )}
+          </div>,
+          document.body,
+        )}
     </section>
   );
 }
